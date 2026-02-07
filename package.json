@@ -1,0 +1,11 @@
+{
+  "name": "booktalk",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "echo \"Run dev from an app workspace\"",
+    "build": "echo \"Run build from an app workspace\"",
+    "test": "echo \"Run tests from an app workspace\""
+  }
+}
+
