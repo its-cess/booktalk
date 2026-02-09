@@ -1,10 +1,14 @@
 import "dotenv/config";
 import Fastify from "fastify";
-import { prisma } from "./prisma.js";
 import authRoutes from "./routes/auth.js";
+import jwt from "@fastify/jwt";
 
 const app = Fastify({
   logger: true,
+});
+
+app.register(jwt, {
+  secret: process.env.JWT_SECRET! ?? "dev-secret-change-me",
 });
 
 // Health check
@@ -13,7 +17,7 @@ app.get("/health", async () => {
 });
 
 // Auth routes
-await authRoutes(app);
+app.register(authRoutes, { prefix: "/auth" });
 
 const port = 3000;
 
