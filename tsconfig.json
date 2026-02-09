@@ -8,9 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["apps/web/src/*"]
-    }
+    "paths": { "@/*": ["apps/web/src/*"] }
   },
-  "include": []
+  "include": ["apps/*/src/**/*.ts", "apps/*/src/**/*.tsx"]
 }
