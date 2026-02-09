@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import { prisma } from "../prisma.js";
 import { loginSchema, signupSchema } from "../schemas/auth.js";
+import { signToken } from "../utils/jwt.js";
 
 export default async function authRoutes(app: FastifyInstance) {
   app.post("/signup", async (request, reply) => {
@@ -81,6 +82,8 @@ export default async function authRoutes(app: FastifyInstance) {
         return reply.status(400).send({ error: "Invalid credentials" });
       }
 
+      const token = signToken({ userId: user.id });
+
       return reply.send({
         user: {
           id: user.id,
@@ -88,6 +91,7 @@ export default async function authRoutes(app: FastifyInstance) {
           username: user.username,
           displayName: user.displayName,
         },
+        token,
       });
     } catch (err) {
       if (err instanceof z.ZodError) {
