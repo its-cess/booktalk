@@ -1,13 +1,18 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signupSchema, type SignupFormData } from "../schemas/auth";
-import { api } from "../lib/api";
+import { useNavigate, Navigate } from "react-router-dom";
+import axios from "axios";
 
-import { Button } from "../components/components/ui/button";
-import { Input } from "../components/components/ui/input";
-import { Label } from "../components/components/ui/label";
+import { signupSchema, type SignupFormData } from "@booktalk/shared";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Signup() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     register,
     handleSubmit,
@@ -23,16 +28,20 @@ export default function Signup() {
     },
   });
 
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   async function onSubmit(data: SignupFormData) {
     try {
-        const { confirmPassword, ...payload } = data;
-        const res = await api.post("/signup", payload);
-        console.log("Signup success:", res.data);
+      const { email, username, displayName, password } = data;
+      await api.post("/auth/signup", { email, username, displayName, password });
+      navigate("/login", { replace: true });
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.error ?? "Signup failed");
       } else {
-        alert("Signup failed");
+        alert(err instanceof Error ? err.message : "Signup failed");
       }
     }
   }

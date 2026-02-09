@@ -1,15 +1,15 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { loginSchema, signupRequestSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
-import { loginSchema, signupSchema } from "../schemas/auth.js";
 import { signToken } from "../utils/jwt.js";
 
 export default async function authRoutes(app: FastifyInstance) {
   app.post("/signup", async (request, reply) => {
     try {
       // Validate request body
-      const data = signupSchema.parse(request.body);
+      const data = signupRequestSchema.parse(request.body);
 
       // Check if email or username is already taken
       const existingUser = await prisma.user.findFirst({

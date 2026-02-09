@@ -1,8 +1,9 @@
 export interface User {
   id: string;
   username: string;
+  displayName: string;
   bio?: string;
-  profilePictureUrl?: string;
+  avatarUrl?: string;
 }
 
 export interface Post {

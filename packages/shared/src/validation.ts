@@ -3,8 +3,9 @@ import { z } from "zod";
 export const userSchema = z.object({
   id: z.string(),
   username: z.string().min(3),
+  displayName: z.string().min(1),
   bio: z.string().optional(),
-  profilePictureUrl: z.string().url().optional(),
+  avatarUrl: z.string().url().optional(),
 });
 
 export const postSchema = z.object({

@@ -1,14 +1,18 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate, Navigate } from "react-router-dom";
+import axios from "axios";
 
-import { loginSchema, type LoginFormData } from "../schemas/auth";
-import { api } from "../lib/api";
-
-import { Button } from "../components/components/ui/button";
-import { Input } from "../components/components/ui/input";
-import { Label } from "../components/components/ui/label";
+import { loginSchema, type LoginFormData } from "@booktalk/shared";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { user, login } = useAuth();
   const {
     register,
     handleSubmit,
@@ -21,20 +25,23 @@ export default function Login() {
     },
   });
 
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   async function onSubmit(data: LoginFormData) {
     try {
-      const res = await api.post("/login", data);
-      console.log("Login success:", res.data);
-
-      // later:
-      // - store token
-      // - set auth context
-      // - redirect
+      const res = await api.post("/auth/login", data);
+      const { token, user: authUser } = res.data;
+      login(token, authUser);
+      navigate("/", { replace: true });
     } catch (err: unknown) {
-      if (err instanceof Error) {
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.error ?? "Login failed");
+      } else if (err instanceof Error) {
         alert(err.message);
       } else {
-        alert("Signup failed");
+        alert("Login failed");
       }
     }
   }
