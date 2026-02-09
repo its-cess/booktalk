@@ -1,10 +1,17 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import authRoutes from "./routes/auth.js";
 import jwt from "@fastify/jwt";
 
 const app = Fastify({
   logger: true,
+});
+
+// Allow frontend (Vite dev server) to call the API
+app.register(cors, {
+  origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+  credentials: true,
 });
 
 app.register(jwt, {

@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Resolve shared package source so Vite compiles it (ESM named exports work)
+      "@booktalk/shared": path.resolve(__dirname, "../../packages/shared/src/index.ts"),
     },
   },
 });

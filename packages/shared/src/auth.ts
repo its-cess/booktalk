@@ -1,11 +1,16 @@
 import { z } from "zod";
 
-export const signupSchema = z
-  .object({
-    email: z.string().email("Invalid email"),
-    username: z.string().min(3, "Username must be at least 3 characters"),
-    displayName: z.string().min(1, "Display name is required"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+/** Request body for POST /auth/signup. API accepts these four fields only. */
+export const signupRequestSchema = z.object({
+  email: z.string().email("Invalid email"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  displayName: z.string().min(1, "Display name is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+/** Full signup form schema (includes confirmPassword + match refinement). */
+export const signupSchema = signupRequestSchema
+  .extend({
     confirmPassword: z.string().min(8),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -16,11 +21,6 @@ export const signupSchema = z
 export const loginSchema = z.object({
   identifier: z.string().min(1, "Email or username is required"),
   password: z.string().min(8, "Password is required"),
-});
-
-/** Request body for POST /auth/signup (no confirmPassword) */
-export const signupRequestSchema = signupSchema.omit({
-  confirmPassword: true,
 });
 
 export type SignupFormData = z.infer<typeof signupSchema>;

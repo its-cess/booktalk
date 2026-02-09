@@ -1,3 +1,3 @@
-export * from "./types.js";
-export * from "./validation.js";
-export * from "./auth.js";
+export * from "./types";
+export * from "./validation";
+export * from "./auth";

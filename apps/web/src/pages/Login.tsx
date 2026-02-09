@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "sonner";
 
 import { loginSchema, type LoginFormData } from "@booktalk/shared";
 import { api } from "@/lib/api";
@@ -37,20 +38,32 @@ export default function Login() {
       navigate("/", { replace: true });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.error ?? "Login failed");
+        toast.error(err.response?.data?.error ?? "Login failed");
       } else if (err instanceof Error) {
-        alert(err.message);
+        toast.error(err.message);
       } else {
-        alert("Login failed");
+        toast.error("Login failed");
       }
     }
   }
 
   return (
-    <div className="max-w-md mx-auto mt-20 space-y-6">
-      <h1 className="text-2xl font-bold">Log in</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div
+      style={{
+        width: "100%",
+        maxWidth: "28rem",
+        margin: "2rem auto 0",
+        padding: 0,
+        boxSizing: "border-box",
+      }}
+    >
+      <h1 className="text-2xl font-bold" style={{ marginBottom: "1.5rem" }}>
+        Log in
+      </h1>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+      >
         <div>
           <Label>Email or Username</Label>
           <Input {...register("identifier")} />

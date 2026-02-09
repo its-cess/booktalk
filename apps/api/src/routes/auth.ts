@@ -4,8 +4,29 @@ import { z } from "zod";
 import { loginSchema, signupRequestSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { signToken } from "../utils/jwt.js";
+import { requireAuth } from "../middleware/auth.js";
 
 export default async function authRoutes(app: FastifyInstance) {
+  // Protected: current user (requires valid JWT)
+  app.get("/me", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayName: true,
+        bio: true,
+        avatarUrl: true,
+      },
+    });
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+    return reply.send({ user });
+  });
+
   app.post("/signup", async (request, reply) => {
     try {
       // Validate request body
