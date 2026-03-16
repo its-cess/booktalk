@@ -9,6 +9,12 @@ export const createPostSchema = z.object({
 
 export type CreatePostData = z.infer<typeof createPostSchema>;
 
+export const updatePostSchema = z.object({
+  content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long"),
+});
+
+export type UpdatePostData = z.infer<typeof updatePostSchema>;
+
 export interface PostWithAuthor {
   id: string;
   content: string;
