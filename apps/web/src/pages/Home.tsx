@@ -1,24 +1,15 @@
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useFeed } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PostCard, { type Post } from "@/components/post/PostCard";
-
-const DUMMY_POSTS: Post[] = [
-  {
-    id: "welcome",
-    authorDisplayName: "BookTalk",
-    authorUsername: "booktalk",
-    content:
-      "Hi, welcome to BookTalk! This is where book lovers share thoughts, reviews, and recommendations. Start by following people and posting about what you're reading.",
-    hasSpoilers: false,
-    createdAt: new Date().toISOString(),
-  },
-];
+import PostCard from "@/components/post/PostCard";
+import PostComposer from "@/components/post/PostComposer";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const { data: posts, isLoading, isError } = useFeed();
 
   if (!isAuthenticated) {
     return (
@@ -36,30 +27,20 @@ export default function Home() {
         <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#171717", marginBottom: "0.75rem" }}>
           BookTok for Millennials
         </h2>
-        <p style={{ color: "#737373", marginBottom: "1.5rem", fontSize: "1rem" }}>
+        <p style={{ color: "#737373", marginBottom: "1.5rem" }}>
           Sign up or log in to start posting and following.
         </p>
         <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link to="/login">
-            <Button variant="outline">Log in</Button>
-          </Link>
-          <Link to="/signup">
-            <Button>Sign up</Button>
-          </Link>
+          <Link to="/login"><Button variant="outline">Log in</Button></Link>
+          <Link to="/signup"><Button>Sign up</Button></Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "38rem",
-        margin: "0 auto",
-        padding: "2rem 1.5rem",
-      }}
-    >
-      {/* Search bar */}
+    <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
+      {/* Search */}
       <div style={{ position: "relative", marginBottom: "1.75rem", width: "100%" }}>
         <Search
           size={16}
@@ -78,22 +59,43 @@ export default function Home() {
         />
       </div>
 
-      {/* Feed header */}
-      <h2
-        style={{
-          fontSize: "1rem",
-          fontWeight: 600,
-          color: "#171717",
-          marginBottom: "1rem",
-        }}
-      >
+      {/* Composer */}
+      <PostComposer />
+
+      {/* Feed */}
+      <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", marginBottom: "1rem" }}>
         Your feed
       </h2>
 
-      {/* Feed */}
+      {isLoading && (
+        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>Loading…</p>
+      )}
+
+      {isError && (
+        <p style={{ color: "#ef4444", fontSize: "0.9rem" }}>Failed to load feed.</p>
+      )}
+
+      {posts && posts.length === 0 && (
+        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>
+          No posts yet. Be the first to post!
+        </p>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {DUMMY_POSTS.map((post) => (
-          <PostCard key={post.id} post={post} />
+        {posts?.map((post) => (
+          <PostCard
+            key={post.id}
+            post={{
+              id: post.id,
+              authorDisplayName: post.author.displayName,
+              authorUsername: post.author.username,
+              content: post.content,
+              bookTitle: post.bookTitle ?? undefined,
+              bookAuthor: post.bookAuthor ?? undefined,
+              hasSpoilers: post.hasSpoilers,
+              createdAt: post.createdAt,
+            }}
+          />
         ))}
       </div>
     </div>
