@@ -14,6 +14,18 @@ export function useFeed() {
   });
 }
 
+export function useDeletePost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      await api.delete(`/posts/${postId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+    },
+  });
+}
+
 export function useCreatePost() {
   const queryClient = useQueryClient();
   return useMutation({
