@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -13,6 +14,12 @@ vi.mock("@/lib/queries", () => ({
 
 vi.mock("sonner", () => ({
   toast: { error: mockToastError },
+}));
+
+vi.mock("react-router-dom", () => ({
+  Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
+    <a href={String(to)} {...props}>{children}</a>
+  ),
 }));
 
 import PostCard from "@/components/post/PostCard";

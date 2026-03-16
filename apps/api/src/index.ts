@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
+import userRoutes from "./routes/users.js";
 import jwt from "@fastify/jwt";
 
 const app = Fastify({
@@ -27,6 +28,7 @@ app.get("/health", async () => {
 // Auth routes
 app.register(authRoutes, { prefix: "/auth" });
 app.register(postRoutes, { prefix: "/posts" });
+app.register(userRoutes, { prefix: "/users" });
 
 const port = 3000;
 

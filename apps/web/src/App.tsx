@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
+import Profile from "@/pages/Profile";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
+            <Route path=":username" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

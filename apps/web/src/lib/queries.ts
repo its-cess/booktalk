@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { PostWithAuthor, CreatePostData } from "@booktalk/shared";
+import type { PostWithAuthor, CreatePostData, UserProfile, UpdateProfileData } from "@booktalk/shared";
 
 export const FEED_KEY = ["posts", "feed"] as const;
 
@@ -35,6 +35,30 @@ export function useDeletePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+    },
+  });
+}
+
+export function useProfile(username: string) {
+  return useQuery({
+    queryKey: ["users", username],
+    queryFn: async () => {
+      const res = await api.get<{ user: UserProfile }>(`/users/${username}`);
+      return res.data.user;
+    },
+    enabled: !!username,
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: UpdateProfileData) => {
+      const res = await api.patch<{ user: UserProfile }>("/users/me", data);
+      return res.data.user;
+    },
+    onSuccess: (user) => {
+      queryClient.invalidateQueries({ queryKey: ["users", user.username] });
     },
   });
 }
