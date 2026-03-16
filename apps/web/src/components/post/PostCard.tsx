@@ -18,24 +18,46 @@ export default function PostCard({ post }: { post: Post }) {
 
   return (
     <div
-      className="rounded-xl p-4 space-y-3"
-      style={{ border: "1px solid #e5e5e5", backgroundColor: "#ffffff" }}
+      style={{
+        backgroundColor: "#ffffff",
+        border: "1px solid #e5e5e5",
+        borderRadius: "0.75rem",
+        padding: "1.25rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.875rem",
+      }}
     >
       {/* Author row */}
-      <div className="flex items-center gap-2">
+      <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-          style={{ backgroundColor: "#e5e5e5", color: "#404040" }}
+          style={{
+            width: "2.25rem",
+            height: "2.25rem",
+            borderRadius: "50%",
+            backgroundColor: "#e0e7ff",
+            color: "#4338ca",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.875rem",
+            fontWeight: 700,
+            flexShrink: 0,
+          }}
         >
           {post.authorDisplayName[0].toUpperCase()}
         </div>
-        <div className="flex flex-col min-w-0">
-          <span className="font-semibold text-sm leading-tight">{post.authorDisplayName}</span>
-          <span className="text-xs" style={{ color: "#737373" }}>
+
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}>
+            {post.authorDisplayName}
+          </span>
+          <span style={{ fontSize: "0.75rem", color: "#737373" }}>
             @{post.authorUsername}
           </span>
         </div>
-        <span className="ml-auto text-xs flex-shrink-0" style={{ color: "#a3a3a3" }}>
+
+        <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#a3a3a3", flexShrink: 0 }}>
           {formatDate(post.createdAt)}
         </span>
       </div>
@@ -43,10 +65,19 @@ export default function PostCard({ post }: { post: Post }) {
       {/* Book tag */}
       {post.bookTitle && (
         <div
-          className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md w-fit"
-          style={{ backgroundColor: "#f5f5f5", color: "#525252" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.375rem",
+            fontSize: "0.75rem",
+            backgroundColor: "#f5f5f5",
+            color: "#525252",
+            padding: "0.25rem 0.625rem",
+            borderRadius: "0.375rem",
+            width: "fit-content",
+          }}
         >
-          <BookOpen className="w-3 h-3 flex-shrink-0" />
+          <BookOpen size={12} style={{ flexShrink: 0 }} />
           <span>
             {post.bookTitle}
             {post.bookAuthor && ` · ${post.bookAuthor}`}
@@ -57,10 +88,18 @@ export default function PostCard({ post }: { post: Post }) {
       {/* Content */}
       {post.hasSpoilers && !spoilerRevealed ? (
         <div
-          className="rounded-lg p-4 text-center space-y-2"
-          style={{ backgroundColor: "#f5f5f5" }}
+          style={{
+            backgroundColor: "#f5f5f5",
+            borderRadius: "0.5rem",
+            padding: "1rem",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            alignItems: "center",
+          }}
         >
-          <p className="text-sm" style={{ color: "#737373" }}>
+          <p style={{ fontSize: "0.875rem", color: "#737373" }}>
             This post contains spoilers
           </p>
           <Button variant="outline" size="sm" onClick={() => setSpoilerRevealed(true)}>
@@ -68,7 +107,7 @@ export default function PostCard({ post }: { post: Post }) {
           </Button>
         </div>
       ) : (
-        <p className="text-sm leading-relaxed" style={{ color: "#262626" }}>
+        <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "#262626", margin: 0 }}>
           {post.content}
         </p>
       )}

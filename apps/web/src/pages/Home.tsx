@@ -22,14 +22,24 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-        <h2 className="text-2xl font-semibold mb-2" style={{ color: "#171717" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          textAlign: "center",
+          padding: "2rem",
+        }}
+      >
+        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#171717", marginBottom: "0.75rem" }}>
           BookTok for Millennials
         </h2>
-        <p className="mb-6" style={{ color: "#737373" }}>
+        <p style={{ color: "#737373", marginBottom: "1.5rem", fontSize: "1rem" }}>
           Sign up or log in to start posting and following.
         </p>
-        <div className="flex gap-3">
+        <div style={{ display: "flex", gap: "0.75rem" }}>
           <Link to="/login">
             <Button variant="outline">Log in</Button>
           </Link>
@@ -42,18 +52,46 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6 w-full">
+    <div
+      style={{
+        maxWidth: "38rem",
+        margin: "0 auto",
+        padding: "2rem 1.5rem",
+      }}
+    >
       {/* Search bar */}
-      <div className="relative mb-6">
+      <div style={{ position: "relative", marginBottom: "1.75rem", width: "100%" }}>
         <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-          style={{ color: "#a3a3a3" }}
+          size={16}
+          style={{
+            position: "absolute",
+            left: "0.75rem",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#a3a3a3",
+            pointerEvents: "none",
+          }}
         />
-        <Input placeholder="Search books or posts..." className="pl-9" />
+        <Input
+          placeholder="Search books or posts..."
+          style={{ paddingLeft: "2.25rem", width: "100%", boxSizing: "border-box" }}
+        />
       </div>
 
+      {/* Feed header */}
+      <h2
+        style={{
+          fontSize: "1rem",
+          fontWeight: 600,
+          color: "#171717",
+          marginBottom: "1rem",
+        }}
+      >
+        Your feed
+      </h2>
+
       {/* Feed */}
-      <div className="space-y-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {DUMMY_POSTS.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
