@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { BookOpen, Trash2 } from "lucide-react";
+import { BookOpen, Check, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { useDeletePost } from "@/lib/queries";
+import { useDeletePost, useUpdatePost } from "@/lib/queries";
 
 export interface Post {
   id: string;
@@ -24,7 +24,11 @@ interface PostCardProps {
 export default function PostCard({ post, isOwner = false }: PostCardProps) {
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+
   const deletePost = useDeletePost();
+  const updatePost = useUpdatePost();
 
   async function handleDelete() {
     try {
@@ -33,6 +37,22 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
     } catch {
       toast.error("Failed to delete post.");
     }
+  }
+
+  async function handleSave() {
+    const trimmed = editContent.trim();
+    if (!trimmed) return;
+    try {
+      await updatePost.mutateAsync({ postId: post.id, content: trimmed });
+      setIsEditing(false);
+    } catch {
+      toast.error("Failed to save changes.");
+    }
+  }
+
+  function handleDiscard() {
+    setEditContent(post.content);
+    setIsEditing(false);
   }
 
   return (
@@ -82,17 +102,35 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
           </span>
 
           {isOwner && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setConfirmOpen(true)}
-              aria-label="Delete post"
-              style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
-            >
-              <Trash2 size={14} />
-            </Button>
+            isEditing ? (
+              <>
+                <IconBtn
+                  label="Save changes"
+                  onClick={handleSave}
+                  disabled={updatePost.isPending || !editContent.trim()}
+                  hoverColor="#16a34a"
+                >
+                  <Check size={14} />
+                </IconBtn>
+                <IconBtn
+                  label="Discard changes"
+                  onClick={handleDiscard}
+                  disabled={updatePost.isPending}
+                  hoverColor="#737373"
+                >
+                  <X size={14} />
+                </IconBtn>
+              </>
+            ) : (
+              <>
+                <IconBtn label="Edit post" onClick={() => setIsEditing(true)} hoverColor="#4338ca">
+                  <Pencil size={14} />
+                </IconBtn>
+                <IconBtn label="Delete post" onClick={() => setConfirmOpen(true)} hoverColor="#ef4444">
+                  <Trash2 size={14} />
+                </IconBtn>
+              </>
+            )
           )}
         </div>
 
@@ -119,8 +157,31 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
           </div>
         )}
 
-        {/* Content */}
-        {post.hasSpoilers && !spoilerRevealed ? (
+        {/* Content — textarea in edit mode, text otherwise */}
+        {isEditing ? (
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+            aria-label="Edit post content"
+            style={{
+              width: "100%",
+              resize: "vertical",
+              border: "1px solid #a3a3a3",
+              borderRadius: "0.5rem",
+              padding: "0.625rem 0.75rem",
+              fontSize: "0.9rem",
+              lineHeight: 1.6,
+              color: "#171717",
+              outline: "none",
+              fontFamily: "inherit",
+              boxSizing: "border-box",
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
+            autoFocus
+          />
+        ) : post.hasSpoilers && !spoilerRevealed ? (
           <div
             style={{
               backgroundColor: "#f5f5f5",
@@ -139,9 +200,29 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
             </Button>
           </div>
         ) : (
-          <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "#262626", margin: 0 }}>
-            {post.content}
-          </p>
+          <div>
+            <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "#262626", margin: 0 }}>
+              {post.content}
+            </p>
+            {post.hasSpoilers && spoilerRevealed && (
+              <button
+                onClick={() => setSpoilerRevealed(false)}
+                style={{
+                  marginTop: "0.5rem",
+                  fontSize: "0.75rem",
+                  color: "#a3a3a3",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#525252")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+              >
+                Hide spoiler
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -155,6 +236,35 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
         onCancel={() => setConfirmOpen(false)}
       />
     </>
+  );
+}
+
+function IconBtn({
+  label,
+  onClick,
+  disabled,
+  hoverColor,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  hoverColor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.color = hoverColor; }}
+      onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+    >
+      {children}
+    </Button>
   );
 }
 

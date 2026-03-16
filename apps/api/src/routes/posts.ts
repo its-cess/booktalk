@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { createPostSchema } from "@booktalk/shared";
+import { createPostSchema, updatePostSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -38,6 +38,33 @@ export default async function postRoutes(app: FastifyInstance) {
       });
 
       return reply.status(201).send({ post });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.status(400).send({ errors: err.issues });
+      }
+      console.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  });
+
+  // PATCH /posts/:id — edit a post (requires auth, must be author)
+  app.patch("/:id", { preHandler: [requireAuth] }, async (request, reply) => {
+    try {
+      const payload = request.user as { userId: string };
+      const { id } = request.params as { id: string };
+      const data = updatePostSchema.parse(request.body);
+
+      const post = await prisma.post.findUnique({ where: { id } });
+      if (!post) return reply.status(404).send({ error: "Post not found" });
+      if (post.authorId !== payload.userId) return reply.status(403).send({ error: "Forbidden" });
+
+      const updated = await prisma.post.update({
+        where: { id },
+        data: { content: data.content },
+        include: { author: { select: authorSelect } },
+      });
+
+      return reply.send({ post: updated });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.status(400).send({ errors: err.issues });
