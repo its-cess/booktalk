@@ -68,7 +68,8 @@ export default async function authRoutes(app: FastifyInstance) {
         },
       });
 
-      return reply.status(201).send({ user });
+      const token = signToken({ userId: user.id });
+      return reply.status(201).send({ user, token });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.status(400).send({ errors: err.issues });

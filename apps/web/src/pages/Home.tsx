@@ -1,38 +1,63 @@
 import { Link } from "react-router-dom";
+import { Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import PostCard, { type Post } from "@/components/post/PostCard";
 
-/**
- * Home page content. Shown for everyone at "/".
- * Layout (header + nav) is provided by Layout; this is just the main content.
- */
+const DUMMY_POSTS: Post[] = [
+  {
+    id: "welcome",
+    authorDisplayName: "BookTalk",
+    authorUsername: "booktalk",
+    content:
+      "Hi, welcome to BookTalk! This is where book lovers share thoughts, reviews, and recommendations. Start by following people and posting about what you're reading.",
+    hasSpoilers: false,
+    createdAt: new Date().toISOString(),
+  },
+];
+
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center px-4">
+        <h2 className="text-2xl font-semibold mb-2" style={{ color: "#171717" }}>
+          BookTok for Millennials
+        </h2>
+        <p className="mb-6" style={{ color: "#737373" }}>
+          Sign up or log in to start posting and following.
+        </p>
+        <div className="flex gap-3">
+          <Link to="/login">
+            <Button variant="outline">Log in</Button>
+          </Link>
+          <Link to="/signup">
+            <Button>Sign up</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {isAuthenticated ? (
-        <p className="text-muted-foreground" style={{ color: "#737373" }}>
-          Welcome, {user?.displayName ?? user?.username}. Your feed will go here.
-        </p>
-      ) : (
-        <div className="text-center py-16 space-y-4">
-          <h2 className="text-2xl font-semibold" style={{ color: "#171717" }}>
-            BookTok for Millenials
-          </h2>
-          <p style={{ color: "#737373" }}>
-            Sign up or log in to start posting and following.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/login">
-              <Button variant="outline">Log in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Sign up</Button>
-            </Link>
-          </div>
-        </div>
-      )}
-    </>
+    <div className="max-w-xl mx-auto px-4 py-6 w-full">
+      {/* Search bar */}
+      <div className="relative mb-6">
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+          style={{ color: "#a3a3a3" }}
+        />
+        <Input placeholder="Search books or posts..." className="pl-9" />
+      </div>
+
+      {/* Feed */}
+      <div className="space-y-4">
+        {DUMMY_POSTS.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+    </div>
   );
 }

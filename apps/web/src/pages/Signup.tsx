@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/auth-context";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const {
     register,
     handleSubmit,
@@ -36,8 +36,10 @@ export default function Signup() {
   async function onSubmit(data: SignupFormData) {
     try {
       const { email, username, displayName, password } = data;
-      await api.post("/auth/signup", { email, username, displayName, password });
-      navigate("/login", { replace: true });
+      const res = await api.post("/auth/signup", { email, username, displayName, password });
+      const { token, user: newUser } = res.data;
+      login(token, newUser);
+      navigate("/", { replace: true });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         toast.error(err.response?.data?.error ?? "Signup failed");

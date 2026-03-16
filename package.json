@@ -6,6 +6,15 @@
     "dev": "echo \"Run dev from an app workspace\"",
     "build": "echo \"Run build from an app workspace\"",
     "test": "echo \"Run tests from an app workspace\""
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "@swc/core",
+      "bcrypt",
+      "esbuild",
+      "prisma"
+    ]
   }
 }
 
