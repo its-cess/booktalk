@@ -33,22 +33,27 @@ const MOCK_POST = {
   createdAt: new Date().toISOString(),
 };
 
+async function openMenu() {
+  await userEvent.click(screen.getByRole("button", { name: "Post options" }));
+}
+
 describe("PostCard — delete", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("does not show the delete button when isOwner is false", () => {
+  it("does not show the options menu when isOwner is false", () => {
     render(<PostCard post={MOCK_POST} />);
-    expect(screen.queryByRole("button", { name: "Delete post" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Post options" })).not.toBeInTheDocument();
   });
 
-  it("shows the delete button when isOwner is true", () => {
+  it("shows the options menu button when isOwner is true", () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    expect(screen.getByRole("button", { name: "Delete post" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Post options" })).toBeInTheDocument();
   });
 
-  it("opens the confirmation dialog when the delete button is clicked", async () => {
+  it("opens the confirmation dialog when Delete post is clicked", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Delete post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /delete post/i }));
 
     expect(screen.getByRole("heading", { name: "Delete post" })).toBeInTheDocument();
     expect(screen.getByText(/can't be undone/i)).toBeInTheDocument();
@@ -58,7 +63,8 @@ describe("PostCard — delete", () => {
 
   it("closes the dialog when Cancel is clicked", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Delete post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /delete post/i }));
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(screen.queryByRole("heading", { name: "Delete post" })).not.toBeInTheDocument();
@@ -67,7 +73,8 @@ describe("PostCard — delete", () => {
 
   it("closes the dialog when the overlay is clicked", async () => {
     const { container } = render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Delete post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /delete post/i }));
 
     const overlay = document.body.querySelector<HTMLElement>("[style*='rgba(0, 0, 0']");
     expect(overlay).not.toBeNull();
@@ -81,7 +88,8 @@ describe("PostCard — delete", () => {
     mockDeleteMutateAsync.mockResolvedValueOnce({});
     render(<PostCard post={MOCK_POST} isOwner />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Delete post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /delete post/i }));
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => expect(mockDeleteMutateAsync).toHaveBeenCalledWith("post-1"));
@@ -94,7 +102,8 @@ describe("PostCard — delete", () => {
     mockDeleteMutateAsync.mockRejectedValueOnce(new Error("Server error"));
     render(<PostCard post={MOCK_POST} isOwner />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Delete post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /delete post/i }));
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
@@ -106,30 +115,31 @@ describe("PostCard — delete", () => {
 describe("PostCard — edit", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("does not show the edit button when isOwner is false", () => {
+  it("does not show the options menu when isOwner is false", () => {
     render(<PostCard post={MOCK_POST} />);
-    expect(screen.queryByRole("button", { name: "Edit post" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Post options" })).not.toBeInTheDocument();
   });
 
-  it("shows the edit button when isOwner is true", () => {
+  it("shows the options menu button when isOwner is true", () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    expect(screen.getByRole("button", { name: "Edit post" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Post options" })).toBeInTheDocument();
   });
 
-  it("switches to edit mode when the pencil button is clicked", async () => {
+  it("switches to edit mode when Edit post is clicked", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
 
     expect(screen.getByRole("textbox", { name: "Edit post content" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Discard changes" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Edit post" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Delete post" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Post options" })).not.toBeInTheDocument();
   });
 
   it("pre-fills the textarea with the current post content", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
 
     expect(screen.getByRole("textbox", { name: "Edit post content" })).toHaveValue(
       "Just finished Dune!"
@@ -138,7 +148,8 @@ describe("PostCard — edit", () => {
 
   it("discards changes and returns to view mode when X is clicked", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
 
     const textarea = screen.getByRole("textbox", { name: "Edit post content" });
     await userEvent.clear(textarea);
@@ -152,7 +163,8 @@ describe("PostCard — edit", () => {
 
   it("disables the save button when the textarea is empty", async () => {
     render(<PostCard post={MOCK_POST} isOwner />);
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
 
     const textarea = screen.getByRole("textbox", { name: "Edit post content" });
     await userEvent.clear(textarea);
@@ -164,7 +176,8 @@ describe("PostCard — edit", () => {
     mockUpdateMutateAsync.mockResolvedValueOnce({});
     render(<PostCard post={MOCK_POST} isOwner />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
     const textarea = screen.getByRole("textbox", { name: "Edit post content" });
     await userEvent.clear(textarea);
     await userEvent.type(textarea, "Updated content");
@@ -185,7 +198,8 @@ describe("PostCard — edit", () => {
     mockUpdateMutateAsync.mockRejectedValueOnce(new Error("Server error"));
     render(<PostCard post={MOCK_POST} isOwner />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Edit post" }));
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
