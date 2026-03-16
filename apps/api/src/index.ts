@@ -2,6 +2,7 @@ import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import authRoutes from "./routes/auth.js";
+import postRoutes from "./routes/posts.js";
 import jwt from "@fastify/jwt";
 
 const app = Fastify({
@@ -25,6 +26,7 @@ app.get("/health", async () => {
 
 // Auth routes
 app.register(authRoutes, { prefix: "/auth" });
+app.register(postRoutes, { prefix: "/posts" });
 
 const port = 3000;
 
