@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { BookOpen, Check, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -92,9 +93,14 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
             <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}>
               {post.authorDisplayName}
             </span>
-            <span style={{ fontSize: "0.75rem", color: "#737373" }}>
+            <Link
+              to={`/${post.authorUsername}`}
+              style={{ fontSize: "0.75rem", color: "#737373", textDecoration: "none" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
+            >
               @{post.authorUsername}
-            </span>
+            </Link>
           </div>
 
           <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#a3a3a3", flexShrink: 0 }}>

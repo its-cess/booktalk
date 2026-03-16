@@ -47,7 +47,7 @@ export default function Layout() {
           {isAuthenticated ? (
             <>
               <IconButton
-                to={`/profile/${user?.username}`}
+                to={`/${user?.username}`}
                 label="Profile"
                 icon={<User size={18} />}
               />
