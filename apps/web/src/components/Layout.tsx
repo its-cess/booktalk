@@ -1,5 +1,5 @@
 import { Outlet, Link } from "react-router-dom";
-import { BookOpen, Bell, LogOut, LogIn, User } from "lucide-react";
+import { BookOpen, Bell, Home, LogOut, LogIn, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 const HEADER_HEIGHT = "3.5rem";
@@ -46,6 +46,11 @@ export default function Layout() {
         <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
           {isAuthenticated ? (
             <>
+              <IconButton
+                to="/"
+                label="Home"
+                icon={<Home size={18} />}
+              />
               <IconButton
                 to={`/${user?.username}`}
                 label="Profile"

@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Check, Pencil, Trash2, X } from "lucide-react";
+import { BookOpen, Check, MoreHorizontal, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useDeletePost, useUpdatePost } from "@/lib/queries";
 
@@ -89,19 +95,29 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
             {post.authorDisplayName[0].toUpperCase()}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <Link
+            to={`/${post.authorUsername}`}
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: "0.375rem",
+              minWidth: 0,
+              textDecoration: "none",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color = "#4338ca";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color = "#737373";
+            }}
+          >
             <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}>
               {post.authorDisplayName}
             </span>
-            <Link
-              to={`/${post.authorUsername}`}
-              style={{ fontSize: "0.75rem", color: "#737373", textDecoration: "none" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
-            >
+            <span className="author-handle" style={{ fontSize: "0.75rem", color: "#737373", transition: "color 0.15s" }}>
               @{post.authorUsername}
-            </Link>
-          </div>
+            </span>
+          </Link>
 
           <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#a3a3a3", flexShrink: 0 }}>
             {formatDate(post.createdAt)}
@@ -110,32 +126,53 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
           {isOwner && (
             isEditing ? (
               <>
-                <IconBtn
-                  label="Save changes"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleSave}
                   disabled={updatePost.isPending || !editContent.trim()}
-                  hoverColor="#16a34a"
+                  aria-label="Save changes"
+                  style={{ color: "#16a34a", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                 >
                   <Check size={14} />
-                </IconBtn>
-                <IconBtn
-                  label="Discard changes"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleDiscard}
                   disabled={updatePost.isPending}
-                  hoverColor="#737373"
+                  aria-label="Discard changes"
+                  style={{ color: "#737373", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                 >
                   <X size={14} />
-                </IconBtn>
+                </Button>
               </>
             ) : (
-              <>
-                <IconBtn label="Edit post" onClick={() => setIsEditing(true)} hoverColor="#4338ca">
-                  <Pencil size={14} />
-                </IconBtn>
-                <IconBtn label="Delete post" onClick={() => setConfirmOpen(true)} hoverColor="#ef4444">
-                  <Trash2 size={14} />
-                </IconBtn>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Post options"
+                    style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                  >
+                    <MoreHorizontal size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <Pencil size={14} />
+                    Edit post
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setConfirmOpen(true)}
+                    style={{ color: "#ef4444" }}
+                  >
+                    <Trash2 size={14} />
+                    Delete post
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )
           )}
         </div>
@@ -245,34 +282,6 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
   );
 }
 
-function IconBtn({
-  label,
-  onClick,
-  disabled,
-  hoverColor,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  hoverColor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.color = hoverColor; }}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
-    >
-      {children}
-    </Button>
-  );
-}
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
