@@ -8,7 +8,7 @@ import PostCard from "@/components/post/PostCard";
 import PostComposer from "@/components/post/PostComposer";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { data: posts, isLoading, isError } = useFeed();
 
   if (!isAuthenticated) {
@@ -85,6 +85,7 @@ export default function Home() {
         {posts?.map((post) => (
           <PostCard
             key={post.id}
+            isOwner={user?.id === post.author.id}
             post={{
               id: post.id,
               authorDisplayName: post.author.displayName,

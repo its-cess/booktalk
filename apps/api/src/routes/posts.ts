@@ -46,4 +46,17 @@ export default async function postRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: "Internal server error" });
     }
   });
+
+  // DELETE /posts/:id — delete a post (requires auth, must be author)
+  app.delete("/:id", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    const { id } = request.params as { id: string };
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return reply.status(404).send({ error: "Post not found" });
+    if (post.authorId !== payload.userId) return reply.status(403).send({ error: "Forbidden" });
+
+    await prisma.post.delete({ where: { id } });
+    return reply.send({ success: true });
+  });
 }
