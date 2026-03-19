@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { useProfile, useUpdateProfile } from "@/lib/queries";
+import { useProfile, useUpdateProfile, useToggleFollow } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,7 @@ export default function Profile() {
   const { user: me } = useAuth();
   const { data: profile, isLoading, isError } = useProfile(username!);
   const updateProfile = useUpdateProfile();
+  const toggleFollow = useToggleFollow();
 
   const isOwn = me?.username === username;
 
@@ -35,6 +36,14 @@ export default function Profile() {
       setEditingField(null);
     } catch {
       toast.error("Failed to save changes.");
+    }
+  }
+
+  async function handleFollow() {
+    try {
+      await toggleFollow.mutateAsync(username!);
+    } catch {
+      toast.error("Failed to update follow status.");
     }
   }
 
@@ -119,10 +128,33 @@ export default function Profile() {
 
             {/* Follower / following counts */}
             <div style={{ display: "flex", gap: "1.25rem", marginTop: "0.75rem" }}>
-              <Stat count={profile.followersCount} label="followers" />
-              <Stat count={profile.followingCount} label="following" />
+              <Link
+                to={`/${username}/followers`}
+                style={{ textDecoration: "none" }}
+              >
+                <Stat count={profile.followersCount} label="followers" />
+              </Link>
+              <Link
+                to={`/${username}/following`}
+                style={{ textDecoration: "none" }}
+              >
+                <Stat count={profile.followingCount} label="following" />
+              </Link>
             </div>
           </div>
+
+          {/* Follow / Unfollow button for other users */}
+          {!isOwn && me && (
+            <Button
+              variant={profile.isFollowing ? "outline" : "default"}
+              size="sm"
+              onClick={handleFollow}
+              disabled={toggleFollow.isPending}
+              style={{ flexShrink: 0 }}
+            >
+              {profile.isFollowing ? "Unfollow" : "Follow"}
+            </Button>
+          )}
         </div>
 
         {/* Bio */}
@@ -192,7 +224,11 @@ export default function Profile() {
 
 function Stat({ count, label }: { count: number; label: string }) {
   return (
-    <span style={{ fontSize: "0.875rem", color: "#525252" }}>
+    <span
+      style={{ fontSize: "0.875rem", color: "#525252" }}
+      onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
+      onMouseLeave={(e) => (e.currentTarget.style.color = "#525252")}
+    >
       <strong style={{ color: "#171717" }}>{count}</strong> {label}
     </span>
   );

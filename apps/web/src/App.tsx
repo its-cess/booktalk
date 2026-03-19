@@ -7,6 +7,7 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Profile from "@/pages/Profile";
 import PostDetail from "@/pages/PostDetail";
+import FollowList from "@/pages/FollowList";
 
 export default function App() {
   return (
@@ -19,6 +20,8 @@ export default function App() {
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
             <Route path="posts/:id" element={<PostDetail />} />
+            <Route path=":username/followers" element={<FollowList />} />
+            <Route path=":username/following" element={<FollowList />} />
             <Route path=":username" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
