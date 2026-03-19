@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useBookPicker, SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { createPostSchema, type CreatePostData, type CreatePostInput } from "@booktalk/shared";
 import { useCreatePost } from "@/lib/queries";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function PostComposer() {
-  const [showBookFields, setShowBookFields] = useState(false);
+  const picker = useBookPicker();
   const createPost = useCreatePost();
 
   const {
@@ -26,15 +27,36 @@ export default function PostComposer() {
   const content = watch("content");
   const hasSpoilers = watch("hasSpoilers");
 
+  function handleBookButtonClick() {
+    if (picker.bookMode !== "none" || picker.selectedBook) {
+      picker.clear();
+      setValue("bookTitle", "");
+      setValue("bookAuthor", "");
+    } else {
+      picker.openSearch();
+    }
+  }
+
+  function handleSwitchToManual() {
+    picker.openManual();
+  }
+
   async function onSubmit(data: CreatePostData) {
     try {
       await createPost.mutateAsync({
-        ...data,
-        bookTitle: data.bookTitle || undefined,
-        bookAuthor: data.bookAuthor || undefined,
+        content: data.content,
+        hasSpoilers: data.hasSpoilers,
+        ...(picker.selectedBook
+          ? { bookId: picker.selectedBook.id }
+          : {
+              bookTitle: data.bookTitle || undefined,
+              bookAuthor: data.bookAuthor || undefined,
+            }),
       });
       reset();
-      setShowBookFields(false);
+      picker.clear();
+      setValue("bookTitle", "");
+      setValue("bookAuthor", "");
     } catch {
       toast.error("Failed to post. Please try again.");
     }
@@ -88,11 +110,51 @@ export default function PostComposer() {
         </div>
       </div>
 
-      {/* Book fields (toggled) */}
-      {showBookFields && (
-        <div style={{ display: "flex", gap: "0.625rem" }}>
-          <Input {...register("bookTitle")} placeholder="Book title" style={{ flex: 1 }} />
-          <Input {...register("bookAuthor")} placeholder="Author" style={{ flex: 1 }} />
+      {/* Selected book chip */}
+      {picker.selectedBook && (
+        <SelectedBookChip book={picker.selectedBook} onRemove={picker.clear} />
+      )}
+
+      {/* Book search panel */}
+      {picker.bookMode === "search" && (
+        <BookSearchPanel
+          query={picker.searchQuery}
+          debouncedQuery={picker.debouncedQuery}
+          onQueryChange={picker.setSearchQuery}
+          onSelect={picker.selectBook}
+          onSwitchToManual={handleSwitchToManual}
+        />
+      )}
+
+      {/* Manual book fields */}
+      {picker.bookMode === "manual" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+          <div style={{ display: "flex", gap: "0.625rem" }}>
+            <Input {...register("bookTitle")} placeholder="Book title" style={{ flex: 1 }} />
+            <Input {...register("bookAuthor")} placeholder="Author" style={{ flex: 1 }} />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              picker.openSearch();
+              setValue("bookTitle", "");
+              setValue("bookAuthor", "");
+            }}
+            style={{
+              fontSize: "0.75rem",
+              color: "#737373",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              textAlign: "left",
+              width: "fit-content",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
+          >
+            ← Search instead
+          </button>
         </div>
       )}
 
@@ -100,18 +162,22 @@ export default function PostComposer() {
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
         <button
           type="button"
-          onClick={() => setShowBookFields((v) => !v)}
+          onClick={handleBookButtonClick}
           style={{
             fontSize: "0.8rem",
             padding: "0.3rem 0.625rem",
             borderRadius: "0.375rem",
             border: "1px solid #e5e5e5",
-            background: showBookFields ? "#f0f0f0" : "none",
+            background: picker.bookMode !== "none" || picker.selectedBook ? "#f0f0f0" : "none",
             cursor: "pointer",
             color: "#525252",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.3rem",
           }}
         >
-          + Book
+          <BookOpen size={13} />
+          {picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "+ Book"}
         </button>
 
         <label

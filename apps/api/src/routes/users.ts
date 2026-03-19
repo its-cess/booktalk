@@ -11,6 +11,14 @@ const userSummarySelect = {
   avatarUrl: true,
 };
 
+const bookSelect = {
+  id: true,
+  openLibraryKey: true,
+  title: true,
+  author: true,
+  coverUrl: true,
+};
+
 async function getOptionalUserId(request: any): Promise<string | null> {
   try {
     await request.jwtVerify();
@@ -43,6 +51,8 @@ export default async function userRoutes(app: FastifyInstance) {
           select: {
             id: true,
             content: true,
+            bookId: true,
+            book: { select: bookSelect },
             bookTitle: true,
             bookAuthor: true,
             hasSpoilers: true,

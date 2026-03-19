@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import userRoutes from "./routes/users.js";
 import commentRoutes from "./routes/comments.js";
+import bookRoutes from "./routes/books.js";
 import jwt from "@fastify/jwt";
 
 const app = Fastify({
@@ -31,6 +32,7 @@ app.register(authRoutes, { prefix: "/auth" });
 app.register(postRoutes, { prefix: "/posts" });
 app.register(userRoutes, { prefix: "/users" });
 app.register(commentRoutes, { prefix: "/comments" });
+app.register(bookRoutes, { prefix: "/books" });
 
 const port = 3000;
 

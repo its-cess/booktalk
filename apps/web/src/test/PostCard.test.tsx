@@ -9,12 +9,14 @@ const mockToggleLikeMutateAsync = vi.hoisted(() => vi.fn());
 const mockToggleCommentsMutateAsync = vi.hoisted(() => vi.fn());
 const mockToastError = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
+const mockUseBookSearch = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/queries", () => ({
   useDeletePost: () => ({ mutateAsync: mockDeleteMutateAsync, isPending: false }),
   useUpdatePost: () => ({ mutateAsync: mockUpdateMutateAsync, isPending: false }),
   useTogglePostLike: () => ({ mutateAsync: mockToggleLikeMutateAsync, isPending: false }),
   useToggleCommentsDisabled: () => ({ mutateAsync: mockToggleCommentsMutateAsync, isPending: false }),
+  useBookSearch: mockUseBookSearch,
 }));
 
 vi.mock("sonner", () => ({
@@ -123,7 +125,10 @@ describe("PostCard — delete", () => {
 });
 
 describe("PostCard — edit", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseBookSearch.mockReturnValue({ data: [], isFetching: false });
+  });
 
   it("does not show the options menu when isOwner is false", () => {
     render(<PostCard post={MOCK_POST} />);
@@ -197,6 +202,7 @@ describe("PostCard — edit", () => {
       expect(mockUpdateMutateAsync).toHaveBeenCalledWith({
         postId: "post-1",
         content: "Updated content",
+        authorUsername: "alice",
       });
     });
     await waitFor(() => {
@@ -350,6 +356,146 @@ describe("PostCard — card navigation", () => {
     await userEvent.click(screen.getByText("Alice"));
     // navigate should NOT be called for the post — the author link handles its own routing
     expect(mockNavigate).not.toHaveBeenCalledWith("/posts/post-1");
+  });
+});
+
+const BOOK_POST = {
+  ...MOCK_POST,
+  book: { title: "Dune", author: "Frank Herbert", coverUrl: "https://example.com/cover.jpg" },
+};
+
+const MANUAL_BOOK_POST = {
+  ...MOCK_POST,
+  book: null,
+  bookTitle: "Foundation",
+  bookAuthor: "Isaac Asimov",
+};
+
+describe("PostCard — book display", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseBookSearch.mockReturnValue({ data: [], isFetching: false });
+  });
+
+  it("shows a book cover image when post.book.coverUrl is present", () => {
+    render(<PostCard post={BOOK_POST} />);
+    expect(screen.getByRole("img", { name: "Dune" })).toBeInTheDocument();
+  });
+
+  it("does not show the Remove book button in view mode", () => {
+    render(<PostCard post={BOOK_POST} isOwner />);
+    expect(screen.queryByRole("button", { name: "Remove book" })).not.toBeInTheDocument();
+  });
+
+  it("shows the Remove book button over the cover image in edit mode", async () => {
+    render(<PostCard post={BOOK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    expect(screen.getByRole("button", { name: "Remove book" })).toBeInTheDocument();
+  });
+
+  it("hides the cover and shows the book picker after clicking Remove book in edit mode", async () => {
+    render(<PostCard post={BOOK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove book" }));
+
+    expect(screen.queryByRole("img", { name: "Dune" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remove book" })).not.toBeInTheDocument();
+  });
+
+  it("saves with clearBook: true when book was removed in edit mode", async () => {
+    mockUpdateMutateAsync.mockResolvedValueOnce({});
+    render(<PostCard post={BOOK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ postId: "post-1", clearBook: true })
+      );
+    });
+  });
+
+  it("restores the book cover when discarding after clicking Remove book", async () => {
+    render(<PostCard post={BOOK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Discard changes" }));
+
+    expect(screen.getByRole("img", { name: "Dune" })).toBeInTheDocument();
+  });
+
+  it("shows a book pill for a manually entered book (no cover)", () => {
+    render(<PostCard post={MANUAL_BOOK_POST} />);
+    expect(screen.getByText(/Foundation/)).toBeInTheDocument();
+    expect(screen.getByText(/Isaac Asimov/)).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("shows Remove book button on the pill in edit mode for a manual book", async () => {
+    render(<PostCard post={MANUAL_BOOK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    expect(screen.getByRole("button", { name: "Remove book" })).toBeInTheDocument();
+  });
+
+  it("shows the + Book button in edit mode when the post has no book", async () => {
+    render(<PostCard post={MOCK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    expect(screen.getByRole("button", { name: "+ Book" })).toBeInTheDocument();
+  });
+
+  it("saves with bookId when a book is selected from search in edit mode", async () => {
+    const searchBook = {
+      id: "book-99",
+      openLibraryKey: "/works/OL99",
+      title: "Foundation",
+      author: "Isaac Asimov",
+      coverUrl: null,
+    };
+    mockUseBookSearch.mockReturnValue({ data: [searchBook], isFetching: false });
+    mockUpdateMutateAsync.mockResolvedValueOnce({});
+
+    render(<PostCard post={MOCK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: /Foundation/i }));
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ postId: "post-1", bookId: "book-99" })
+      );
+    });
+  });
+
+  it("saves with bookTitle/bookAuthor when entered manually in edit mode", async () => {
+    mockUpdateMutateAsync.mockResolvedValueOnce({});
+
+    render(<PostCard post={MOCK_POST} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: /add manually instead/i }));
+    await userEvent.type(screen.getByPlaceholderText("Book title"), "Neuromancer");
+    await userEvent.type(screen.getByPlaceholderText("Author"), "William Gibson");
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          postId: "post-1",
+          bookTitle: "Neuromancer",
+          bookAuthor: "William Gibson",
+        })
+      );
+    });
   });
 });
 

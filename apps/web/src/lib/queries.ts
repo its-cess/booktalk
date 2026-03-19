@@ -8,9 +8,24 @@ import type {
   UpdateProfileData,
   CommentWithAuthor,
   UserSummary,
+  BookResult,
 } from "@booktalk/shared";
 
 export const FEED_KEY = ["posts", "feed"] as const;
+
+export function useBookSearch(query: string) {
+  return useQuery({
+    queryKey: ["books", "search", query],
+    queryFn: async () => {
+      const res = await api.get<{ books: BookResult[] }>(
+        `/books/search?q=${encodeURIComponent(query)}`
+      );
+      return res.data.books;
+    },
+    enabled: query.length >= 2,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useFeed() {
   return useQuery({
@@ -36,13 +51,34 @@ export function usePost(id: string) {
 export function useUpdatePost() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
-      const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, { content });
+    mutationFn: async ({
+      postId,
+      content,
+      clearBook,
+      bookId,
+      bookTitle,
+      bookAuthor,
+    }: {
+      postId: string;
+      content: string;
+      authorUsername: string;
+      clearBook?: boolean;
+      bookId?: string;
+      bookTitle?: string;
+      bookAuthor?: string;
+    }) => {
+      const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, {
+        content,
+        ...(clearBook && { clearBook: true }),
+        ...(bookId && { bookId }),
+        ...(bookTitle && !bookId && { bookTitle, bookAuthor }),
+      });
       return res.data.post;
     },
-    onSuccess: (post) => {
+    onSuccess: (post, { authorUsername }) => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
       queryClient.invalidateQueries({ queryKey: ["posts", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["users", authorUsername] });
     },
   });
 }

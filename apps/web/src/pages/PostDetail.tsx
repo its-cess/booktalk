@@ -85,6 +85,7 @@ export default function PostDetail() {
           authorDisplayName: post.author.displayName,
           authorUsername: post.author.username,
           content: post.content,
+          book: post.book ?? null,
           bookTitle: post.bookTitle ?? undefined,
           bookAuthor: post.bookAuthor ?? undefined,
           hasSpoilers: post.hasSpoilers,
