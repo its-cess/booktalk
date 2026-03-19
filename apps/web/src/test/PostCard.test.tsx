@@ -318,6 +318,39 @@ describe("PostCard — comment button", () => {
     await userEvent.click(screen.getByRole("button", { name: "View comments" }));
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it("hides the comment button when commentsDisabled is true", () => {
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: true }} />);
+    expect(screen.queryByRole("button", { name: "View comments" })).not.toBeInTheDocument();
+  });
+
+  it("shows the comment button when commentsDisabled is false", () => {
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: false }} />);
+    expect(screen.getByRole("button", { name: "View comments" })).toBeInTheDocument();
+  });
+});
+
+describe("PostCard — card navigation", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("navigates to /posts/:id when the card body is clicked", async () => {
+    const { container } = render(<PostCard post={MOCK_POST} />);
+    await userEvent.click(container.firstChild as HTMLElement);
+    expect(mockNavigate).toHaveBeenCalledWith("/posts/post-1");
+  });
+
+  it("does not navigate when isDetailView is true", async () => {
+    const { container } = render(<PostCard post={MOCK_POST} isDetailView />);
+    await userEvent.click(container.firstChild as HTMLElement);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("navigates to the author profile when the author link is clicked, not to the post", async () => {
+    render(<PostCard post={MOCK_POST} />);
+    await userEvent.click(screen.getByText("Alice"));
+    // navigate should NOT be called for the post — the author link handles its own routing
+    expect(mockNavigate).not.toHaveBeenCalledWith("/posts/post-1");
+  });
 });
 
 describe("PostCard — disable comments", () => {
