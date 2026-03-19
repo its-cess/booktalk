@@ -27,6 +27,20 @@ export function useBookSearch(query: string) {
   });
 }
 
+export function useSearchPosts(query: string) {
+  return useQuery({
+    queryKey: ["posts", "search", query],
+    queryFn: async () => {
+      const res = await api.get<{ posts: PostWithAuthor[] }>(
+        `/posts/search?q=${encodeURIComponent(query)}`
+      );
+      return res.data.posts;
+    },
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 1000,
+  });
+}
+
 export function useFeed() {
   return useQuery({
     queryKey: FEED_KEY,

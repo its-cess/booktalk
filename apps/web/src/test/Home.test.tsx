@@ -3,11 +3,13 @@ import { render, screen } from "@testing-library/react";
 
 const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockUseFeed = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock("react-router-dom", () => ({
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
     <a href={to}>{children}</a>
   ),
+  useNavigate: () => mockNavigate,
 }));
 
 vi.mock("@/lib/auth-context", () => ({ useAuth: mockUseAuth }));

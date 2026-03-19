@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useFeed } from "@/lib/queries";
@@ -10,6 +11,8 @@ import PostComposer from "@/components/post/PostComposer";
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const { data: posts, isLoading, isError } = useFeed();
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState("");
 
   if (!isAuthenticated) {
     return (
@@ -41,7 +44,15 @@ export default function Home() {
   return (
     <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
       {/* Search */}
-      <div style={{ position: "relative", marginBottom: "1.75rem", width: "100%" }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (searchInput.trim().length >= 2) {
+            navigate(`/search?q=${encodeURIComponent(searchInput.trim())}`);
+          }
+        }}
+        style={{ position: "relative", marginBottom: "1.75rem", width: "100%" }}
+      >
         <Search
           size={16}
           style={{
@@ -51,13 +62,16 @@ export default function Home() {
             transform: "translateY(-50%)",
             color: "#a3a3a3",
             pointerEvents: "none",
+            zIndex: 1,
           }}
         />
         <Input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search books or posts..."
           style={{ paddingLeft: "2.25rem", width: "100%", boxSizing: "border-box" }}
         />
-      </div>
+      </form>
 
       {/* Composer */}
       <PostComposer />
