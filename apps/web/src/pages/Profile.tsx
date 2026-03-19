@@ -168,9 +168,18 @@ export default function Profile() {
             <PostCard
               key={post.id}
               post={{
-                ...post,
+                id: post.id,
                 authorDisplayName: post.author.displayName,
                 authorUsername: post.author.username,
+                content: post.content,
+                bookTitle: post.bookTitle ?? undefined,
+                bookAuthor: post.bookAuthor ?? undefined,
+                hasSpoilers: post.hasSpoilers,
+                commentsDisabled: post.commentsDisabled,
+                createdAt: post.createdAt,
+                likeCount: post.likeCount,
+                commentCount: post.commentCount,
+                isLiked: post.isLiked,
               }}
               isOwner={isOwn}
             />

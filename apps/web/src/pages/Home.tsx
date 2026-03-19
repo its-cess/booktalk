@@ -94,7 +94,11 @@ export default function Home() {
               bookTitle: post.bookTitle ?? undefined,
               bookAuthor: post.bookAuthor ?? undefined,
               hasSpoilers: post.hasSpoilers,
+              commentsDisabled: post.commentsDisabled,
               createdAt: post.createdAt,
+              likeCount: post.likeCount,
+              commentCount: post.commentCount,
+              isLiked: post.isLiked,
             }}
           />
         ))}

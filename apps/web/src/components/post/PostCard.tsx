@@ -1,16 +1,32 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { BookOpen, Check, MoreHorizontal, Pencil, Trash2, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  BookOpen,
+  Check,
+  Heart,
+  MessageCircle,
+  MessageCircleOff,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { useDeletePost, useUpdatePost } from "@/lib/queries";
+import {
+  useDeletePost,
+  useUpdatePost,
+  useTogglePostLike,
+  useToggleCommentsDisabled,
+} from "@/lib/queries";
 
 export interface Post {
   id: string;
@@ -20,15 +36,21 @@ export interface Post {
   bookTitle?: string;
   bookAuthor?: string;
   hasSpoilers: boolean;
+  commentsDisabled: boolean;
   createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
 }
 
 interface PostCardProps {
   post: Post;
   isOwner?: boolean;
+  isDetailView?: boolean;
 }
 
-export default function PostCard({ post, isOwner = false }: PostCardProps) {
+export default function PostCard({ post, isOwner = false, isDetailView = false }: PostCardProps) {
+  const navigate = useNavigate();
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,6 +58,8 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
 
   const deletePost = useDeletePost();
   const updatePost = useUpdatePost();
+  const toggleLike = useTogglePostLike();
+  const toggleComments = useToggleCommentsDisabled();
 
   async function handleDelete() {
     try {
@@ -60,6 +84,25 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
   function handleDiscard() {
     setEditContent(post.content);
     setIsEditing(false);
+  }
+
+  async function handleLike() {
+    try {
+      await toggleLike.mutateAsync(post.id);
+    } catch {
+      toast.error("Failed to like post.");
+    }
+  }
+
+  async function handleToggleComments() {
+    try {
+      await toggleComments.mutateAsync({
+        postId: post.id,
+        commentsDisabled: !post.commentsDisabled,
+      });
+    } catch {
+      toast.error("Failed to update comment settings.");
+    }
   }
 
   return (
@@ -105,26 +148,40 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
               textDecoration: "none",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color = "#4338ca";
+              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
+                "#4338ca";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color = "#737373";
+              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
+                "#737373";
             }}
           >
-            <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}>
+            <span
+              style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}
+            >
               {post.authorDisplayName}
             </span>
-            <span className="author-handle" style={{ fontSize: "0.75rem", color: "#737373", transition: "color 0.15s" }}>
+            <span
+              className="author-handle"
+              style={{ fontSize: "0.75rem", color: "#737373", transition: "color 0.15s" }}
+            >
               @{post.authorUsername}
             </span>
           </Link>
 
-          <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#a3a3a3", flexShrink: 0 }}>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: "0.75rem",
+              color: "#a3a3a3",
+              flexShrink: 0,
+            }}
+          >
             {formatDate(post.createdAt)}
           </span>
 
-          {isOwner && (
-            isEditing ? (
+          {isOwner &&
+            (isEditing ? (
               <>
                 <Button
                   variant="ghost"
@@ -165,6 +222,18 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
                     Edit post
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    onClick={handleToggleComments}
+                    disabled={toggleComments.isPending}
+                  >
+                    {post.commentsDisabled ? (
+                      <MessageCircle size={14} />
+                    ) : (
+                      <MessageCircleOff size={14} />
+                    )}
+                    {post.commentsDisabled ? "Enable comments" : "Disable comments"}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
                     onClick={() => setConfirmOpen(true)}
                     style={{ color: "#ef4444" }}
                   >
@@ -173,8 +242,7 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )
-          )}
+            ))}
         </div>
 
         {/* Book tag */}
@@ -267,6 +335,81 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
             )}
           </div>
         )}
+
+        {/* Action bar */}
+        {!isEditing && (
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              paddingTop: "0.25rem",
+              borderTop: "1px solid #f5f5f5",
+            }}
+          >
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              disabled={toggleLike.isPending}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.3rem",
+                fontSize: "0.8rem",
+                color: post.isLiked ? "#ef4444" : "#a3a3a3",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0.25rem 0",
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!post.isLiked)
+                  (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
+              }}
+              onMouseLeave={(e) => {
+                if (!post.isLiked)
+                  (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
+              }}
+              aria-label={post.isLiked ? "Unlike post" : "Like post"}
+            >
+              <Heart
+                size={15}
+                fill={post.isLiked ? "#ef4444" : "none"}
+                style={{ flexShrink: 0 }}
+              />
+              <span>{post.likeCount}</span>
+            </button>
+
+            {/* Comment */}
+            <button
+              onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.3rem",
+                fontSize: "0.8rem",
+                color: "#a3a3a3",
+                background: "none",
+                border: "none",
+                cursor: isDetailView ? "default" : "pointer",
+                padding: "0.25rem 0",
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isDetailView)
+                  (e.currentTarget as HTMLButtonElement).style.color = "#4338ca";
+              }}
+              onMouseLeave={(e) => {
+                if (!isDetailView)
+                  (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
+              }}
+              aria-label="View comments"
+            >
+              <MessageCircle size={15} style={{ flexShrink: 0 }} />
+              <span>{post.commentCount}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <ConfirmDialog
@@ -281,7 +424,6 @@ export default function PostCard({ post, isOwner = false }: PostCardProps) {
     </>
   );
 }
-
 
 function formatDate(iso: string): string {
   const date = new Date(iso);

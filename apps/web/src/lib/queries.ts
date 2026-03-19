@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { PostWithAuthor, CreatePostData, UserProfile, UpdateProfileData } from "@booktalk/shared";
+import type {
+  PostWithAuthor,
+  CreatePostData,
+  UserProfile,
+  UpdateProfileData,
+  CommentWithAuthor,
+} from "@booktalk/shared";
 
 export const FEED_KEY = ["posts", "feed"] as const;
 
@@ -14,6 +20,17 @@ export function useFeed() {
   });
 }
 
+export function usePost(id: string) {
+  return useQuery({
+    queryKey: ["posts", id],
+    queryFn: async () => {
+      const res = await api.get<{ post: PostWithAuthor }>(`/posts/${id}`);
+      return res.data.post;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useUpdatePost() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -21,8 +38,31 @@ export function useUpdatePost() {
       const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, { content });
       return res.data.post;
     },
-    onSuccess: () => {
+    onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: ["posts", post.id] });
+    },
+  });
+}
+
+export function useToggleCommentsDisabled() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      commentsDisabled,
+    }: {
+      postId: string;
+      commentsDisabled: boolean;
+    }) => {
+      const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, {
+        commentsDisabled,
+      });
+      return res.data.post;
+    },
+    onSuccess: (post) => {
+      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: ["posts", post.id] });
     },
   });
 }
@@ -35,6 +75,20 @@ export function useDeletePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+    },
+  });
+}
+
+export function useTogglePostLike() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const res = await api.post<{ isLiked: boolean }>(`/posts/${postId}/like`);
+      return { postId, isLiked: res.data.isLiked };
+    },
+    onSuccess: ({ postId }) => {
+      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
     },
   });
 }
@@ -72,6 +126,76 @@ export function useCreatePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+    },
+  });
+}
+
+export function useComments(postId: string) {
+  return useQuery({
+    queryKey: ["comments", postId],
+    queryFn: async () => {
+      const res = await api.get<{ comments: CommentWithAuthor[] }>(`/posts/${postId}/comments`);
+      return res.data.comments;
+    },
+    enabled: !!postId,
+  });
+}
+
+export function useCreateComment(postId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (content: string) => {
+      const res = await api.post<{ comment: CommentWithAuthor }>(`/posts/${postId}/comments`, {
+        content,
+      });
+      return res.data.comment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
+    },
+  });
+}
+
+export function useUpdateComment(postId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: string; content: string }) => {
+      const res = await api.patch<{ comment: CommentWithAuthor }>(`/comments/${commentId}`, {
+        content,
+      });
+      return res.data.comment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    },
+  });
+}
+
+export function useDeleteComment(postId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (commentId: string) => {
+      await api.delete(`/comments/${commentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
+    },
+  });
+}
+
+export function useToggleCommentLike(postId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (commentId: string) => {
+      const res = await api.post<{ isLiked: boolean }>(`/comments/${commentId}/like`);
+      return { commentId, isLiked: res.data.isLiked };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
     },
   });
 }
