@@ -54,6 +54,7 @@ export function useUpdatePost() {
     mutationFn: async ({
       postId,
       content,
+      hasSpoilers,
       clearBook,
       bookId,
       bookTitle,
@@ -62,6 +63,7 @@ export function useUpdatePost() {
       postId: string;
       content: string;
       authorUsername: string;
+      hasSpoilers?: boolean;
       clearBook?: boolean;
       bookId?: string;
       bookTitle?: string;
@@ -69,6 +71,7 @@ export function useUpdatePost() {
     }) => {
       const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, {
         content,
+        ...(hasSpoilers !== undefined && { hasSpoilers }),
         ...(clearBook && { clearBook: true }),
         ...(bookId && { bookId }),
         ...(bookTitle && !bookId && { bookTitle, bookAuthor }),

@@ -13,6 +13,7 @@ export type CreatePostInput = z.input<typeof createPostSchema>;
 
 export const updatePostSchema = z.object({
   content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long").optional(),
+  hasSpoilers: z.boolean().optional(),
   commentsDisabled: z.boolean().optional(),
   clearBook: z.boolean().optional(),
   bookId: z.string().optional(),
