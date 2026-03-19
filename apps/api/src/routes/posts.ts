@@ -58,6 +58,53 @@ export default async function postRoutes(app: FastifyInstance) {
     });
   });
 
+  // GET /posts/search?q= — full-text search across content and book fields
+  app.get("/search", async (request, reply) => {
+    const userId = await getOptionalUserId(request);
+    const { q } = request.query as { q?: string };
+
+    if (!q || q.trim().length < 2) {
+      return reply.send({ posts: [] });
+    }
+
+    const term = q.trim();
+
+    const [posts, userLikes] = await Promise.all([
+      prisma.post.findMany({
+        where: {
+          OR: [
+            { content: { contains: term } },
+            { bookTitle: { contains: term } },
+            { bookAuthor: { contains: term } },
+            { book: { title: { contains: term } } },
+            { book: { author: { contains: term } } },
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        include: {
+          author: { select: authorSelect },
+          book: { select: bookSelect },
+          _count: { select: { comments: true, likes: true } },
+        },
+      }),
+      userId
+        ? prisma.postLike.findMany({ where: { userId }, select: { postId: true } })
+        : Promise.resolve([]),
+    ]);
+
+    const likedPostIds = new Set(userLikes.map((l) => l.postId));
+
+    return reply.send({
+      posts: posts.map(({ _count, ...post }) => ({
+        ...post,
+        likeCount: _count.likes,
+        commentCount: _count.comments,
+        isLiked: likedPostIds.has(post.id),
+      })),
+    });
+  });
+
   // GET /posts/:id — single post
   app.get("/:id", async (request, reply) => {
     const userId = await getOptionalUserId(request);
