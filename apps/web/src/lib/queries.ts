@@ -6,6 +6,7 @@ import type {
   UserProfile,
   UpdateProfileData,
   CommentWithAuthor,
+  UserSummary,
 } from "@booktalk/shared";
 
 export const FEED_KEY = ["posts", "feed"] as const;
@@ -114,6 +115,30 @@ export function useUpdateProfile() {
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: ["users", user.username] });
     },
+  });
+}
+
+export function useToggleFollow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (targetUsername: string) => {
+      const res = await api.post<{ isFollowing: boolean }>(`/users/${targetUsername}/follow`);
+      return { targetUsername, isFollowing: res.data.isFollowing };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
+export function useFollowList(username: string, type: "followers" | "following") {
+  return useQuery({
+    queryKey: ["users", username, type],
+    queryFn: async () => {
+      const res = await api.get<{ users: UserSummary[] }>(`/users/${username}/${type}`);
+      return res.data.users;
+    },
+    enabled: !!username,
   });
 }
 

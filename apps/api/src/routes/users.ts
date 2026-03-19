@@ -4,16 +4,27 @@ import { updateProfileSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
+const userSummarySelect = {
+  id: true,
+  username: true,
+  displayName: true,
+  avatarUrl: true,
+};
+
+async function getOptionalUserId(request: any): Promise<string | null> {
+  try {
+    await request.jwtVerify();
+    return (request.user as { userId: string }).userId;
+  } catch {
+    return null;
+  }
+}
+
 export default async function userRoutes(app: FastifyInstance) {
   // GET /users/:username — public profile with posts
   app.get("/:username", async (request, reply) => {
     const { username } = request.params as { username: string };
-
-    let userId: string | null = null;
-    try {
-      await request.jwtVerify();
-      userId = (request.user as { userId: string }).userId;
-    } catch {}
+    const userId = await getOptionalUserId(request);
 
     const user = await prisma.user.findUnique({
       where: { username },
@@ -50,12 +61,19 @@ export default async function userRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "User not found" });
     }
 
-    const userLikes = userId
-      ? await prisma.postLike.findMany({
-          where: { userId, post: { author: { username } } },
-          select: { postId: true },
-        })
-      : [];
+    const [userLikes, followRecord] = await Promise.all([
+      userId
+        ? prisma.postLike.findMany({
+            where: { userId, post: { author: { username } } },
+            select: { postId: true },
+          })
+        : Promise.resolve([]),
+      userId && userId !== user.id
+        ? prisma.follow.findUnique({
+            where: { followerId_followingId: { followerId: userId, followingId: user.id } },
+          })
+        : Promise.resolve(null),
+    ]);
 
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
 
@@ -65,6 +83,7 @@ export default async function userRoutes(app: FastifyInstance) {
         ...rest,
         followersCount: _count.followers,
         followingCount: _count.following,
+        isFollowing: !!followRecord,
         posts: posts.map(({ _count: postCount, ...post }) => ({
           ...post,
           likeCount: postCount.likes,
@@ -72,6 +91,101 @@ export default async function userRoutes(app: FastifyInstance) {
           isLiked: likedPostIds.has(post.id),
         })),
       },
+    });
+  });
+
+  // POST /users/:username/follow — toggle follow/unfollow (requires auth)
+  app.post("/:username/follow", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    const { username } = request.params as { username: string };
+
+    const targetUser = await prisma.user.findUnique({ where: { username } });
+    if (!targetUser) return reply.status(404).send({ error: "User not found" });
+    if (targetUser.id === payload.userId) {
+      return reply.status(400).send({ error: "Cannot follow yourself" });
+    }
+
+    const existing = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: payload.userId,
+          followingId: targetUser.id,
+        },
+      },
+    });
+
+    if (existing) {
+      await prisma.follow.delete({ where: { id: existing.id } });
+      return reply.send({ isFollowing: false });
+    } else {
+      await prisma.follow.create({
+        data: { followerId: payload.userId, followingId: targetUser.id },
+      });
+      return reply.send({ isFollowing: true });
+    }
+  });
+
+  // GET /users/:username/followers — list of followers
+  app.get("/:username/followers", async (request, reply) => {
+    const { username } = request.params as { username: string };
+    const viewerId = await getOptionalUserId(request);
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return reply.status(404).send({ error: "User not found" });
+
+    const [follows, viewerFollowing] = await Promise.all([
+      prisma.follow.findMany({
+        where: { followingId: user.id },
+        orderBy: { createdAt: "desc" },
+        include: { follower: { select: userSummarySelect } },
+      }),
+      viewerId
+        ? prisma.follow.findMany({
+            where: { followerId: viewerId },
+            select: { followingId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const viewerFollowingIds = new Set(viewerFollowing.map((f) => f.followingId));
+
+    return reply.send({
+      users: follows.map((f) => ({
+        ...f.follower,
+        isFollowing: viewerFollowingIds.has(f.follower.id),
+      })),
+    });
+  });
+
+  // GET /users/:username/following — list of users this person follows
+  app.get("/:username/following", async (request, reply) => {
+    const { username } = request.params as { username: string };
+    const viewerId = await getOptionalUserId(request);
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return reply.status(404).send({ error: "User not found" });
+
+    const [follows, viewerFollowing] = await Promise.all([
+      prisma.follow.findMany({
+        where: { followerId: user.id },
+        orderBy: { createdAt: "desc" },
+        include: { following: { select: userSummarySelect } },
+      }),
+      viewerId
+        ? prisma.follow.findMany({
+            where: { followerId: viewerId },
+            select: { followingId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const viewerFollowingIds = new Set(viewerFollowing.map((f) => f.followingId));
+
+    return reply.send({
+      users: follows.map((f) => ({
+        ...f.following,
+        isFollowing: viewerFollowingIds.has(f.following.id),
+      })),
     });
   });
 

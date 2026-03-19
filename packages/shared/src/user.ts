@@ -17,5 +17,14 @@ export interface UserProfile {
   createdAt: string;
   followersCount: number;
   followingCount: number;
+  isFollowing: boolean;
   posts: PostWithAuthor[];
+}
+
+export interface UserSummary {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  isFollowing: boolean;
 }
