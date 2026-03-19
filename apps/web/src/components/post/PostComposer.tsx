@@ -1,4 +1,5 @@
-import { useBookPicker, SelectedBookChip, BookSearchPanel } from "./BookSearch";
+import { useBookPicker } from "./useBookPicker";
+import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen } from "lucide-react";

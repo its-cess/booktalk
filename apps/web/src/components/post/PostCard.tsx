@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useBookPicker, SelectedBookChip, BookSearchPanel } from "./BookSearch";
+import { useBookPicker } from "./useBookPicker";
+import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import {
   BookOpen,
   Check,
