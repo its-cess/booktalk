@@ -10,6 +10,14 @@ const authorSelect = {
   displayName: true,
 };
 
+const bookSelect = {
+  id: true,
+  openLibraryKey: true,
+  title: true,
+  author: true,
+  coverUrl: true,
+};
+
 async function getOptionalUserId(request: any): Promise<string | null> {
   try {
     await request.jwtVerify();
@@ -29,6 +37,7 @@ export default async function postRoutes(app: FastifyInstance) {
         orderBy: { createdAt: "desc" },
         include: {
           author: { select: authorSelect },
+          book: { select: bookSelect },
           _count: { select: { comments: true, likes: true } },
         },
       }),
@@ -58,6 +67,7 @@ export default async function postRoutes(app: FastifyInstance) {
       where: { id },
       include: {
         author: { select: authorSelect },
+        book: { select: bookSelect },
         _count: { select: { comments: true, likes: true } },
       },
     });
@@ -91,12 +101,18 @@ export default async function postRoutes(app: FastifyInstance) {
         data: {
           authorId: payload.userId,
           content: data.content,
-          bookTitle: data.bookTitle ?? null,
-          bookAuthor: data.bookAuthor ?? null,
           hasSpoilers: data.hasSpoilers,
+          // OpenLibrary book takes precedence; fall back to manual fields
+          ...(data.bookId
+            ? { bookId: data.bookId }
+            : {
+                bookTitle: data.bookTitle ?? null,
+                bookAuthor: data.bookAuthor ?? null,
+              }),
         },
         include: {
           author: { select: authorSelect },
+          book: { select: bookSelect },
           _count: { select: { comments: true, likes: true } },
         },
       });
@@ -135,9 +151,17 @@ export default async function postRoutes(app: FastifyInstance) {
         data: {
           ...(data.content !== undefined && { content: data.content }),
           ...(data.commentsDisabled !== undefined && { commentsDisabled: data.commentsDisabled }),
+          ...(data.clearBook && { bookId: null, bookTitle: null, bookAuthor: null }),
+          ...(data.bookId && { bookId: data.bookId, bookTitle: null, bookAuthor: null }),
+          ...(data.bookTitle && !data.bookId && {
+            bookTitle: data.bookTitle,
+            bookAuthor: data.bookAuthor ?? null,
+            bookId: null,
+          }),
         },
         include: {
           author: { select: authorSelect },
+          book: { select: bookSelect },
           _count: { select: { comments: true, likes: true } },
         },
       });

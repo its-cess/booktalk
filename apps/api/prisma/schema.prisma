@@ -62,12 +62,26 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+model Book {
+  id             String @id @default(cuid())
+  openLibraryKey String @unique
+  title          String
+  author         String
+  coverUrl       String?
+
+  createdAt DateTime @default(now())
+
+  posts Post[]
+}
+
 model Post {
   id       String @id @default(cuid())
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   content          String
+  bookId           String?
+  book             Book?   @relation(fields: [bookId], references: [id])
   bookTitle        String?
   bookAuthor       String?
   hasSpoilers      Boolean @default(false)
@@ -81,6 +95,7 @@ model Post {
 
   @@index([authorId])
   @@index([createdAt])
+  @@index([bookId])
 }
 
 model Comment {

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const createPostSchema = z.object({
   content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long"),
+  bookId: z.string().optional(),
   bookTitle: z.string().optional(),
   bookAuthor: z.string().optional(),
   hasSpoilers: z.boolean().default(false),
@@ -13,13 +14,26 @@ export type CreatePostInput = z.input<typeof createPostSchema>;
 export const updatePostSchema = z.object({
   content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long").optional(),
   commentsDisabled: z.boolean().optional(),
+  clearBook: z.boolean().optional(),
+  bookId: z.string().optional(),
+  bookTitle: z.string().optional(),
+  bookAuthor: z.string().optional(),
 });
 
 export type UpdatePostData = z.infer<typeof updatePostSchema>;
 
+export interface BookResult {
+  id: string;
+  openLibraryKey: string;
+  title: string;
+  author: string;
+  coverUrl: string | null;
+}
+
 export interface PostWithAuthor {
   id: string;
   content: string;
+  book: BookResult | null;
   bookTitle: string | null;
   bookAuthor: string | null;
   hasSpoilers: boolean;
