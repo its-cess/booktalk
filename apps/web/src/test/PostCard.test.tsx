@@ -5,13 +5,16 @@ import userEvent from "@testing-library/user-event";
 
 const mockDeleteMutateAsync = vi.hoisted(() => vi.fn());
 const mockUpdateMutateAsync = vi.hoisted(() => vi.fn());
+const mockToggleLikeMutateAsync = vi.hoisted(() => vi.fn());
+const mockToggleCommentsMutateAsync = vi.hoisted(() => vi.fn());
 const mockToastError = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/queries", () => ({
   useDeletePost: () => ({ mutateAsync: mockDeleteMutateAsync, isPending: false }),
   useUpdatePost: () => ({ mutateAsync: mockUpdateMutateAsync, isPending: false }),
-  useTogglePostLike: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useToggleCommentsDisabled: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useTogglePostLike: () => ({ mutateAsync: mockToggleLikeMutateAsync, isPending: false }),
+  useToggleCommentsDisabled: () => ({ mutateAsync: mockToggleCommentsMutateAsync, isPending: false }),
 }));
 
 vi.mock("sonner", () => ({
@@ -22,7 +25,7 @@ vi.mock("react-router-dom", () => ({
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mockNavigate,
 }));
 
 import PostCard from "@/components/post/PostCard";
@@ -257,5 +260,105 @@ describe("PostCard — spoilers", () => {
 
     expect(screen.queryByRole("button", { name: "Hide spoiler" })).not.toBeInTheDocument();
     expect(screen.getByText("Just finished Dune!")).toBeInTheDocument();
+  });
+});
+
+describe("PostCard — like button", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("shows the like count", () => {
+    render(<PostCard post={{ ...MOCK_POST, likeCount: 7 }} />);
+    expect(screen.getByRole("button", { name: "Like post" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Like post" })).toHaveTextContent("7");
+  });
+
+  it("shows 'Unlike post' aria-label when already liked", () => {
+    render(<PostCard post={{ ...MOCK_POST, isLiked: true }} />);
+    expect(screen.getByRole("button", { name: "Unlike post" })).toBeInTheDocument();
+  });
+
+  it("shows 'Like post' aria-label when not liked", () => {
+    render(<PostCard post={{ ...MOCK_POST, isLiked: false }} />);
+    expect(screen.getByRole("button", { name: "Like post" })).toBeInTheDocument();
+  });
+
+  it("calls toggleLike with the post id when clicked", async () => {
+    mockToggleLikeMutateAsync.mockResolvedValueOnce({ isLiked: true });
+    render(<PostCard post={MOCK_POST} />);
+    await userEvent.click(screen.getByRole("button", { name: "Like post" }));
+    expect(mockToggleLikeMutateAsync).toHaveBeenCalledWith("post-1");
+  });
+
+  it("shows an error toast when liking fails", async () => {
+    mockToggleLikeMutateAsync.mockRejectedValueOnce(new Error("Server error"));
+    render(<PostCard post={MOCK_POST} />);
+    await userEvent.click(screen.getByRole("button", { name: "Like post" }));
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Failed to like post.");
+    });
+  });
+});
+
+describe("PostCard — comment button", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("shows the comment count", () => {
+    render(<PostCard post={{ ...MOCK_POST, commentCount: 3 }} />);
+    expect(screen.getByRole("button", { name: "View comments" })).toHaveTextContent("3");
+  });
+
+  it("navigates to /posts/:id when the comment button is clicked", async () => {
+    render(<PostCard post={MOCK_POST} />);
+    await userEvent.click(screen.getByRole("button", { name: "View comments" }));
+    expect(mockNavigate).toHaveBeenCalledWith("/posts/post-1");
+  });
+
+  it("does not navigate when isDetailView is true", async () => {
+    render(<PostCard post={MOCK_POST} isDetailView />);
+    await userEvent.click(screen.getByRole("button", { name: "View comments" }));
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
+describe("PostCard — disable comments", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("shows 'Disable comments' in the owner menu when comments are enabled", async () => {
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: false }} isOwner />);
+    await openMenu();
+    expect(screen.getByRole("menuitem", { name: /disable comments/i })).toBeInTheDocument();
+  });
+
+  it("shows 'Enable comments' in the owner menu when comments are disabled", async () => {
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: true }} isOwner />);
+    await openMenu();
+    expect(screen.getByRole("menuitem", { name: /enable comments/i })).toBeInTheDocument();
+  });
+
+  it("calls toggleComments with commentsDisabled=true when disabling", async () => {
+    mockToggleCommentsMutateAsync.mockResolvedValueOnce({});
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: false }} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /disable comments/i }));
+    expect(mockToggleCommentsMutateAsync).toHaveBeenCalledWith({
+      postId: "post-1",
+      commentsDisabled: true,
+    });
+  });
+
+  it("calls toggleComments with commentsDisabled=false when enabling", async () => {
+    mockToggleCommentsMutateAsync.mockResolvedValueOnce({});
+    render(<PostCard post={{ ...MOCK_POST, commentsDisabled: true }} isOwner />);
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /enable comments/i }));
+    expect(mockToggleCommentsMutateAsync).toHaveBeenCalledWith({
+      postId: "post-1",
+      commentsDisabled: false,
+    });
+  });
+
+  it("does not show the owner menu to non-owners", () => {
+    render(<PostCard post={MOCK_POST} />);
+    expect(screen.queryByRole("button", { name: "Post options" })).not.toBeInTheDocument();
   });
 });
