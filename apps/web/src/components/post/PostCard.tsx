@@ -58,6 +58,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [editHasSpoilers, setEditHasSpoilers] = useState(post.hasSpoilers);
   const [bookCleared, setBookCleared] = useState(false);
   const bookPicker = useBookPicker();
   const [manualTitle, setManualTitle] = useState("");
@@ -72,6 +73,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
     try {
       await deletePost.mutateAsync(post.id);
       setConfirmOpen(false);
+      if (isDetailView) navigate("/");
     } catch {
       toast.error("Failed to delete post.");
     }
@@ -85,6 +87,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
         postId: post.id,
         content: trimmed,
         authorUsername: post.authorUsername,
+        hasSpoilers: editHasSpoilers,
         ...(bookCleared && { clearBook: true }),
         ...(bookPicker.selectedBook && { bookId: bookPicker.selectedBook.id }),
         ...(bookPicker.bookMode === "manual" && manualTitle.trim() && {
@@ -104,6 +107,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
 
   function handleDiscard() {
     setEditContent(post.content);
+    setEditHasSpoilers(post.hasSpoilers);
     setIsEditing(false);
     setBookCleared(false);
     setManualTitle("");
@@ -510,6 +514,29 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                         )}
                       </div>
                     ) : null}
+
+                    {/* Spoilers toggle */}
+                    <label
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.375rem",
+                        fontSize: "0.8rem",
+                        color: "#525252",
+                        cursor: "pointer",
+                        userSelect: "none",
+                        width: "fit-content",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editHasSpoilers}
+                        onChange={(e) => setEditHasSpoilers(e.target.checked)}
+                        style={{ cursor: "pointer" }}
+                      />
+                      Spoilers?
+                    </label>
                   </>
                 ) : post.hasSpoilers && !spoilerRevealed ? (
                   <div
@@ -579,7 +606,6 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
               display: "flex",
               gap: "1rem",
               paddingTop: "0.25rem",
-              borderTop: "1px solid #f5f5f5",
             }}
           >
             {/* Like */}

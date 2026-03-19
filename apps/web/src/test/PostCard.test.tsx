@@ -203,6 +203,7 @@ describe("PostCard — edit", () => {
         postId: "post-1",
         content: "Updated content",
         authorUsername: "alice",
+        hasSpoilers: false,
       });
     });
     await waitFor(() => {

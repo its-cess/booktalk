@@ -150,6 +150,7 @@ export default async function postRoutes(app: FastifyInstance) {
         where: { id },
         data: {
           ...(data.content !== undefined && { content: data.content }),
+          ...(data.hasSpoilers !== undefined && { hasSpoilers: data.hasSpoilers }),
           ...(data.commentsDisabled !== undefined && { commentsDisabled: data.commentsDisabled }),
           ...(data.clearBook && { bookId: null, bookTitle: null, bookAuthor: null }),
           ...(data.bookId && { bookId: data.bookId, bookTitle: null, bookAuthor: null }),
