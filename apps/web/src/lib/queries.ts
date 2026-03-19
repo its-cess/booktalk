@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import type {
   PostWithAuthor,
   CreatePostData,
@@ -83,13 +84,14 @@ export function useDeletePost() {
 export function useTogglePostLike() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (postId: string) => {
+    mutationFn: async ({ postId }: { postId: string; authorUsername: string }) => {
       const res = await api.post<{ isLiked: boolean }>(`/posts/${postId}/like`);
       return { postId, isLiked: res.data.isLiked };
     },
-    onSuccess: ({ postId }) => {
+    onSuccess: ({ postId }, { authorUsername }) => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
       queryClient.invalidateQueries({ queryKey: ["posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["users", authorUsername] });
     },
   });
 }
@@ -120,13 +122,18 @@ export function useUpdateProfile() {
 
 export function useToggleFollow() {
   const queryClient = useQueryClient();
+  const { user: me } = useAuth();
   return useMutation({
     mutationFn: async (targetUsername: string) => {
       const res = await api.post<{ isFollowing: boolean }>(`/users/${targetUsername}/follow`);
       return { targetUsername, isFollowing: res.data.isFollowing };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+    onSuccess: ({ targetUsername }) => {
+      queryClient.invalidateQueries({ queryKey: ["users", targetUsername] });
+      if (me?.username) {
+        queryClient.invalidateQueries({ queryKey: ["users", me.username] });
+        queryClient.invalidateQueries({ queryKey: ["users", me.username, "following"] });
+      }
     },
   });
 }
