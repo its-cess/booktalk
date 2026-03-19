@@ -105,9 +105,16 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
     }
   }
 
+  function handleCardClick() {
+    if (!isEditing && !isDetailView) {
+      navigate(`/posts/${post.id}`);
+    }
+  }
+
   return (
     <>
       <div
+        onClick={handleCardClick}
         style={{
           backgroundColor: "#ffffff",
           border: "1px solid #e5e5e5",
@@ -116,6 +123,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
           display: "flex",
           flexDirection: "column",
           gap: "0.875rem",
+          cursor: isEditing || isDetailView ? "default" : "pointer",
         }}
       >
         {/* Author row */}
@@ -140,6 +148,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
 
           <Link
             to={`/${post.authorUsername}`}
+            onClick={(e) => e.stopPropagation()}
             style={{
               display: "flex",
               alignItems: "baseline",
@@ -180,69 +189,73 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             {formatDate(post.createdAt)}
           </span>
 
-          {isOwner &&
-            (isEditing ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSave}
-                  disabled={updatePost.isPending || !editContent.trim()}
-                  aria-label="Save changes"
-                  style={{ color: "#16a34a", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-                >
-                  <Check size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDiscard}
-                  disabled={updatePost.isPending}
-                  aria-label="Discard changes"
-                  style={{ color: "#737373", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-                >
-                  <X size={14} />
-                </Button>
-              </>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+          {/* Owner controls — stopPropagation so clicks here don't trigger card navigation */}
+          {isOwner && (
+            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center" }}>
+              {isEditing ? (
+                <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Post options"
-                    style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                    onClick={handleSave}
+                    disabled={updatePost.isPending || !editContent.trim()}
+                    aria-label="Save changes"
+                    style={{ color: "#16a34a", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
-                    <MoreHorizontal size={16} />
+                    <Check size={14} />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    <Pencil size={14} />
-                    Edit post
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleToggleComments}
-                    disabled={toggleComments.isPending}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDiscard}
+                    disabled={updatePost.isPending}
+                    aria-label="Discard changes"
+                    style={{ color: "#737373", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
-                    {post.commentsDisabled ? (
-                      <MessageCircle size={14} />
-                    ) : (
-                      <MessageCircleOff size={14} />
-                    )}
-                    {post.commentsDisabled ? "Enable comments" : "Disable comments"}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setConfirmOpen(true)}
-                    style={{ color: "#ef4444" }}
-                  >
-                    <Trash2 size={14} />
-                    Delete post
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ))}
+                    <X size={14} />
+                  </Button>
+                </>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Post options"
+                      style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                    >
+                      <MoreHorizontal size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Pencil size={14} />
+                      Edit post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleToggleComments}
+                      disabled={toggleComments.isPending}
+                    >
+                      {post.commentsDisabled ? (
+                        <MessageCircle size={14} />
+                      ) : (
+                        <MessageCircleOff size={14} />
+                      )}
+                      {post.commentsDisabled ? "Enable comments" : "Disable comments"}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setConfirmOpen(true)}
+                      style={{ color: "#ef4444" }}
+                    >
+                      <Trash2 size={14} />
+                      Delete post
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Book tag */}
@@ -273,6 +286,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
             rows={3}
             aria-label="Edit post content"
             style={{
@@ -306,7 +320,11 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             }}
           >
             <p style={{ fontSize: "0.875rem", color: "#737373" }}>This post contains spoilers</p>
-            <Button variant="outline" size="sm" onClick={() => setSpoilerRevealed(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); setSpoilerRevealed(true); }}
+            >
               Show anyway
             </Button>
           </div>
@@ -317,7 +335,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             </p>
             {post.hasSpoilers && spoilerRevealed && (
               <button
-                onClick={() => setSpoilerRevealed(false)}
+                onClick={(e) => { e.stopPropagation(); setSpoilerRevealed(false); }}
                 style={{
                   marginTop: "0.5rem",
                   fontSize: "0.75rem",
@@ -336,9 +354,10 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
           </div>
         )}
 
-        {/* Action bar */}
+        {/* Action bar — stopPropagation so clicks here don't trigger card navigation */}
         {!isEditing && (
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               display: "flex",
               gap: "1rem",
@@ -380,34 +399,36 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
               <span>{post.likeCount}</span>
             </button>
 
-            {/* Comment */}
-            <button
-              onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.3rem",
-                fontSize: "0.8rem",
-                color: "#a3a3a3",
-                background: "none",
-                border: "none",
-                cursor: isDetailView ? "default" : "pointer",
-                padding: "0.25rem 0",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                if (!isDetailView)
-                  (e.currentTarget as HTMLButtonElement).style.color = "#4338ca";
-              }}
-              onMouseLeave={(e) => {
-                if (!isDetailView)
-                  (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
-              }}
-              aria-label="View comments"
-            >
-              <MessageCircle size={15} style={{ flexShrink: 0 }} />
-              <span>{post.commentCount}</span>
-            </button>
+            {/* Comment — hidden when comments are disabled */}
+            {!post.commentsDisabled && (
+              <button
+                onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
+                  fontSize: "0.8rem",
+                  color: "#a3a3a3",
+                  background: "none",
+                  border: "none",
+                  cursor: isDetailView ? "default" : "pointer",
+                  padding: "0.25rem 0",
+                  transition: "color 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isDetailView)
+                    (e.currentTarget as HTMLButtonElement).style.color = "#4338ca";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDetailView)
+                    (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
+                }}
+                aria-label="View comments"
+              >
+                <MessageCircle size={15} style={{ flexShrink: 0 }} />
+                <span>{post.commentCount}</span>
+              </button>
+            )}
           </div>
         )}
       </div>

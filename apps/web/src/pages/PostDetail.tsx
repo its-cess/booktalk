@@ -190,23 +190,23 @@ export default function PostDetail() {
           </div>
         )}
 
-        {/* Comment list */}
-        {commentsLoading ? (
-          <p style={{ color: "#a3a3a3", fontSize: "0.875rem" }}>Loading comments…</p>
-        ) : comments && comments.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                postId={id!}
-                isOwner={user?.id === comment.author.id}
-                isPostOwner={isPostOwner}
-              />
-            ))}
-          </div>
-        ) : (
-          !post.commentsDisabled && (
+        {/* Comment list — hidden when comments are disabled */}
+        {!post.commentsDisabled && (
+          commentsLoading ? (
+            <p style={{ color: "#a3a3a3", fontSize: "0.875rem" }}>Loading comments…</p>
+          ) : comments && comments.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+              {comments.map((comment) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  postId={id!}
+                  isOwner={user?.id === comment.author.id}
+                  isPostOwner={isPostOwner}
+                />
+              ))}
+            </div>
+          ) : (
             <p
               style={{
                 color: "#a3a3a3",
