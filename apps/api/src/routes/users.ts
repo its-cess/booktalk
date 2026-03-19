@@ -9,6 +9,12 @@ export default async function userRoutes(app: FastifyInstance) {
   app.get("/:username", async (request, reply) => {
     const { username } = request.params as { username: string };
 
+    let userId: string | null = null;
+    try {
+      await request.jwtVerify();
+      userId = (request.user as { userId: string }).userId;
+    } catch {}
+
     const user = await prisma.user.findUnique({
       where: { username },
       select: {
@@ -29,10 +35,12 @@ export default async function userRoutes(app: FastifyInstance) {
             bookTitle: true,
             bookAuthor: true,
             hasSpoilers: true,
+            commentsDisabled: true,
             createdAt: true,
             author: {
               select: { id: true, username: true, displayName: true },
             },
+            _count: { select: { comments: true, likes: true } },
           },
         },
       },
@@ -42,12 +50,27 @@ export default async function userRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: "User not found" });
     }
 
-    const { _count, ...rest } = user;
+    const userLikes = userId
+      ? await prisma.postLike.findMany({
+          where: { userId, post: { author: { username } } },
+          select: { postId: true },
+        })
+      : [];
+
+    const likedPostIds = new Set(userLikes.map((l) => l.postId));
+
+    const { _count, posts, ...rest } = user;
     return reply.send({
       user: {
         ...rest,
         followersCount: _count.followers,
         followingCount: _count.following,
+        posts: posts.map(({ _count: postCount, ...post }) => ({
+          ...post,
+          likeCount: postCount.likes,
+          commentCount: postCount.comments,
+          isLiked: likedPostIds.has(post.id),
+        })),
       },
     });
   });

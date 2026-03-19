@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { createPostSchema, type CreatePostData } from "@booktalk/shared";
+import { createPostSchema, type CreatePostData, type CreatePostInput } from "@booktalk/shared";
 import { useCreatePost } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ export default function PostComposer() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<CreatePostData>({
+  } = useForm<CreatePostInput, unknown, CreatePostData>({
     resolver: zodResolver(createPostSchema),
     defaultValues: { content: "", bookTitle: "", bookAuthor: "", hasSpoilers: false },
   });

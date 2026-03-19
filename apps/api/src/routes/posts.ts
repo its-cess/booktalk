@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { createPostSchema, updatePostSchema } from "@booktalk/shared";
+import { createPostSchema, updatePostSchema, createCommentSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -10,14 +10,75 @@ const authorSelect = {
   displayName: true,
 };
 
+async function getOptionalUserId(request: any): Promise<string | null> {
+  try {
+    await request.jwtVerify();
+    return (request.user as { userId: string }).userId;
+  } catch {
+    return null;
+  }
+}
+
 export default async function postRoutes(app: FastifyInstance) {
   // GET /posts — feed (newest first)
-  app.get("/", async (_request, reply) => {
-    const posts = await prisma.post.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { author: { select: authorSelect } },
+  app.get("/", async (request, reply) => {
+    const userId = await getOptionalUserId(request);
+
+    const [posts, userLikes] = await Promise.all([
+      prisma.post.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          author: { select: authorSelect },
+          _count: { select: { comments: true, likes: true } },
+        },
+      }),
+      userId
+        ? prisma.postLike.findMany({ where: { userId }, select: { postId: true } })
+        : Promise.resolve([]),
+    ]);
+
+    const likedPostIds = new Set(userLikes.map((l) => l.postId));
+
+    return reply.send({
+      posts: posts.map(({ _count, ...post }) => ({
+        ...post,
+        likeCount: _count.likes,
+        commentCount: _count.comments,
+        isLiked: likedPostIds.has(post.id),
+      })),
     });
-    return reply.send({ posts });
+  });
+
+  // GET /posts/:id — single post
+  app.get("/:id", async (request, reply) => {
+    const userId = await getOptionalUserId(request);
+    const { id } = request.params as { id: string };
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
+        author: { select: authorSelect },
+        _count: { select: { comments: true, likes: true } },
+      },
+    });
+
+    if (!post) return reply.status(404).send({ error: "Post not found" });
+
+    const isLiked = userId
+      ? !!(await prisma.postLike.findUnique({
+          where: { postId_userId: { postId: id, userId } },
+        }))
+      : false;
+
+    const { _count, ...postData } = post;
+    return reply.send({
+      post: {
+        ...postData,
+        likeCount: _count.likes,
+        commentCount: _count.comments,
+        isLiked,
+      },
+    });
   });
 
   // POST /posts — create a post (requires auth)
@@ -34,10 +95,21 @@ export default async function postRoutes(app: FastifyInstance) {
           bookAuthor: data.bookAuthor ?? null,
           hasSpoilers: data.hasSpoilers,
         },
-        include: { author: { select: authorSelect } },
+        include: {
+          author: { select: authorSelect },
+          _count: { select: { comments: true, likes: true } },
+        },
       });
 
-      return reply.status(201).send({ post });
+      const { _count, ...postData } = post;
+      return reply.status(201).send({
+        post: {
+          ...postData,
+          likeCount: _count.likes,
+          commentCount: _count.comments,
+          isLiked: false,
+        },
+      });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.status(400).send({ errors: err.issues });
@@ -60,11 +132,29 @@ export default async function postRoutes(app: FastifyInstance) {
 
       const updated = await prisma.post.update({
         where: { id },
-        data: { content: data.content },
-        include: { author: { select: authorSelect } },
+        data: {
+          ...(data.content !== undefined && { content: data.content }),
+          ...(data.commentsDisabled !== undefined && { commentsDisabled: data.commentsDisabled }),
+        },
+        include: {
+          author: { select: authorSelect },
+          _count: { select: { comments: true, likes: true } },
+        },
       });
 
-      return reply.send({ post: updated });
+      const isLiked = !!(await prisma.postLike.findUnique({
+        where: { postId_userId: { postId: id, userId: payload.userId } },
+      }));
+
+      const { _count, ...postData } = updated;
+      return reply.send({
+        post: {
+          ...postData,
+          likeCount: _count.likes,
+          commentCount: _count.comments,
+          isLiked,
+        },
+      });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.status(400).send({ errors: err.issues });
@@ -85,5 +175,103 @@ export default async function postRoutes(app: FastifyInstance) {
 
     await prisma.post.delete({ where: { id } });
     return reply.send({ success: true });
+  });
+
+  // POST /posts/:id/like — toggle like on a post (requires auth)
+  app.post("/:id/like", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    const { id } = request.params as { id: string };
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return reply.status(404).send({ error: "Post not found" });
+
+    const existing = await prisma.postLike.findUnique({
+      where: { postId_userId: { postId: id, userId: payload.userId } },
+    });
+
+    if (existing) {
+      await prisma.postLike.delete({ where: { id: existing.id } });
+      return reply.send({ isLiked: false });
+    } else {
+      await prisma.postLike.create({ data: { postId: id, userId: payload.userId } });
+      return reply.send({ isLiked: true });
+    }
+  });
+
+  // GET /posts/:id/comments — list comments for a post
+  app.get("/:id/comments", async (request, reply) => {
+    const userId = await getOptionalUserId(request);
+    const { id } = request.params as { id: string };
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) return reply.status(404).send({ error: "Post not found" });
+
+    const [comments, userCommentLikes] = await Promise.all([
+      prisma.comment.findMany({
+        where: { postId: id },
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: { select: authorSelect },
+          _count: { select: { likes: true } },
+        },
+      }),
+      userId
+        ? prisma.commentLike.findMany({
+            where: { userId, comment: { postId: id } },
+            select: { commentId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const likedCommentIds = new Set(userCommentLikes.map((l) => l.commentId));
+
+    return reply.send({
+      comments: comments.map(({ _count, ...comment }) => ({
+        ...comment,
+        likeCount: _count.likes,
+        isLiked: likedCommentIds.has(comment.id),
+      })),
+    });
+  });
+
+  // POST /posts/:id/comments — add a comment (requires auth)
+  app.post("/:id/comments", { preHandler: [requireAuth] }, async (request, reply) => {
+    try {
+      const payload = request.user as { userId: string };
+      const { id } = request.params as { id: string };
+
+      const post = await prisma.post.findUnique({ where: { id } });
+      if (!post) return reply.status(404).send({ error: "Post not found" });
+      if (post.commentsDisabled) return reply.status(403).send({ error: "Comments are disabled" });
+
+      const data = createCommentSchema.parse(request.body);
+
+      const comment = await prisma.comment.create({
+        data: {
+          postId: id,
+          authorId: payload.userId,
+          content: data.content,
+        },
+        include: {
+          author: { select: authorSelect },
+          _count: { select: { likes: true } },
+        },
+      });
+
+      const { _count, ...commentData } = comment;
+      return reply.status(201).send({
+        comment: {
+          ...commentData,
+          likeCount: _count.likes,
+          isLiked: false,
+        },
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.status(400).send({ errors: err.issues });
+      }
+      console.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
   });
 }

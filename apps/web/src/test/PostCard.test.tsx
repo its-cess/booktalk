@@ -10,6 +10,8 @@ const mockToastError = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/queries", () => ({
   useDeletePost: () => ({ mutateAsync: mockDeleteMutateAsync, isPending: false }),
   useUpdatePost: () => ({ mutateAsync: mockUpdateMutateAsync, isPending: false }),
+  useTogglePostLike: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useToggleCommentsDisabled: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("sonner", () => ({
@@ -20,6 +22,7 @@ vi.mock("react-router-dom", () => ({
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>
   ),
+  useNavigate: () => vi.fn(),
 }));
 
 import PostCard from "@/components/post/PostCard";
@@ -30,7 +33,11 @@ const MOCK_POST = {
   authorUsername: "alice",
   content: "Just finished Dune!",
   hasSpoilers: false,
+  commentsDisabled: false,
   createdAt: new Date().toISOString(),
+  likeCount: 0,
+  commentCount: 0,
+  isLiked: false,
 };
 
 async function openMenu() {
