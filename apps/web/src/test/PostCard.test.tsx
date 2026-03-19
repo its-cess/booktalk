@@ -286,7 +286,7 @@ describe("PostCard — like button", () => {
     mockToggleLikeMutateAsync.mockResolvedValueOnce({ isLiked: true });
     render(<PostCard post={MOCK_POST} />);
     await userEvent.click(screen.getByRole("button", { name: "Like post" }));
-    expect(mockToggleLikeMutateAsync).toHaveBeenCalledWith("post-1");
+    expect(mockToggleLikeMutateAsync).toHaveBeenCalledWith({ postId: "post-1", authorUsername: "alice" });
   });
 
   it("shows an error toast when liking fails", async () => {

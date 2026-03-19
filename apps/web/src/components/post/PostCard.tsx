@@ -88,7 +88,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
 
   async function handleLike() {
     try {
-      await toggleLike.mutateAsync(post.id);
+      await toggleLike.mutateAsync({ postId: post.id, authorUsername: post.authorUsername });
     } catch {
       toast.error("Failed to like post.");
     }
