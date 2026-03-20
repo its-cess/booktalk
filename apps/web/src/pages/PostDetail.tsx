@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircleOff } from "lucide-react";
+import { ArrowLeft, MessageCircleOff, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
@@ -8,6 +8,7 @@ import PostCard from "@/components/post/PostCard";
 import CommentCard from "@/components/post/CommentCard";
 import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
+import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,20 @@ export default function PostDetail() {
   const createComment = useCreateComment(id!);
 
   const [commentText, setCommentText] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojiPicker]);
 
   if (postLoading) {
     return (
@@ -166,11 +181,49 @@ export default function PostDetail() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                position: "relative",
               }}
             >
-              <span style={{ fontSize: "0.72rem", color: "#a3a3a3" }}>
-                {commentText.length}/500
-              </span>
+              {showEmojiPicker && (
+                <div
+                  ref={emojiPickerRef}
+                  style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: 0, zIndex: 50 }}
+                >
+                  <EmojiPicker
+                    onEmojiClick={(data: EmojiClickData) => {
+                      setCommentText((prev) => prev + data.emoji);
+                      setShowEmojiPicker(false);
+                    }}
+                    emojiStyle={EmojiStyle.GOOGLE}
+                    previewConfig={{ showPreview: false }}
+                    height={350}
+                    width={300}
+                    style={{ "--epr-emoji-size": "22px", "--epr-emoji-padding": "4px", "--epr-category-navigation-button-size": "22px" } as React.CSSProperties}
+                  />
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker((v) => !v)}
+                  style={{
+                    padding: "0.25rem 0.375rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid #e5e5e5",
+                    background: showEmojiPicker ? "#f0f0f0" : "none",
+                    cursor: "pointer",
+                    color: "#525252",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label="Insert emoji"
+                >
+                  <Smile size={15} />
+                </button>
+                <span style={{ fontSize: "0.72rem", color: "#a3a3a3" }}>
+                  {commentText.length}/500
+                </span>
+              </div>
               <Button
                 size="sm"
                 onClick={handleSubmitComment}
