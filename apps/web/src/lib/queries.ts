@@ -230,9 +230,10 @@ export function useComments(postId: string) {
 export function useCreateComment(postId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, gifUrl }: { content: string; gifUrl?: string }) => {
       const res = await api.post<{ comment: CommentWithAuthor }>(`/posts/${postId}/comments`, {
         content,
+        ...(gifUrl && { gifUrl }),
       });
       return res.data.comment;
     },
@@ -283,6 +284,22 @@ export function useToggleCommentLike(postId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
     },
+  });
+}
+
+// --- GIF search ---
+
+export function useGifSearch(query: string) {
+  return useQuery({
+    queryKey: ["gifs", "search", query],
+    queryFn: async () => {
+      const res = await api.get<{
+        gifs: { id: string; title: string; previewUrl: string; gifUrl: string }[];
+      }>(`/gifs/search?q=${encodeURIComponent(query)}`);
+      return res.data.gifs;
+    },
+    enabled: query.length >= 1,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

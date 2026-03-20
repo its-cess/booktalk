@@ -40,6 +40,7 @@ export interface Post {
   bookAuthor?: string;
   hasSpoilers: boolean;
   commentsDisabled: boolean;
+  gifUrl?: string | null;
   createdAt: string;
   likeCount: number;
   commentCount: number;
@@ -597,6 +598,17 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             </div>
           );
         })()}
+
+        {/* GIF */}
+        {post.gifUrl && !isEditing && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <img
+              src={post.gifUrl}
+              alt="GIF"
+              style={{ maxWidth: "100%", borderRadius: "0.5rem", display: "block" }}
+            />
+          </div>
+        )}
 
         {/* Action bar — stopPropagation so clicks here don't trigger card navigation */}
         {!isEditing && (

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircleOff, Smile } from "lucide-react";
+import { ArrowLeft, MessageCircleOff, Smile, ImagePlay, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
@@ -9,6 +9,7 @@ import CommentCard from "@/components/post/CommentCard";
 import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
+import GifPicker from "@/components/post/GifPicker";
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,8 +21,11 @@ export default function PostDetail() {
   const createComment = useCreateComment(id!);
 
   const [commentText, setCommentText] = useState("");
+  const [commentGifUrl, setCommentGifUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const gifPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -34,6 +38,18 @@ export default function PostDetail() {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmojiPicker]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (gifPickerRef.current && !gifPickerRef.current.contains(e.target as Node)) {
+        setShowGifPicker(false);
+      }
+    }
+    if (showGifPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showGifPicker]);
 
   if (postLoading) {
     return (
@@ -57,8 +73,9 @@ export default function PostDetail() {
     const trimmed = commentText.trim();
     if (!trimmed) return;
     try {
-      await createComment.mutateAsync(trimmed);
+      await createComment.mutateAsync({ content: trimmed, gifUrl: commentGifUrl ?? undefined });
       setCommentText("");
+      setCommentGifUrl(null);
     } catch {
       toast.error("Failed to post comment.");
     }
@@ -106,6 +123,7 @@ export default function PostDetail() {
           bookAuthor: post.bookAuthor ?? undefined,
           hasSpoilers: post.hasSpoilers,
           commentsDisabled: post.commentsDisabled,
+          gifUrl: post.gifUrl,
           createdAt: post.createdAt,
           likeCount: post.likeCount,
           commentCount: post.commentCount,
@@ -176,6 +194,39 @@ export default function PostDetail() {
                 lineHeight: 1.5,
               }}
             />
+            {/* GIF preview */}
+            {commentGifUrl && (
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <img
+                  src={commentGifUrl}
+                  alt="Selected GIF"
+                  style={{ maxWidth: "100%", maxHeight: "160px", borderRadius: "0.375rem", display: "block" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setCommentGifUrl(null)}
+                  aria-label="Remove GIF"
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(0,0,0,0.55)",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                    color: "#ffffff",
+                  }}
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
@@ -202,6 +253,19 @@ export default function PostDetail() {
                   />
                 </div>
               )}
+              {showGifPicker && (
+                <div
+                  ref={gifPickerRef}
+                  style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "2.5rem", zIndex: 50 }}
+                >
+                  <GifPicker
+                    onSelect={(url) => {
+                      setCommentGifUrl(url);
+                      setShowGifPicker(false);
+                    }}
+                  />
+                </div>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <button
                   type="button"
@@ -219,6 +283,23 @@ export default function PostDetail() {
                   aria-label="Insert emoji"
                 >
                   <Smile size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGifPicker((v) => !v)}
+                  style={{
+                    padding: "0.25rem 0.375rem",
+                    borderRadius: "0.375rem",
+                    border: "1px solid #e5e5e5",
+                    background: showGifPicker ? "#f0f0f0" : "none",
+                    cursor: "pointer",
+                    color: "#525252",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label="Insert GIF"
+                >
+                  <ImagePlay size={15} />
                 </button>
                 <span style={{ fontSize: "0.72rem", color: "#a3a3a3" }}>
                   {commentText.length}/500

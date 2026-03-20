@@ -3,13 +3,14 @@ import { useBookPicker } from "./useBookPicker";
 import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Smile } from "lucide-react";
+import { BookOpen, Smile, ImagePlay, X } from "lucide-react";
 import { toast } from "sonner";
 import { createPostSchema, type CreatePostData, type CreatePostInput } from "@booktalk/shared";
 import { useCreatePost } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import MentionTextarea from "./MentionTextarea";
+import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
 
 export default function PostComposer() {
@@ -17,6 +18,9 @@ export default function PostComposer() {
   const createPost = useCreatePost();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const gifPickerRef = useRef<HTMLDivElement>(null);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -29,6 +33,18 @@ export default function PostComposer() {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmojiPicker]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (gifPickerRef.current && !gifPickerRef.current.contains(e.target as Node)) {
+        setShowGifPicker(false);
+      }
+    }
+    if (showGifPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showGifPicker]);
 
   const {
     register,
@@ -64,6 +80,7 @@ export default function PostComposer() {
       await createPost.mutateAsync({
         content: data.content,
         hasSpoilers: data.hasSpoilers,
+        ...(gifUrl && { gifUrl }),
         ...(picker.selectedBook
           ? { bookId: picker.selectedBook.id }
           : {
@@ -73,6 +90,7 @@ export default function PostComposer() {
       });
       reset();
       picker.clear();
+      setGifUrl(null);
       setValue("bookTitle", "");
       setValue("bookAuthor", "");
     } catch {
@@ -113,6 +131,40 @@ export default function PostComposer() {
           </span>
         </div>
       </div>
+
+      {/* GIF preview */}
+      {gifUrl && (
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <img
+            src={gifUrl}
+            alt="Selected GIF"
+            style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "0.5rem", display: "block" }}
+          />
+          <button
+            type="button"
+            onClick={() => setGifUrl(null)}
+            aria-label="Remove GIF"
+            style={{
+              position: "absolute",
+              top: "4px",
+              right: "4px",
+              width: "20px",
+              height: "20px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(0,0,0,0.55)",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              color: "#ffffff",
+            }}
+          >
+            <X size={11} />
+          </button>
+        </div>
+      )}
 
       {/* Selected book chip */}
       {picker.selectedBook && (
@@ -200,6 +252,39 @@ export default function PostComposer() {
           aria-label="Insert emoji"
         >
           <Smile size={15} />
+        </button>
+
+        {showGifPicker && (
+          <div
+            ref={gifPickerRef}
+            style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "2.5rem", zIndex: 50 }}
+          >
+            <GifPicker
+              onSelect={(url) => {
+                setGifUrl(url);
+                setShowGifPicker(false);
+              }}
+            />
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setShowGifPicker((v) => !v)}
+          style={{
+            fontSize: "0.8rem",
+            padding: "0.3rem 0.5rem",
+            borderRadius: "0.375rem",
+            border: "1px solid #e5e5e5",
+            background: showGifPicker ? "#f0f0f0" : "none",
+            cursor: "pointer",
+            color: "#525252",
+            display: "flex",
+            alignItems: "center",
+          }}
+          aria-label="Insert GIF"
+        >
+          <ImagePlay size={15} />
         </button>
 
         <button
