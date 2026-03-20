@@ -141,18 +141,15 @@ describe("NotificationDropdown", () => {
     mockUseNotifications.mockReturnValue({
       data: { notifications: [makeNotif({ read: false })], unreadCount: 1 },
     });
-    const { container } = render(<NotificationDropdown onClose={onClose} />);
-    // The unread dot has backgroundColor #4338ca (indigo)
-    const dot = container.querySelector('span[style*="4338ca"]');
-    expect(dot).toBeInTheDocument();
+    render(<NotificationDropdown onClose={onClose} />);
+    expect(screen.getByTestId("unread-dot")).toBeInTheDocument();
   });
 
-  it("read notification has a transparent dot indicator", () => {
+  it("read notification does not have an unread dot indicator", () => {
     mockUseNotifications.mockReturnValue({
       data: { notifications: [makeNotif({ read: true })], unreadCount: 0 },
     });
-    const { container } = render(<NotificationDropdown onClose={onClose} />);
-    const dot = container.querySelector('span[style*="transparent"]');
-    expect(dot).toBeInTheDocument();
+    render(<NotificationDropdown onClose={onClose} />);
+    expect(screen.queryByTestId("unread-dot")).not.toBeInTheDocument();
   });
 });

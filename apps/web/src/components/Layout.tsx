@@ -108,6 +108,7 @@ export default function Layout() {
                   <Bell size={18} />
                   {unreadCount > 0 && (
                     <span
+                      data-testid="notification-badge"
                       style={{
                         position: "absolute",
                         top: "4px",

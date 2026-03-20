@@ -149,6 +149,7 @@ export default function NotificationDropdown({ onClose }: Props) {
             >
               {/* Unread dot */}
               <span
+                data-testid={n.read ? undefined : "unread-dot"}
                 style={{
                   flexShrink: 0,
                   marginTop: "0.35rem",

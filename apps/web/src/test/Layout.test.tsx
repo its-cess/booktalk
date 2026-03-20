@@ -114,17 +114,16 @@ describe("Layout notification bell", () => {
 
   it("shows a badge with the unread count when unreadCount > 0", () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 3 } });
-    const { container } = render(<Layout />);
-    const badge = container.querySelector('span[style*="ef4444"]');
+    render(<Layout />);
+    const badge = screen.getByTestId("notification-badge");
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveTextContent("3");
   });
 
   it("shows '9+' in the badge when unreadCount exceeds 9", () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 12 } });
-    const { container } = render(<Layout />);
-    const badge = container.querySelector('span[style*="ef4444"]');
-    expect(badge).toHaveTextContent("9+");
+    render(<Layout />);
+    expect(screen.getByTestId("notification-badge")).toHaveTextContent("9+");
   });
 
   it("clicking the bell opens the notification dropdown", async () => {
