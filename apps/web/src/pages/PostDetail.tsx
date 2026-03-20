@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 import CommentCard from "@/components/post/CommentCard";
+import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
 
 export default function PostDetail() {
@@ -147,28 +148,18 @@ export default function PostDetail() {
               gap: "0.625rem",
             }}
           >
-            <textarea
+            <MentionTextarea
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
+              onChange={setCommentText}
               onKeyDown={handleKeyDown}
               placeholder="Add a comment"
               maxLength={500}
               rows={2}
               style={{
-                width: "100%",
                 resize: "none",
-                border: "1px solid #e5e5e5",
-                borderRadius: "0.5rem",
-                padding: "0.5rem 0.75rem",
                 fontSize: "0.875rem",
                 lineHeight: 1.5,
-                color: "#171717",
-                outline: "none",
-                fontFamily: "inherit",
-                boxSizing: "border-box",
               }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e5e5")}
             />
             <div
               style={{

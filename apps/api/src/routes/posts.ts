@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createPostSchema, updatePostSchema, createCommentSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+import { notifyMentions } from "../lib/mentions.js";
 
 const authorSelect = {
   id: true,
@@ -164,6 +165,14 @@ export default async function postRoutes(app: FastifyInstance) {
         },
       });
 
+      // Fire mention notifications (non-blocking)
+      notifyMentions({
+        content: data.content,
+        actorId: payload.userId,
+        postId: post.id,
+        type: "MENTION_POST",
+      }).catch(console.error);
+
       const { _count, ...postData } = post;
       return reply.status(201).send({
         post: {
@@ -213,6 +222,16 @@ export default async function postRoutes(app: FastifyInstance) {
           _count: { select: { comments: true, likes: true } },
         },
       });
+
+      // Fire mention notifications for newly added @mentions (non-blocking)
+      if (data.content !== undefined) {
+        notifyMentions({
+          content: data.content,
+          actorId: payload.userId,
+          postId: id,
+          type: "MENTION_POST",
+        }).catch(console.error);
+      }
 
       const isLiked = !!(await prisma.postLike.findUnique({
         where: { postId_userId: { postId: id, userId: payload.userId } },
@@ -266,6 +285,21 @@ export default async function postRoutes(app: FastifyInstance) {
       return reply.send({ isLiked: false });
     } else {
       await prisma.postLike.create({ data: { postId: id, userId: payload.userId } });
+
+      // Notify post author (skip if liking own post)
+      if (post.authorId !== payload.userId) {
+        prisma.notification
+          .create({
+            data: {
+              userId: post.authorId,
+              actorId: payload.userId,
+              type: "POST_LIKE",
+              postId: id,
+            },
+          })
+          .catch(console.error);
+      }
+
       return reply.send({ isLiked: true });
     }
   });
@@ -329,6 +363,30 @@ export default async function postRoutes(app: FastifyInstance) {
           _count: { select: { likes: true } },
         },
       });
+
+      // Notify post author of new comment (skip if commenting on own post)
+      if (post.authorId !== payload.userId) {
+        prisma.notification
+          .create({
+            data: {
+              userId: post.authorId,
+              actorId: payload.userId,
+              type: "COMMENT",
+              postId: id,
+              commentId: comment.id,
+            },
+          })
+          .catch(console.error);
+      }
+
+      // Notify any @mentioned users (non-blocking)
+      notifyMentions({
+        content: data.content,
+        actorId: payload.userId,
+        postId: id,
+        commentId: comment.id,
+        type: "MENTION_COMMENT",
+      }).catch(console.error);
 
       const { _count, ...commentData } = comment;
       return reply.status(201).send({

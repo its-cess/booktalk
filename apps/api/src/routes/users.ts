@@ -29,6 +29,27 @@ async function getOptionalUserId(request: any): Promise<string | null> {
 }
 
 export default async function userRoutes(app: FastifyInstance) {
+  // GET /users/search?q= — mention autocomplete (must be before /:username)
+  app.get("/search", async (request, reply) => {
+    const { q } = request.query as { q?: string };
+    if (!q || q.trim().length < 1) {
+      return reply.send({ users: [] });
+    }
+    const term = q.trim();
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: term } },
+          { displayName: { contains: term } },
+        ],
+      },
+      select: { id: true, username: true, displayName: true },
+      take: 8,
+      orderBy: { username: "asc" },
+    });
+    return reply.send({ users });
+  });
+
   // GET /users/:username — public profile with posts
   app.get("/:username", async (request, reply) => {
     const { username } = request.params as { username: string };

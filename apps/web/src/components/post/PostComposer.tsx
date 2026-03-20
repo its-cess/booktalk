@@ -8,6 +8,7 @@ import { createPostSchema, type CreatePostData, type CreatePostInput } from "@bo
 import { useCreatePost } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import MentionTextarea from "./MentionTextarea";
 
 export default function PostComposer() {
   const picker = useBookPicker();
@@ -79,25 +80,11 @@ export default function PostComposer() {
     >
       {/* Text area */}
       <div>
-        <textarea
-          {...register("content")}
+        <MentionTextarea
+          value={content}
+          onChange={(val) => setValue("content", val, { shouldValidate: true })}
           placeholder="What are you reading?"
           rows={3}
-          style={{
-            width: "100%",
-            resize: "vertical",
-            border: "1px solid #e5e5e5",
-            borderRadius: "0.5rem",
-            padding: "0.625rem 0.75rem",
-            fontSize: "0.9rem",
-            lineHeight: 1.6,
-            color: "#171717",
-            outline: "none",
-            fontFamily: "inherit",
-            boxSizing: "border-box",
-          }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e5e5")}
         />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
           {errors.content ? (
