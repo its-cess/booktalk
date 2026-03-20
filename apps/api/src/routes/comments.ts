@@ -3,6 +3,7 @@ import { z } from "zod";
 import { updateCommentSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+import { notifyMentions } from "../lib/mentions.js";
 
 export default async function commentRoutes(app: FastifyInstance) {
   // PATCH /comments/:id — edit own comment (requires auth)
@@ -28,6 +29,15 @@ export default async function commentRoutes(app: FastifyInstance) {
       const isLiked = !!(await prisma.commentLike.findUnique({
         where: { commentId_userId: { commentId: id, userId: payload.userId } },
       }));
+
+      // Notify any @mentioned users added in the edit (non-blocking)
+      notifyMentions({
+        content: data.content,
+        actorId: payload.userId,
+        postId: updated.postId,
+        commentId: id,
+        type: "MENTION_COMMENT",
+      }).catch(console.error);
 
       const { _count, ...commentData } = updated;
       return reply.send({

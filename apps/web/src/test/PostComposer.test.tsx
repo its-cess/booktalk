@@ -9,6 +9,7 @@ const mockUseBookSearch = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/queries", () => ({
   useCreatePost: () => ({ mutateAsync: mockMutateAsync, isPending: false }),
   useBookSearch: mockUseBookSearch,
+  useUserSearch: () => ({ data: [] }),
 }));
 
 vi.mock("sonner", () => ({

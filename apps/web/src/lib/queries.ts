@@ -9,6 +9,7 @@ import type {
   CommentWithAuthor,
   UserSummary,
   BookResult,
+  GroupedNotification,
 } from "@booktalk/shared";
 
 export const FEED_KEY = ["posts", "feed"] as const;
@@ -281,6 +282,68 @@ export function useToggleCommentLike(postId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    },
+  });
+}
+
+// --- User search (for @mention autocomplete) ---
+
+export function useUserSearch(query: string) {
+  return useQuery({
+    queryKey: ["users", "search", query],
+    queryFn: async () => {
+      const res = await api.get<{ users: { id: string; username: string; displayName: string }[] }>(
+        `/users/search?q=${encodeURIComponent(query)}`
+      );
+      return res.data.users;
+    },
+    enabled: query.length >= 1,
+    staleTime: 30 * 1000,
+  });
+}
+
+// --- Notifications ---
+
+export const NOTIFICATIONS_KEY = ["notifications"] as const;
+
+export function useNotifications() {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: NOTIFICATIONS_KEY,
+    queryFn: async () => {
+      const res = await api.get<{
+        notifications: GroupedNotification[];
+        unreadCount: number;
+      }>("/notifications");
+      return res.data;
+    },
+    enabled: isAuthenticated,
+    refetchInterval: 30_000,
+    staleTime: 10_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await api.post("/notifications/read-all");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+    },
+  });
+}
+
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/notifications/${id}/read`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
     },
   });
 }

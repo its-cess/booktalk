@@ -33,6 +33,9 @@ model User {
 
   followers Follow[] @relation("Following")
   following Follow[] @relation("Follower")
+
+  notifications      Notification[] @relation("RecipientNotifications")
+  actorNotifications Notification[] @relation("ActorNotifications")
 }
 
 model AuthCredential {
@@ -90,8 +93,9 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  comments Comment[]
-  likes    PostLike[]
+  comments      Comment[]
+  likes         PostLike[]
+  notifications Notification[]
 
   @@index([authorId])
   @@index([createdAt])
@@ -107,9 +111,10 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  likes  CommentLike[]
+  post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes         CommentLike[]
+  notifications Notification[]
 
   @@index([postId])
   @@index([authorId])
@@ -155,4 +160,25 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
+}
+
+// type values: POST_LIKE | COMMENT | MENTION_POST | MENTION_COMMENT
+model Notification {
+  id        String  @id @default(cuid())
+  userId    String
+  actorId   String
+  type      String
+  postId    String?
+  commentId String?
+  read      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user    User     @relation("RecipientNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor   User     @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, postId, type])
 }
