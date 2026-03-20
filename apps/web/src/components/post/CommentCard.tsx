@@ -241,6 +241,15 @@ export default function CommentCard({
             </p>
           )}
 
+          {/* GIF */}
+          {!isEditing && comment.gifUrl && (
+            <img
+              src={comment.gifUrl}
+              alt="GIF"
+              style={{ maxWidth: "100%", borderRadius: "0.375rem", display: "block", marginTop: "0.375rem" }}
+            />
+          )}
+
           {/* Like button */}
           {!isEditing && (
             <div style={{ marginTop: "0.5rem" }}>

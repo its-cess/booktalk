@@ -110,6 +110,7 @@ export default function Home() {
               bookAuthor: post.bookAuthor ?? undefined,
               hasSpoilers: post.hasSpoilers,
               commentsDisabled: post.commentsDisabled,
+              gifUrl: post.gifUrl,
               createdAt: post.createdAt,
               likeCount: post.likeCount,
               commentCount: post.commentCount,

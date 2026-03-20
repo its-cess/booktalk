@@ -6,6 +6,7 @@ export const createPostSchema = z.object({
   bookTitle: z.string().optional(),
   bookAuthor: z.string().optional(),
   hasSpoilers: z.boolean().default(false),
+  gifUrl: z.string().url().optional(),
 });
 
 export type CreatePostData = z.infer<typeof createPostSchema>;
@@ -39,6 +40,7 @@ export interface PostWithAuthor {
   bookAuthor: string | null;
   hasSpoilers: boolean;
   commentsDisabled: boolean;
+  gifUrl: string | null;
   createdAt: string;
   author: {
     id: string;
@@ -52,6 +54,7 @@ export interface PostWithAuthor {
 
 export const createCommentSchema = z.object({
   content: z.string().min(1, "Comment cannot be empty").max(500, "Comment is too long"),
+  gifUrl: z.string().url().optional(),
 });
 
 export type CreateCommentData = z.infer<typeof createCommentSchema>;
@@ -65,6 +68,7 @@ export type UpdateCommentData = z.infer<typeof updateCommentSchema>;
 export interface CommentWithAuthor {
   id: string;
   content: string;
+  gifUrl: string | null;
   createdAt: string;
   updatedAt: string;
   author: {

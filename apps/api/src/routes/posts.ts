@@ -150,6 +150,7 @@ export default async function postRoutes(app: FastifyInstance) {
           authorId: payload.userId,
           content: data.content,
           hasSpoilers: data.hasSpoilers,
+          gifUrl: data.gifUrl ?? null,
           // OpenLibrary book takes precedence; fall back to manual fields
           ...(data.bookId
             ? { bookId: data.bookId }
@@ -357,6 +358,7 @@ export default async function postRoutes(app: FastifyInstance) {
           postId: id,
           authorId: payload.userId,
           content: data.content,
+          gifUrl: data.gifUrl ?? null,
         },
         include: {
           author: { select: authorSelect },

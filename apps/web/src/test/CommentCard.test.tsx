@@ -30,6 +30,7 @@ import type { CommentWithAuthor } from "@booktalk/shared";
 const MOCK_COMMENT: CommentWithAuthor = {
   id: "comment-1",
   content: "Great review!",
+  gifUrl: null,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   author: {
