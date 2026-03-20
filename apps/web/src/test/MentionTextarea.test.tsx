@@ -134,7 +134,6 @@ describe("MentionTextarea", () => {
   it("does not fire onKeyDown for ArrowDown when dropdown is open", async () => {
     mockUseUserSearch.mockReturnValue({ data: USERS });
     const onKeyDown = vi.fn();
-    const [value, setValue] = [{ current: "" }, { current: (v: string) => { value.current = v; } }];
     const WithKeyDown = () => {
       const [v, setV] = useState("");
       return (

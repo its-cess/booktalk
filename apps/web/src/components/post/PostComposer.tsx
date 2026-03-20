@@ -1,6 +1,6 @@
 import { useBookPicker } from "./useBookPicker";
 import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen } from "lucide-react";
 import { toast } from "sonner";
@@ -18,16 +18,16 @@ export default function PostComposer() {
     register,
     handleSubmit,
     reset,
-    watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<CreatePostInput, unknown, CreatePostData>({
     resolver: zodResolver(createPostSchema),
     defaultValues: { content: "", bookTitle: "", bookAuthor: "", hasSpoilers: false },
   });
 
-  const content = watch("content");
-  const hasSpoilers = watch("hasSpoilers");
+  const content = useWatch({ control, name: "content", defaultValue: "" });
+  const hasSpoilers = useWatch({ control, name: "hasSpoilers", defaultValue: false });
 
   function handleBookButtonClick() {
     if (picker.bookMode !== "none" || picker.selectedBook) {
