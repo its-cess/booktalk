@@ -121,7 +121,7 @@ export default function CommentCard({
                   "#737373";
               }}
             >
-              <span className="text-foreground" style={{ fontSize: "0.8rem", fontWeight: 600, fontFamily: '"Poppins", system-ui, sans-serif' }}>
+              <span className="text-foreground" style={{ fontSize: "0.8rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
                 {comment.author.displayName}
               </span>
               <span

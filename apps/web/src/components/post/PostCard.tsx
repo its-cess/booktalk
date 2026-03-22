@@ -194,7 +194,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
           >
             <span
               className="text-foreground"
-              style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Poppins", system-ui, sans-serif' }}
+              style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}
             >
               {post.authorDisplayName}
             </span>

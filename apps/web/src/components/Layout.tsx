@@ -57,7 +57,7 @@ export default function Layout() {
             fontWeight: 700,
             fontSize: "1.1rem",
             textDecoration: "none",
-            fontFamily: '"Poppins", system-ui, sans-serif',
+            fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
           }}
         >
           BookTalk

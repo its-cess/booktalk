@@ -73,7 +73,7 @@ const DropdownMenuContent = React.forwardRef<
         padding: "0.375rem",
         color: "#171717",
         boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-        fontFamily: '"Poppins", system-ui, sans-serif',
+        fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
         ...style,
       }}
       {...props}

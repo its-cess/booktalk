@@ -128,8 +128,8 @@ export default function PostDetail() {
           className="text-foreground"
           style={{
             fontSize: "0.9rem",
-            fontWeight: 700,
-            fontFamily: '"Poppins", system-ui, sans-serif',
+            fontWeight: 600,
+            fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
             marginBottom: "1rem",
           }}
         >

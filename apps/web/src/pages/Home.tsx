@@ -27,7 +27,7 @@ export default function Home() {
           padding: "2rem",
         }}
       >
-        <h2 className="text-foreground" style={{ fontSize: "1.75rem", fontWeight: 700, fontFamily: '"Poppins", system-ui, sans-serif', marginBottom: "0.75rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "1.75rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "0.75rem" }}>
           BookTok for Millennials
         </h2>
         <p className="text-muted-foreground" style={{ marginBottom: "1.5rem" }}>
@@ -77,7 +77,7 @@ export default function Home() {
       <PostComposer />
 
       {/* Feed */}
-      <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 700, fontFamily: '"Poppins", system-ui, sans-serif', marginBottom: "1rem" }}>
+      <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "1rem" }}>
         Your feed
       </h2>
 
