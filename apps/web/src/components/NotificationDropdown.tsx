@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import {
   useNotifications,
   useMarkAllNotificationsRead,
@@ -40,10 +40,10 @@ function notificationText(n: GroupedNotification): string {
 }
 
 interface Props {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
-export default function NotificationDropdown({ onClose }: Props) {
+export default function NotificationPanel({ onClose }: Props) {
   const navigate = useNavigate();
   const { data } = useNotifications();
   const markAll = useMarkAllNotificationsRead();
@@ -53,61 +53,66 @@ export default function NotificationDropdown({ onClose }: Props) {
 
   function handleClick(n: GroupedNotification) {
     markOne.mutate(n.id);
-    onClose();
+    onClose?.();
     navigate(`/posts/${n.postId}`);
   }
 
   return (
     <div
+      className="bg-background"
       style={{
-        position: "absolute",
-        top: "calc(100% + 0.5rem)",
-        right: 0,
-        zIndex: 100,
-        width: "320px",
-        borderRadius: "4px",
         border: "1px solid #e5e5e5",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+        borderRadius: "4px",
         overflow: "hidden",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0.75rem 1rem",
-          borderBottom: "1px solid hsl(var(--border))",
-        }}
-      >
-        <span className="text-foreground" style={{ fontWeight: 600, fontSize: "0.9rem" }}>
-          Notifications
-        </span>
-        {notifications.some((n) => !n.read) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAll.mutate()}
-            disabled={markAll.isPending}
-            className="h-auto gap-1 p-0 text-xs text-primary"
-          >
-            <Check size={13} />
-            Mark all read
-          </Button>
-        )}
-      </div>
+      {/* Header row — mark all read + optional close */}
+      {(notifications.some((n) => !n.read) || onClose) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0.5rem 0.875rem",
+            borderBottom: "1px solid hsl(var(--border))",
+          }}
+        >
+          {notifications.some((n) => !n.read) ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAll.mutate()}
+              disabled={markAll.isPending}
+              className="h-auto gap-1 p-0 text-xs text-primary"
+            >
+              <Check size={12} />
+              Mark all read
+            </Button>
+          ) : (
+            <span />
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="text-muted-foreground hover:text-foreground"
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "0.125rem", display: "flex" }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* List */}
-      <div style={{ maxHeight: "380px", overflowY: "auto" }}>
+      <div style={{ maxHeight: "300px", overflowY: "auto" }}>
         {notifications.length === 0 ? (
           <p
             className="text-muted-foreground"
             style={{
-              padding: "2rem 1rem",
+              padding: "1.5rem 1rem",
               textAlign: "center",
-              fontSize: "0.875rem",
+              fontSize: "0.8rem",
             }}
           >
             No notifications yet.
@@ -118,20 +123,18 @@ export default function NotificationDropdown({ onClose }: Props) {
               key={n.id}
               variant="ghost"
               onClick={() => handleClick(n)}
-              className="w-full justify-start items-start gap-2.5 rounded-none border-b px-4 py-3 h-auto"
+              className="w-full justify-start items-start gap-2 rounded-none border-b border-border px-3 py-2.5 h-auto"
               style={{
-                backgroundColor: n.read ? undefined : "hsl(var(--primary) / 0.05)",
-                borderColor: "hsl(var(--muted))",
+                backgroundColor: n.read ? "hsl(57 80% 96%)" : "hsl(var(--primary) / 0.05)",
               }}
             >
-              {/* Unread dot */}
               <span
                 data-testid={n.read ? undefined : "unread-dot"}
                 style={{
                   flexShrink: 0,
-                  marginTop: "0.35rem",
-                  width: "8px",
-                  height: "8px",
+                  marginTop: "0.3rem",
+                  width: "7px",
+                  height: "7px",
                   borderRadius: "50%",
                   backgroundColor: n.read ? "transparent" : "hsl(var(--primary))",
                 }}
@@ -139,15 +142,11 @@ export default function NotificationDropdown({ onClose }: Props) {
               <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                 <p
                   className="text-foreground"
-                  style={{
-                    fontSize: "0.85rem",
-                    margin: 0,
-                    lineHeight: 1.4,
-                  }}
+                  style={{ fontSize: "0.8rem", margin: 0, lineHeight: 1.4 }}
                 >
                   {notificationText(n)}
                 </p>
-                <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
+                <span className="text-muted-foreground" style={{ fontSize: "0.7rem" }}>
                   {formatTimeAgo(n.createdAt)}
                 </span>
               </div>

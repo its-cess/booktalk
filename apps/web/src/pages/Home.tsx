@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useFeed } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import PostCard from "@/components/post/PostCard";
 import PostComposer from "@/components/post/PostComposer";
 
@@ -12,7 +9,6 @@ export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const { data: posts, isLoading, isError } = useFeed();
   const navigate = useNavigate();
-  const [searchInput, setSearchInput] = useState("");
 
   if (!isAuthenticated) {
     return (
@@ -42,37 +38,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
-      {/* Search */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (searchInput.trim().length >= 2) {
-            navigate(`/search?q=${encodeURIComponent(searchInput.trim())}`);
-          }
-        }}
-        style={{ position: "relative", marginBottom: "1.75rem", width: "100%" }}
-      >
-        <Search
-          size={16}
-          className="text-muted-foreground"
-          style={{
-            position: "absolute",
-            left: "0.75rem",
-            top: "50%",
-            transform: "translateY(-50%)",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        />
-        <Input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search books or posts..."
-          style={{ paddingLeft: "2.25rem", width: "100%", boxSizing: "border-box" }}
-        />
-      </form>
-
+    <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "1rem 1.5rem" }}>
       {/* Composer */}
       <PostComposer />
 
