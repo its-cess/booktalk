@@ -13,12 +13,21 @@ vi.mock("@/lib/queries", () => ({
   useNotifications: mockUseNotifications,
 }));
 
-// Stub out the dropdown so Layout tests stay focused on the bell itself
+// Stub out the notification panel so Layout tests stay focused on the bell itself
 vi.mock("@/components/NotificationDropdown", () => ({
-  default: ({ onClose }: { onClose: () => void }) => (
+  default: ({ onClose }: { onClose?: () => void }) => (
     <div data-testid="notification-dropdown">
       <button onClick={onClose}>close</button>
     </div>
+  ),
+}));
+
+// Stub Sheet to avoid Radix portal/dialog issues in jsdom
+vi.mock("@/components/ui/sheet", () => ({
+  Sheet: ({ open, children }: { open?: boolean; children: React.ReactNode }) =>
+    open ? <>{children}</> : null,
+  SheetContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="sheet-content">{children}</div>
   ),
 }));
 
@@ -30,6 +39,8 @@ vi.mock("react-router-dom", () => ({
   ),
   Outlet: () => null,
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: "/" }),
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
 }));
 
 import Layout from "@/components/Layout";
@@ -42,21 +53,18 @@ describe("Layout header — unauthenticated", () => {
 
   it("shows the BookTalk logo linking to /", () => {
     render(<Layout />);
-    expect(screen.getByRole("link", { name: /booktalk/i })).toHaveAttribute("href", "/");
+    expect(screen.getAllByRole("link", { name: /booktalk/i })[0]).toHaveAttribute("href", "/");
   });
 
-  it("shows the Log in icon as a button that navigates to /login", async () => {
+  it("shows the Log in link that navigates to /login", () => {
     render(<Layout />);
-    await userEvent.click(screen.getByRole("button", { name: "Log in" }));
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
+    expect(screen.getByRole("link", { name: /log in/i })).toHaveAttribute("href", "/login");
   });
 
-  it("does not show authenticated icons", () => {
+  it("does not show authenticated nav items", () => {
     render(<Layout />);
-    expect(screen.queryByRole("button", { name: "Home" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Profile" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Notifications" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("notifications-toggle")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("logout-button")).not.toBeInTheDocument();
   });
 });
 
@@ -71,33 +79,31 @@ describe("Layout header — authenticated", () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 0 } });
   });
 
-  it("shows the Home icon as a button that navigates to /", async () => {
+  it("shows the Home link pointing to /", () => {
     render(<Layout />);
-    await userEvent.click(screen.getByRole("button", { name: "Home" }));
-    expect(mockNavigate).toHaveBeenCalledWith("/");
+    expect(screen.getByRole("link", { name: /home/i })).toHaveAttribute("href", "/");
   });
 
-  it("shows the Profile icon as a button that navigates to the user's profile", async () => {
+  it("shows the Profile link pointing to the user's profile", () => {
     render(<Layout />);
-    await userEvent.click(screen.getByRole("button", { name: "Profile" }));
-    expect(mockNavigate).toHaveBeenCalledWith("/alice");
+    expect(screen.getByRole("link", { name: /profile/i })).toHaveAttribute("href", "/alice");
   });
 
   it("shows the Notifications bell as a button (not a link)", () => {
     render(<Layout />);
-    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Notifications" })).not.toBeInTheDocument();
+    expect(screen.getByTestId("notifications-toggle")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /notifications/i })).not.toBeInTheDocument();
   });
 
   it("shows the Log out button and calls logout when clicked", async () => {
     render(<Layout />);
-    await userEvent.click(screen.getByRole("button", { name: "Log out" }));
+    await userEvent.click(screen.getByTestId("logout-button"));
     expect(mockLogout).toHaveBeenCalledOnce();
   });
 
-  it("does not show the Log in icon", () => {
+  it("does not show the Log in link", () => {
     render(<Layout />);
-    expect(screen.queryByRole("button", { name: "Log in" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /log in/i })).not.toBeInTheDocument();
   });
 });
 
@@ -113,9 +119,8 @@ describe("Layout notification bell", () => {
 
   it("does not show a badge when unread count is 0", () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 0 } });
-    const { container } = render(<Layout />);
-    // Badge is a span with backgroundColor #ef4444 — should not be present
-    expect(container.querySelector('span[style*="ef4444"]')).not.toBeInTheDocument();
+    render(<Layout />);
+    expect(screen.queryByTestId("notification-badge")).not.toBeInTheDocument();
   });
 
   it("shows a badge with the unread count when unreadCount > 0", () => {
@@ -132,19 +137,19 @@ describe("Layout notification bell", () => {
     expect(screen.getByTestId("notification-badge")).toHaveTextContent("9+");
   });
 
-  it("clicking the bell opens the notification dropdown", async () => {
+  it("clicking the bell opens the notification panel", async () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 0 } });
     render(<Layout />);
     expect(screen.queryByTestId("notification-dropdown")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Notifications" }));
+    await userEvent.click(screen.getByTestId("notifications-toggle"));
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
   });
 
-  it("clicking the bell again closes the dropdown", async () => {
+  it("clicking the bell again closes the notification panel", async () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 0 } });
     render(<Layout />);
-    await userEvent.click(screen.getByRole("button", { name: "Notifications" }));
-    await userEvent.click(screen.getByRole("button", { name: "Notifications" }));
+    await userEvent.click(screen.getByTestId("notifications-toggle"));
+    await userEvent.click(screen.getByTestId("notifications-toggle"));
     expect(screen.queryByTestId("notification-dropdown")).not.toBeInTheDocument();
   });
 });

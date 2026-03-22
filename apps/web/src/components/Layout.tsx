@@ -184,6 +184,7 @@ export default function Layout() {
               <>
                 {/* Notifications — inline collapsible */}
                 <button
+                  data-testid="notifications-toggle"
                   onClick={() => setNotifExpanded((v) => !v)}
                   className={navClass(notifExpanded)}
                   style={{ border: "none", cursor: "pointer", background: "none" }}
@@ -192,6 +193,7 @@ export default function Layout() {
                   <span style={{ flex: 1 }}>Notifications</span>
                   {unreadCount > 0 && (
                     <span
+                      data-testid="notification-badge"
                       className="bg-primary text-primary-foreground"
                       style={{
                         fontSize: "0.6rem",
@@ -227,6 +229,7 @@ export default function Layout() {
                 </Link>
 
                 <button
+                  data-testid="logout-button"
                   onClick={logout}
                   className={navClass(false)}
                   style={{ border: "none", cursor: "pointer", background: "none" }}
