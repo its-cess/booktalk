@@ -57,7 +57,7 @@ export default function Login() {
         boxSizing: "border-box",
       }}
     >
-      <h1 className="text-2xl font-bold" style={{ marginBottom: "1.5rem" }}>
+      <h1 className="text-2xl font-semibold" style={{ marginBottom: "1.5rem", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
         Log in
       </h1>
       <form

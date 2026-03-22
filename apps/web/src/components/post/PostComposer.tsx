@@ -9,6 +9,8 @@ import { createPostSchema, type CreatePostData, type CreatePostInput } from "@bo
 import { useCreatePost } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
@@ -101,10 +103,8 @@ export default function PostComposer() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
+      className="bg-background rounded-sm"
       style={{
-        backgroundColor: "#ffffff",
-        border: "1px solid #e5e5e5",
-        borderRadius: "0.75rem",
         padding: "1.25rem",
         display: "flex",
         flexDirection: "column",
@@ -122,11 +122,11 @@ export default function PostComposer() {
         />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
           {errors.content ? (
-            <span style={{ fontSize: "0.8rem", color: "#ef4444" }}>{errors.content.message}</span>
+            <span className="text-destructive" style={{ fontSize: "0.8rem" }}>{errors.content.message}</span>
           ) : (
             <span />
           )}
-          <span style={{ fontSize: "0.75rem", color: content.length > 900 ? "#ef4444" : "#a3a3a3" }}>
+          <span className={content.length > 900 ? "text-destructive" : "text-muted-foreground"} style={{ fontSize: "0.75rem" }}>
             {content.length}/1000
           </span>
         </div>
@@ -144,13 +144,13 @@ export default function PostComposer() {
             type="button"
             onClick={() => setGifUrl(null)}
             aria-label="Remove GIF"
+            className="rounded-full text-white"
             style={{
               position: "absolute",
               top: "4px",
               right: "4px",
               width: "20px",
               height: "20px",
-              borderRadius: "50%",
               backgroundColor: "rgba(0,0,0,0.55)",
               border: "none",
               cursor: "pointer",
@@ -158,7 +158,6 @@ export default function PostComposer() {
               alignItems: "center",
               justifyContent: "center",
               padding: 0,
-              color: "#ffffff",
             }}
           >
             <X size={11} />
@@ -189,28 +188,19 @@ export default function PostComposer() {
             <Input {...register("bookTitle")} placeholder="Book title" style={{ flex: 1 }} />
             <Input {...register("bookAuthor")} placeholder="Author" style={{ flex: 1 }} />
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
+            className="h-auto p-0 text-xs text-muted-foreground self-start"
             onClick={() => {
               picker.openSearch();
               setValue("bookTitle", "");
               setValue("bookAuthor", "");
             }}
-            style={{
-              fontSize: "0.75rem",
-              color: "#737373",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              textAlign: "left",
-              width: "fit-content",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
           >
             ← Search instead
-          </button>
+          </Button>
         </div>
       )}
 
@@ -219,7 +209,7 @@ export default function PostComposer() {
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: 0, zIndex: 50 }}
+            style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "3rem", zIndex: 50 }}
           >
             <EmojiPicker
               onEmojiClick={(data: EmojiClickData) => {
@@ -235,29 +225,10 @@ export default function PostComposer() {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setShowEmojiPicker((v) => !v)}
-          style={{
-            fontSize: "0.8rem",
-            padding: "0.3rem 0.5rem",
-            borderRadius: "0.375rem",
-            border: "1px solid #e5e5e5",
-            background: showEmojiPicker ? "#f0f0f0" : "none",
-            cursor: "pointer",
-            color: "#525252",
-            display: "flex",
-            alignItems: "center",
-          }}
-          aria-label="Insert emoji"
-        >
-          <Smile size={15} />
-        </button>
-
         {showGifPicker && (
           <div
             ref={gifPickerRef}
-            style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "2.5rem", zIndex: 50 }}
+            style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "4.5rem", zIndex: 50 }}
           >
             <GifPicker
               onSelect={(url) => {
@@ -268,64 +239,53 @@ export default function PostComposer() {
           </div>
         )}
 
-        <button
+        {/* Spoilers */}
+        <div className="flex items-center gap-1.5">
+          <Checkbox
+            id="hasSpoilers"
+            checked={hasSpoilers}
+            onCheckedChange={(checked) => setValue("hasSpoilers", checked === true)}
+          />
+          <Label htmlFor="hasSpoilers" className="text-xs font-normal cursor-pointer">
+            Spoilers?
+          </Label>
+        </div>
+
+        {/* Book */}
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
+          onClick={handleBookButtonClick}
+          aria-label={picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "Add book"}
+          className={picker.bookMode !== "none" || picker.selectedBook ? "bg-muted" : ""}
+        >
+          <BookOpen size={15} />
+        </Button>
+
+        {/* Emoji */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowEmojiPicker((v) => !v)}
+          aria-label="Insert emoji"
+          className={showEmojiPicker ? "bg-muted" : ""}
+        >
+          <Smile size={15} />
+        </Button>
+
+        {/* GIF */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => setShowGifPicker((v) => !v)}
-          style={{
-            fontSize: "0.8rem",
-            padding: "0.3rem 0.5rem",
-            borderRadius: "0.375rem",
-            border: "1px solid #e5e5e5",
-            background: showGifPicker ? "#f0f0f0" : "none",
-            cursor: "pointer",
-            color: "#525252",
-            display: "flex",
-            alignItems: "center",
-          }}
           aria-label="Insert GIF"
+          className={showGifPicker ? "bg-muted" : ""}
         >
           <ImagePlay size={15} />
-        </button>
-
-        <button
-          type="button"
-          onClick={handleBookButtonClick}
-          style={{
-            fontSize: "0.8rem",
-            padding: "0.3rem 0.625rem",
-            borderRadius: "0.375rem",
-            border: "1px solid #e5e5e5",
-            background: picker.bookMode !== "none" || picker.selectedBook ? "#f0f0f0" : "none",
-            cursor: "pointer",
-            color: "#525252",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.3rem",
-          }}
-        >
-          <BookOpen size={13} />
-          {picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "+ Book"}
-        </button>
-
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem",
-            fontSize: "0.8rem",
-            color: "#525252",
-            cursor: "pointer",
-            userSelect: "none",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={hasSpoilers}
-            onChange={(e) => setValue("hasSpoilers", e.target.checked)}
-            style={{ cursor: "pointer" }}
-          />
-          Spoilers?
-        </label>
+        </Button>
 
         <Button
           type="submit"

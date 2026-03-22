@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useSearchPosts } from "@/lib/queries";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import PostCard from "@/components/post/PostCard";
 
 export default function SearchPage() {
@@ -42,12 +43,12 @@ export default function SearchPage() {
       <form onSubmit={handleSubmit} style={{ position: "relative", marginBottom: "1.75rem" }}>
         <Search
           size={16}
+          className="text-muted-foreground"
           style={{
             position: "absolute",
             left: "0.75rem",
             top: "50%",
             transform: "translateY(-50%)",
-            color: "#a3a3a3",
             pointerEvents: "none",
             zIndex: 1,
           }}
@@ -60,35 +61,22 @@ export default function SearchPage() {
           style={{ paddingLeft: "2.25rem", paddingRight: "2.25rem", width: "100%", boxSizing: "border-box" }}
         />
         {searchInput && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setSearchInput("")}
             aria-label="Clear search"
-            style={{
-              position: "absolute",
-              right: "0.625rem",
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#a3a3a3",
-              display: "flex",
-              alignItems: "center",
-              padding: "0.125rem",
-              borderRadius: "50%",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#525252")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
           >
             <X size={15} />
-          </button>
+          </Button>
         )}
       </form>
 
       {/* Results heading */}
       {urlQuery.length >= 2 && (
-        <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", marginBottom: "1rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem" }}>
           {isFetching
             ? "Searching…"
             : `Results for "${urlQuery}"`}
@@ -97,17 +85,17 @@ export default function SearchPage() {
 
       {/* States */}
       {urlQuery.length < 2 && (
-        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>
+        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
           Type at least 2 characters to search.
         </p>
       )}
 
       {isError && (
-        <p style={{ color: "#ef4444", fontSize: "0.9rem" }}>Search failed. Please try again.</p>
+        <p className="text-destructive" style={{ fontSize: "0.9rem" }}>Search failed. Please try again.</p>
       )}
 
       {!isFetching && !isError && urlQuery.length >= 2 && posts?.length === 0 && (
-        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>
+        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
           No posts found for "{urlQuery}".
         </p>
       )}

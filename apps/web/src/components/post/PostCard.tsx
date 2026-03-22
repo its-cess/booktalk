@@ -7,14 +7,15 @@ import {
   Check,
   Heart,
   MessageCircle,
-  MessageCircleOff,
   MoreHorizontal,
-  Pencil,
-  Trash2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,10 +146,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
     <>
       <div
         onClick={handleCardClick}
+        className="bg-background rounded-sm"
         style={{
-          backgroundColor: "#ffffff",
-          border: "1px solid #e5e5e5",
-          borderRadius: "0.75rem",
           padding: "1.25rem",
           display: "flex",
           flexDirection: "column",
@@ -159,12 +158,10 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
         {/* Author row */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <div
+            className="bg-primary/10 text-primary rounded-full"
             style={{
               width: "2.25rem",
               height: "2.25rem",
-              borderRadius: "50%",
-              backgroundColor: "#e0e7ff",
-              color: "#4338ca",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -196,23 +193,24 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             }}
           >
             <span
-              style={{ fontSize: "0.875rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}
+              className="text-foreground"
+              style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}
             >
               {post.authorDisplayName}
             </span>
             <span
-              className="author-handle"
-              style={{ fontSize: "0.75rem", color: "#737373", transition: "color 0.15s" }}
+              className="author-handle text-muted-foreground"
+              style={{ fontSize: "0.75rem", transition: "color 0.15s" }}
             >
               @{post.authorUsername}
             </span>
           </Link>
 
           <span
+            className="text-muted-foreground"
             style={{
               marginLeft: "auto",
               fontSize: "0.75rem",
-              color: "#a3a3a3",
               flexShrink: 0,
             }}
           >
@@ -230,7 +228,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                     onClick={handleSave}
                     disabled={updatePost.isPending || !editContent.trim()}
                     aria-label="Save changes"
-                    style={{ color: "#16a34a", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                    className="text-primary"
+                    style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
                     <Check size={14} />
                   </Button>
@@ -240,7 +239,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                     onClick={handleDiscard}
                     disabled={updatePost.isPending}
                     aria-label="Discard changes"
-                    style={{ color: "#737373", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                    className="text-destructive"
+                    style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
                     <X size={14} />
                   </Button>
@@ -252,33 +252,27 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                       variant="ghost"
                       size="icon"
                       aria-label="Post options"
-                      style={{ color: "#a3a3a3", flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                      className="text-muted-foreground"
+                      style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                     >
                       <MoreHorizontal size={16} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      <Pencil size={14} />
                       Edit post
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleToggleComments}
                       disabled={toggleComments.isPending}
                     >
-                      {post.commentsDisabled ? (
-                        <MessageCircle size={14} />
-                      ) : (
-                        <MessageCircleOff size={14} />
-                      )}
                       {post.commentsDisabled ? "Enable comments" : "Disable comments"}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => setConfirmOpen(true)}
-                      style={{ color: "#ef4444" }}
+                      className="text-destructive"
                     >
-                      <Trash2 size={14} />
                       Delete post
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -309,38 +303,24 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                   <img
                     src={displayBook!.coverUrl!}
                     alt={displayBook!.title}
+                    className="rounded-sm"
                     style={{
                       width: "72px",
-                      borderRadius: "4px",
                       objectFit: "cover",
                       display: "block",
                       boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
                     }}
                   />
                   {isOwner && isEditing && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setBookCleared(true)}
-                      disabled={false}
                       aria-label="Remove book"
-                      style={{
-                        position: "absolute",
-                        top: "3px",
-                        right: "3px",
-                        width: "18px",
-                        height: "18px",
-                        borderRadius: "50%",
-                        backgroundColor: "rgba(0,0,0,0.55)",
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: 0,
-                        color: "#ffffff",
-                      }}
+                      className="absolute top-0.5 right-0.5 h-[18px] w-[18px] rounded-full bg-black/55 text-white"
                     >
                       <X size={10} />
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -351,15 +331,13 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                 {displayBook && !hasCover && !bookCleared && (
                   <div
                     onClick={(e) => e.stopPropagation()}
+                    className="bg-pear/70 text-foreground rounded-md"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
                       gap: "0.375rem",
                       fontSize: "0.75rem",
-                      backgroundColor: "#f5f5f5",
-                      color: "#525252",
                       padding: "0.25rem 0.375rem 0.25rem 0.625rem",
-                      borderRadius: "0.375rem",
                       width: "fit-content",
                     }}
                   >
@@ -369,24 +347,15 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                       {displayBook.author && ` · ${displayBook.author}`}
                     </span>
                     {isOwner && isEditing && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setBookCleared(true)}
                         aria-label="Remove book"
-                        style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          color: "#a3a3a3",
-                          display: "flex",
-                          alignItems: "center",
-                          padding: "0 0.125rem",
-                          flexShrink: 0,
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#525252")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+                        className="h-5 w-5 text-muted-foreground"
                       >
                         <X size={12} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -394,27 +363,12 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                 {/* Content — textarea in edit mode, text otherwise */}
                 {isEditing ? (
                   <>
-                    <textarea
+                    <Textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
                       rows={3}
                       aria-label="Edit post content"
-                      style={{
-                        width: "100%",
-                        resize: "vertical",
-                        border: "1px solid #a3a3a3",
-                        borderRadius: "0.5rem",
-                        padding: "0.625rem 0.75rem",
-                        fontSize: "0.9rem",
-                        lineHeight: 1.6,
-                        color: "#171717",
-                        outline: "none",
-                        fontFamily: "inherit",
-                        boxSizing: "border-box",
-                      }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
                       autoFocus
                     />
 
@@ -438,112 +392,67 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                         ) : bookPicker.bookMode === "manual" ? (
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
                             <div style={{ display: "flex", gap: "0.5rem" }}>
-                              <input
-                                type="text"
+                              <Input
                                 value={manualTitle}
                                 onChange={(e) => setManualTitle(e.target.value)}
                                 placeholder="Book title"
-                                style={{
-                                  flex: 1,
-                                  border: "1px solid #e5e5e5",
-                                  borderRadius: "0.375rem",
-                                  padding: "0.375rem 0.5rem",
-                                  fontSize: "0.875rem",
-                                  fontFamily: "inherit",
-                                  outline: "none",
-                                }}
-                                onFocus={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
-                                onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e5e5")}
+                                style={{ flex: 1 }}
                               />
-                              <input
-                                type="text"
+                              <Input
                                 value={manualAuthor}
                                 onChange={(e) => setManualAuthor(e.target.value)}
                                 placeholder="Author"
-                                style={{
-                                  flex: 1,
-                                  border: "1px solid #e5e5e5",
-                                  borderRadius: "0.375rem",
-                                  padding: "0.375rem 0.5rem",
-                                  fontSize: "0.875rem",
-                                  fontFamily: "inherit",
-                                  outline: "none",
-                                }}
-                                onFocus={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
-                                onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e5e5")}
+                                style={{ flex: 1 }}
                               />
                             </div>
-                            <button
+                            <Button
                               type="button"
+                              variant="link"
+                              size="sm"
+                              className="h-auto p-0 text-xs text-muted-foreground"
                               onClick={() => { bookPicker.openSearch(); setManualTitle(""); setManualAuthor(""); }}
-                              style={{
-                                fontSize: "0.75rem",
-                                color: "#737373",
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: 0,
-                                textAlign: "left",
-                                width: "fit-content",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
                             >
                               ← Search instead
-                            </button>
+                            </Button>
                           </div>
                         ) : (
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={bookPicker.openSearch}
-                            style={{
-                              fontSize: "0.8rem",
-                              padding: "0.3rem 0.625rem",
-                              borderRadius: "0.375rem",
-                              border: "1px solid #e5e5e5",
-                              background: "none",
-                              cursor: "pointer",
-                              color: "#525252",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.3rem",
-                            }}
                           >
                             <BookOpen size={13} />
                             + Book
-                          </button>
+                          </Button>
                         )}
                       </div>
                     ) : null}
 
                     {/* Spoilers toggle */}
-                    <label
+                    <div
                       onClick={(e) => e.stopPropagation()}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.375rem",
-                        fontSize: "0.8rem",
-                        color: "#525252",
-                        cursor: "pointer",
-                        userSelect: "none",
-                        width: "fit-content",
-                      }}
+                      className="flex items-center gap-1.5"
+                      style={{ width: "fit-content" }}
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        id={`spoilers-${post.id}`}
                         checked={editHasSpoilers}
-                        onChange={(e) => setEditHasSpoilers(e.target.checked)}
-                        style={{ cursor: "pointer" }}
+                        onCheckedChange={(checked) => setEditHasSpoilers(checked === true)}
                       />
-                      Spoilers?
-                    </label>
+                      <Label
+                        htmlFor={`spoilers-${post.id}`}
+                        className="text-foreground/60 cursor-pointer select-none"
+                        style={{ fontSize: "0.8rem" }}
+                      >
+                        Spoilers?
+                      </Label>
+                    </div>
                   </>
                 ) : post.hasSpoilers && !spoilerRevealed ? (
                   <div
+                    className="bg-muted/50 rounded-md"
                     style={{
-                      backgroundColor: "#f5f5f5",
-                      borderRadius: "0.5rem",
                       padding: "1rem",
                       textAlign: "center",
                       display: "flex",
@@ -552,7 +461,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                       alignItems: "center",
                     }}
                   >
-                    <p style={{ fontSize: "0.875rem", color: "#737373" }}>This post contains spoilers</p>
+                    <p className="text-muted-foreground" style={{ fontSize: "0.875rem" }}>This post contains spoilers</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -563,34 +472,27 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                   </div>
                 ) : (
                   <div>
-                    <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "#262626", margin: 0 }}>
+                    <p className="text-foreground" style={{ fontSize: "0.9rem", lineHeight: 1.6, margin: 0 }}>
                       {post.content}
                     </p>
                     {post.hasSpoilers && spoilerRevealed && (
-                      <button
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-xs text-muted-foreground mt-1"
                         onClick={(e) => { e.stopPropagation(); setSpoilerRevealed(false); }}
-                        style={{
-                          marginTop: "0.5rem",
-                          fontSize: "0.75rem",
-                          color: "#a3a3a3",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#525252")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
                       >
                         Hide spoiler
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
 
                 {/* Book title/author overlay — shown below content when cover is present */}
                 {displayBook && hasCover && (
-                  <div style={{ fontSize: "0.75rem", color: "#737373", lineHeight: 1.4 }}>
-                    <span style={{ fontWeight: 500, color: "#525252" }}>{displayBook.title}</span>
+                  <div className="text-muted-foreground" style={{ fontSize: "0.75rem", lineHeight: 1.4 }}>
+                    <span className="text-foreground/60" style={{ fontWeight: 500 }}>{displayBook.title}</span>
                     {displayBook.author && ` · ${displayBook.author}`}
                   </div>
                 )}
@@ -605,7 +507,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             <img
               src={post.gifUrl}
               alt="GIF"
-              style={{ maxWidth: "100%", borderRadius: "0.5rem", display: "block" }}
+              className="rounded-md"
+              style={{ maxWidth: "100%", display: "block" }}
             />
           </div>
         )}
@@ -621,68 +524,31 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             }}
           >
             {/* Like */}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleLike}
               disabled={toggleLike.isPending}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.3rem",
-                fontSize: "0.8rem",
-                color: post.isLiked ? "#ef4444" : "#a3a3a3",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "0.25rem 0",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                if (!post.isLiked)
-                  (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
-              }}
-              onMouseLeave={(e) => {
-                if (!post.isLiked)
-                  (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
-              }}
               aria-label={post.isLiked ? "Unlike post" : "Like post"}
+              className={`gap-1 px-2 h-7 text-xs ${post.isLiked ? "text-primary" : "text-muted-foreground"}`}
             >
-              <Heart
-                size={15}
-                fill={post.isLiked ? "#ef4444" : "none"}
-                style={{ flexShrink: 0 }}
-              />
+              <Heart size={15} fill={post.isLiked ? "currentColor" : "none"} className="flex-shrink-0" />
               <span>{post.likeCount}</span>
-            </button>
+            </Button>
 
             {/* Comment — hidden when comments are disabled */}
             {!post.commentsDisabled && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                  fontSize: "0.8rem",
-                  color: "#a3a3a3",
-                  background: "none",
-                  border: "none",
-                  cursor: isDetailView ? "default" : "pointer",
-                  padding: "0.25rem 0",
-                  transition: "color 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isDetailView)
-                    (e.currentTarget as HTMLButtonElement).style.color = "#4338ca";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isDetailView)
-                    (e.currentTarget as HTMLButtonElement).style.color = "#a3a3a3";
-                }}
                 aria-label="View comments"
+                className="gap-1 px-2 h-7 text-xs text-muted-foreground"
+                style={{ cursor: isDetailView ? "default" : "pointer" }}
               >
-                <MessageCircle size={15} style={{ flexShrink: 0 }} />
+                <MessageCircle size={15} className="flex-shrink-0" />
                 <span>{post.commentCount}</span>
-              </button>
+              </Button>
             )}
           </div>
         )}

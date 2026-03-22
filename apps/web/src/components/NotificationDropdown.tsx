@@ -6,6 +6,7 @@ import {
   useMarkNotificationRead,
 } from "@/lib/queries";
 import type { GroupedNotification } from "@booktalk/shared";
+import { Button } from "@/components/ui/button";
 
 function formatTimeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -64,10 +65,10 @@ export default function NotificationDropdown({ onClose }: Props) {
         right: 0,
         zIndex: 100,
         width: "320px",
-        backgroundColor: "#ffffff",
+        borderRadius: "4px",
         border: "1px solid #e5e5e5",
-        borderRadius: "0.75rem",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+        backgroundColor: "#ffffff",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
         overflow: "hidden",
       }}
     >
@@ -78,31 +79,23 @@ export default function NotificationDropdown({ onClose }: Props) {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0.75rem 1rem",
-          borderBottom: "1px solid #f0f0f0",
+          borderBottom: "1px solid hsl(var(--border))",
         }}
       >
-        <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#171717" }}>
+        <span className="text-foreground" style={{ fontWeight: 600, fontSize: "0.9rem" }}>
           Notifications
         </span>
         {notifications.some((n) => !n.read) && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.25rem",
-              fontSize: "0.75rem",
-              color: "#4338ca",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
+            className="h-auto gap-1 p-0 text-xs text-primary"
           >
             <Check size={13} />
             Mark all read
-          </button>
+          </Button>
         )}
       </div>
 
@@ -110,42 +103,26 @@ export default function NotificationDropdown({ onClose }: Props) {
       <div style={{ maxHeight: "380px", overflowY: "auto" }}>
         {notifications.length === 0 ? (
           <p
+            className="text-muted-foreground"
             style={{
               padding: "2rem 1rem",
               textAlign: "center",
               fontSize: "0.875rem",
-              color: "#a3a3a3",
             }}
           >
             No notifications yet.
           </p>
         ) : (
           notifications.map((n) => (
-            <button
+            <Button
               key={n.id}
+              variant="ghost"
               onClick={() => handleClick(n)}
+              className="w-full justify-start items-start gap-2.5 rounded-none border-b px-4 py-3 h-auto"
               style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "0.625rem",
-                width: "100%",
-                padding: "0.75rem 1rem",
-                background: n.read ? "none" : "#f5f3ff",
-                border: "none",
-                borderBottom: "1px solid #f5f5f5",
-                cursor: "pointer",
-                textAlign: "left",
+                backgroundColor: n.read ? undefined : "hsl(var(--primary) / 0.05)",
+                borderColor: "hsl(var(--muted))",
               }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.backgroundColor = n.read
-                  ? "#fafafa"
-                  : "#ede9fe")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.backgroundColor = n.read
-                  ? "transparent"
-                  : "#f5f3ff")
-              }
             >
               {/* Unread dot */}
               <span
@@ -156,25 +133,25 @@ export default function NotificationDropdown({ onClose }: Props) {
                   width: "8px",
                   height: "8px",
                   borderRadius: "50%",
-                  backgroundColor: n.read ? "transparent" : "#4338ca",
+                  backgroundColor: n.read ? "transparent" : "hsl(var(--primary))",
                 }}
               />
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                 <p
+                  className="text-foreground"
                   style={{
                     fontSize: "0.85rem",
-                    color: "#171717",
                     margin: 0,
                     lineHeight: 1.4,
                   }}
                 >
                   {notificationText(n)}
                 </p>
-                <span style={{ fontSize: "0.72rem", color: "#a3a3a3" }}>
+                <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
                   {formatTimeAgo(n.createdAt)}
                 </span>
               </div>
-            </button>
+            </Button>
           ))
         )}
       </div>

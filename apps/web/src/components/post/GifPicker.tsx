@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useGifSearch } from "@/lib/queries";
+import { Input } from "@/components/ui/input";
 
 interface GifPickerProps {
   onSelect: (gifUrl: string) => void;
@@ -18,10 +19,8 @@ export default function GifPicker({ onSelect }: GifPickerProps) {
 
   return (
     <div
+      className="bg-background border rounded-sm"
       style={{
-        backgroundColor: "#ffffff",
-        border: "1px solid #e5e5e5",
-        borderRadius: "0.5rem",
         width: 300,
         overflow: "hidden",
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
@@ -29,41 +28,28 @@ export default function GifPicker({ onSelect }: GifPickerProps) {
     >
       {/* Search input */}
       <div style={{ padding: "0.5rem" }}>
-        <input
-          type="text"
+        <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search GIFs..."
           autoFocus
-          style={{
-            width: "100%",
-            border: "1px solid #e5e5e5",
-            borderRadius: "0.375rem",
-            padding: "0.375rem 0.5rem",
-            fontSize: "0.875rem",
-            outline: "none",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-          }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e5e5")}
         />
       </div>
 
       {/* Results grid */}
       <div style={{ height: 240, overflowY: "auto", padding: "0 0.5rem" }}>
         {isFetching && (
-          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#a3a3a3", padding: "1rem 0" }}>
+          <p className="text-muted-foreground" style={{ textAlign: "center", fontSize: "0.8rem", padding: "1rem 0" }}>
             Loading…
           </p>
         )}
         {!isFetching && !debouncedQuery && (
-          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#a3a3a3", padding: "1rem 0" }}>
+          <p className="text-muted-foreground" style={{ textAlign: "center", fontSize: "0.8rem", padding: "1rem 0" }}>
             Search for GIFs above
           </p>
         )}
         {!isFetching && debouncedQuery && gifs && gifs.length === 0 && (
-          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#a3a3a3", padding: "1rem 0" }}>
+          <p className="text-muted-foreground" style={{ textAlign: "center", fontSize: "0.8rem", padding: "1rem 0" }}>
             No GIFs found.
           </p>
         )}
@@ -87,7 +73,7 @@ export default function GifPicker({ onSelect }: GifPickerProps) {
                   cursor: "pointer",
                   borderRadius: "0.25rem",
                   overflow: "hidden",
-                  background: "#f5f5f5",
+                  background: "hsl(var(--muted) / 0.5)",
                   aspectRatio: "4/3",
                   display: "block",
                   width: "100%",
@@ -112,11 +98,11 @@ export default function GifPicker({ onSelect }: GifPickerProps) {
       <div
         style={{
           padding: "0.375rem 0.5rem",
-          borderTop: "1px solid #f0f0f0",
+          borderTop: "1px solid hsl(var(--border))",
           textAlign: "right",
         }}
       >
-        <span style={{ fontSize: "0.65rem", color: "#a3a3a3", letterSpacing: "0.02em" }}>
+        <span className="text-muted-foreground" style={{ fontSize: "0.65rem", letterSpacing: "0.02em" }}>
           Powered by GIPHY
         </span>
       </div>

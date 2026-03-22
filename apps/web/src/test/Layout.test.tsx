@@ -22,11 +22,14 @@ vi.mock("@/components/NotificationDropdown", () => ({
   ),
 }));
 
+const mockNavigate = vi.hoisted(() => vi.fn());
+
 vi.mock("react-router-dom", () => ({
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>
   ),
   Outlet: () => null,
+  useNavigate: () => mockNavigate,
 }));
 
 import Layout from "@/components/Layout";
@@ -42,15 +45,16 @@ describe("Layout header — unauthenticated", () => {
     expect(screen.getByRole("link", { name: /booktalk/i })).toHaveAttribute("href", "/");
   });
 
-  it("shows the Log in icon linking to /login", () => {
+  it("shows the Log in icon as a button that navigates to /login", async () => {
     render(<Layout />);
-    expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
+    await userEvent.click(screen.getByRole("button", { name: "Log in" }));
+    expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 
   it("does not show authenticated icons", () => {
     render(<Layout />);
-    expect(screen.queryByRole("link", { name: "Home" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Profile" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Home" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Profile" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Notifications" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
   });
@@ -67,14 +71,16 @@ describe("Layout header — authenticated", () => {
     mockUseNotifications.mockReturnValue({ data: { notifications: [], unreadCount: 0 } });
   });
 
-  it("shows the Home icon linking to /", () => {
+  it("shows the Home icon as a button that navigates to /", async () => {
     render(<Layout />);
-    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
+    await userEvent.click(screen.getByRole("button", { name: "Home" }));
+    expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
-  it("shows the Profile icon linking to the user's profile", () => {
+  it("shows the Profile icon as a button that navigates to the user's profile", async () => {
     render(<Layout />);
-    expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute("href", "/alice");
+    await userEvent.click(screen.getByRole("button", { name: "Profile" }));
+    expect(mockNavigate).toHaveBeenCalledWith("/alice");
   });
 
   it("shows the Notifications bell as a button (not a link)", () => {
@@ -91,7 +97,7 @@ describe("Layout header — authenticated", () => {
 
   it("does not show the Log in icon", () => {
     render(<Layout />);
-    expect(screen.queryByRole("link", { name: "Log in" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Log in" })).not.toBeInTheDocument();
   });
 });
 

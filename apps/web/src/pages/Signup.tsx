@@ -59,7 +59,7 @@ export default function Signup() {
         boxSizing: "border-box",
       }}
     >
-      <h1 className="text-2xl font-bold" style={{ marginBottom: "1.5rem" }}>
+      <h1 className="text-2xl font-semibold" style={{ marginBottom: "1.5rem", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
         Create an account
       </h1>
       <form

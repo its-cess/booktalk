@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
-import { BookOpen, Search, X } from "lucide-react";
+import { BookOpen, X } from "lucide-react";
 import type { BookResult } from "@booktalk/shared";
 import { useBookSearch } from "@/lib/queries";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function SelectedBookChip({
   book,
@@ -12,14 +14,12 @@ export function SelectedBookChip({
 }) {
   return (
     <div
+      className="bg-accent border-0 rounded-md"
       style={{
         display: "flex",
         alignItems: "center",
         gap: "0.5rem",
         padding: "0.5rem 0.625rem",
-        backgroundColor: "#f5f3ff",
-        border: "1px solid #e0d9ff",
-        borderRadius: "0.5rem",
       }}
     >
       {book.coverUrl ? (
@@ -30,10 +30,10 @@ export function SelectedBookChip({
         />
       ) : (
         <div
+          className="bg-pear/20"
           style={{
             width: "2rem",
             height: "3rem",
-            backgroundColor: "#e0d9ff",
             borderRadius: "2px",
             display: "flex",
             alignItems: "center",
@@ -41,33 +41,25 @@ export function SelectedBookChip({
             flexShrink: 0,
           }}
         >
-          <BookOpen size={14} style={{ color: "#7c3aed" }} />
+          <BookOpen size={14} className="text-foreground" />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#171717", lineHeight: 1.3 }}>
+        <div className="text-foreground" style={{ fontSize: "0.85rem", fontWeight: 600, lineHeight: 1.3 }}>
           {book.title}
         </div>
-        <div style={{ fontSize: "0.75rem", color: "#737373" }}>{book.author}</div>
+        <div className="text-foreground/70" style={{ fontSize: "0.75rem" }}>{book.author}</div>
       </div>
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={onRemove}
         aria-label="Remove book"
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "#a3a3a3",
-          display: "flex",
-          padding: "0.25rem",
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "#525252")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+        className="h-7 w-7 text-muted-foreground hover:text-foreground flex-shrink-0"
       >
         <X size={14} />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -93,71 +85,35 @@ export function BookSearchPanel({
   }, []);
 
   return (
-    <div style={{ border: "1px solid #e5e5e5", borderRadius: "0.5rem", overflow: "hidden" }}>
+    <div className="border border-border rounded-md" style={{ overflow: "hidden" }}>
       {/* Search input */}
-      <div style={{ position: "relative" }}>
-        <Search
-          size={14}
-          style={{
-            position: "absolute",
-            left: "0.75rem",
-            top: "50%",
-            transform: "translateY(-50%)",
-            color: "#a3a3a3",
-            pointerEvents: "none",
-          }}
-        />
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Search for a book..."
-          style={{
-            width: "100%",
-            padding: "0.625rem 0.75rem 0.625rem 2.25rem",
-            border: "none",
-            borderBottom: "1px solid #e5e5e5",
-            outline: "none",
-            fontSize: "0.875rem",
-            color: "#171717",
-            fontFamily: "inherit",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
+      <Input
+        ref={inputRef}
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+        placeholder="Search for a book..."
+        className="rounded-none border-0 border-b border-border"
+      />
 
       {/* Results */}
       <div style={{ maxHeight: "220px", overflowY: "auto" }}>
         {isFetching && debouncedQuery.length >= 2 && (
-          <div style={{ padding: "0.75rem 1rem", fontSize: "0.8rem", color: "#a3a3a3" }}>
+          <div className="text-muted-foreground" style={{ padding: "0.75rem 1rem", fontSize: "0.8rem" }}>
             Searching…
           </div>
         )}
         {!isFetching && debouncedQuery.length >= 2 && results?.length === 0 && (
-          <div style={{ padding: "0.75rem 1rem", fontSize: "0.8rem", color: "#a3a3a3" }}>
+          <div className="text-muted-foreground" style={{ padding: "0.75rem 1rem", fontSize: "0.8rem" }}>
             No results found.
           </div>
         )}
         {results?.map((book) => (
-          <button
+          <Button
             key={book.id}
             type="button"
+            variant="ghost"
             onClick={() => onSelect(book)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.625rem",
-              padding: "0.5rem 0.75rem",
-              border: "none",
-              borderBottom: "1px solid #f5f5f5",
-              background: "none",
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            className="w-full justify-start gap-2.5 rounded-none border-b border-border px-3 py-2 h-auto"
           >
             {book.coverUrl ? (
               <img
@@ -167,10 +123,10 @@ export function BookSearchPanel({
               />
             ) : (
               <div
+                className="bg-muted"
                 style={{
                   width: "1.75rem",
                   height: "2.625rem",
-                  backgroundColor: "#f0f0f0",
                   borderRadius: "2px",
                   display: "flex",
                   alignItems: "center",
@@ -178,38 +134,31 @@ export function BookSearchPanel({
                   flexShrink: 0,
                 }}
               >
-                <BookOpen size={12} style={{ color: "#a3a3a3" }} />
+                <BookOpen size={12} className="text-muted-foreground" />
               </div>
             )}
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: "0.85rem", fontWeight: 500, color: "#171717", lineHeight: 1.3 }}>
+            <div style={{ minWidth: 0, textAlign: "left" }}>
+              <div className="text-foreground" style={{ fontSize: "0.85rem", fontWeight: 500, lineHeight: 1.3 }}>
                 {book.title}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#737373" }}>{book.author}</div>
+              <div className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>{book.author}</div>
             </div>
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Footer */}
       {onSwitchToManual && (
-        <div style={{ padding: "0.5rem 0.75rem", borderTop: "1px solid #f5f5f5" }}>
-          <button
+        <div style={{ padding: "0.375rem 0.5rem" }}>
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={onSwitchToManual}
-            style={{
-              fontSize: "0.75rem",
-              color: "#737373",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
+            className="h-auto p-0 text-xs text-muted-foreground"
           >
             Can't find it? Add manually instead
-          </button>
+          </Button>
         </div>
       )}
     </div>
