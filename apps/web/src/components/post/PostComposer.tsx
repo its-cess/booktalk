@@ -103,7 +103,7 @@ export default function PostComposer() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-background border rounded-sm"
+      className="bg-background border border-border rounded-sm"
       style={{
         padding: "1.25rem",
         display: "flex",
@@ -258,7 +258,7 @@ export default function PostComposer() {
           size="icon"
           onClick={handleBookButtonClick}
           aria-label={picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "Add book"}
-          className={`h-8 w-8${picker.bookMode !== "none" || picker.selectedBook ? " bg-muted" : ""}`}
+          className={picker.bookMode !== "none" || picker.selectedBook ? "bg-muted" : ""}
         >
           <BookOpen size={15} />
         </Button>
@@ -270,7 +270,7 @@ export default function PostComposer() {
           size="icon"
           onClick={() => setShowEmojiPicker((v) => !v)}
           aria-label="Insert emoji"
-          className={`h-8 w-8${showEmojiPicker ? " bg-muted" : ""}`}
+          className={showEmojiPicker ? "bg-muted" : ""}
         >
           <Smile size={15} />
         </Button>
@@ -282,7 +282,7 @@ export default function PostComposer() {
           size="icon"
           onClick={() => setShowGifPicker((v) => !v)}
           aria-label="Insert GIF"
-          className={`h-8 w-8${showGifPicker ? " bg-muted" : ""}`}
+          className={showGifPicker ? "bg-muted" : ""}
         >
           <ImagePlay size={15} />
         </Button>

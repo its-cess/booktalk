@@ -69,7 +69,7 @@ export default function Profile() {
     <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
       {/* Profile header */}
       <div
-        className="bg-background border rounded-lg"
+        className="bg-background border border-border rounded-sm"
         style={{
           padding: "1.5rem",
           marginBottom: "1.5rem",
@@ -187,8 +187,8 @@ export default function Profile() {
       </div>
 
       {/* Posts */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "1rem" }}>
           Posts
         </h2>
         {profile.posts.length === 0 ? (
@@ -294,7 +294,7 @@ function InlineEdit({
           onClick={onSave}
           disabled={isPending || !value.trim()}
           aria-label="Save changes"
-          className="text-green-600"
+          className="text-primary"
           style={{ width: "1.75rem", height: "1.75rem" }}
         >
           <Check size={14} />
@@ -305,7 +305,7 @@ function InlineEdit({
           onClick={onCancel}
           disabled={isPending}
           aria-label="Discard changes"
-          className="text-muted-foreground"
+          className="text-destructive"
           style={{ width: "1.75rem", height: "1.75rem" }}
         >
           <X size={14} />

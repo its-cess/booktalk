@@ -95,7 +95,7 @@ export default function Home() {
         </p>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {posts?.map((post) => (
           <PostCard
             key={post.id}

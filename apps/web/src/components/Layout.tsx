@@ -87,7 +87,7 @@ export default function Layout() {
                   {unreadCount > 0 && (
                     <span
                       data-testid="notification-badge"
-                      className="bg-destructive text-destructive-foreground"
+                      className="bg-primary text-primary-foreground"
                       style={{
                         position: "absolute",
                         top: "4px",

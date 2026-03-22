@@ -73,7 +73,7 @@ export default function CommentCard({
   return (
     <>
       <div
-        className="bg-muted/30 border rounded-lg"
+        className="bg-muted/30 border border-[hsl(32,25%,82%)] rounded-sm"
         style={{
           display: "flex",
           gap: "0.625rem",
@@ -182,7 +182,7 @@ export default function CommentCard({
                   onClick={handleSave}
                   disabled={updateComment.isPending || !editContent.trim()}
                   aria-label="Save comment"
-                  className="text-green-600"
+                  className="text-primary"
                   style={{ width: "1.5rem", height: "1.5rem", flexShrink: 0 }}
                 >
                   <Check size={13} />
@@ -193,7 +193,7 @@ export default function CommentCard({
                   onClick={handleDiscard}
                   disabled={updateComment.isPending}
                   aria-label="Discard changes"
-                  className="text-muted-foreground"
+                  className="text-destructive"
                   style={{ width: "1.5rem", height: "1.5rem", flexShrink: 0 }}
                 >
                   <X size={13} />

@@ -14,7 +14,7 @@ export function SelectedBookChip({
 }) {
   return (
     <div
-      className="bg-primary/5 border rounded-md"
+      className="bg-accent border-0 rounded-md"
       style={{
         display: "flex",
         alignItems: "center",
@@ -30,7 +30,7 @@ export function SelectedBookChip({
         />
       ) : (
         <div
-          className="bg-primary/10"
+          className="bg-pear/20"
           style={{
             width: "2rem",
             height: "3rem",
@@ -41,14 +41,14 @@ export function SelectedBookChip({
             flexShrink: 0,
           }}
         >
-          <BookOpen size={14} className="text-primary" />
+          <BookOpen size={14} className="text-foreground" />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="text-foreground" style={{ fontSize: "0.85rem", fontWeight: 600, lineHeight: 1.3 }}>
           {book.title}
         </div>
-        <div className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>{book.author}</div>
+        <div className="text-foreground/70" style={{ fontSize: "0.75rem" }}>{book.author}</div>
       </div>
       <Button
         type="button"

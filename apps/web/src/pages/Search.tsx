@@ -58,6 +58,7 @@ export default function SearchPage() {
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search books or posts..."
           autoFocus
+          className="rounded-full"
           style={{ paddingLeft: "2.25rem", paddingRight: "2.25rem", width: "100%", boxSizing: "border-box" }}
         />
         {searchInput && (

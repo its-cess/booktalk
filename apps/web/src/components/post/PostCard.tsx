@@ -146,7 +146,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
     <>
       <div
         onClick={handleCardClick}
-        className="bg-background border rounded-sm"
+        className="bg-background border border-border rounded-sm"
         style={{
           padding: "1.25rem",
           display: "flex",
@@ -228,7 +228,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                     onClick={handleSave}
                     disabled={updatePost.isPending || !editContent.trim()}
                     aria-label="Save changes"
-                    className="text-green-600"
+                    className="text-primary"
                     style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
                     <Check size={14} />
@@ -239,7 +239,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                     onClick={handleDiscard}
                     disabled={updatePost.isPending}
                     aria-label="Discard changes"
-                    className="text-muted-foreground"
+                    className="text-destructive"
                     style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
                     <X size={14} />
@@ -331,7 +331,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                 {displayBook && !hasCover && !bookCleared && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-muted/50 text-foreground/60 rounded-md"
+                    className="bg-accent text-foreground rounded-md"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -530,7 +530,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
               onClick={handleLike}
               disabled={toggleLike.isPending}
               aria-label={post.isLiked ? "Unlike post" : "Like post"}
-              className={`gap-1 px-2 h-7 text-xs ${post.isLiked ? "text-destructive" : "text-muted-foreground"}`}
+              className={`gap-1 px-2 h-7 text-xs ${post.isLiked ? "text-primary" : "text-muted-foreground"}`}
             >
               <Heart size={15} fill={post.isLiked ? "currentColor" : "none"} className="flex-shrink-0" />
               <span>{post.likeCount}</span>

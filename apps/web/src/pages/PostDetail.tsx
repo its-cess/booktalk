@@ -157,7 +157,7 @@ export default function PostDetail() {
         {/* Comment input */}
         {isAuthenticated && !post.commentsDisabled && (
           <div
-            className="bg-background border rounded-lg"
+            className="bg-background border border-border rounded-sm"
             style={{
               padding: "0.875rem 1rem",
               marginBottom: "1.25rem",
@@ -257,7 +257,7 @@ export default function PostDetail() {
                   size="icon"
                   onClick={() => setShowEmojiPicker((v) => !v)}
                   aria-label="Insert emoji"
-                  className={`h-8 w-8${showEmojiPicker ? " bg-muted" : ""}`}
+                  className={showEmojiPicker ? "bg-muted" : ""}
                 >
                   <Smile size={15} />
                 </Button>
@@ -267,7 +267,7 @@ export default function PostDetail() {
                   size="icon"
                   onClick={() => setShowGifPicker((v) => !v)}
                   aria-label="Insert GIF"
-                  className={`h-8 w-8${showGifPicker ? " bg-muted" : ""}`}
+                  className={showGifPicker ? "bg-muted" : ""}
                 >
                   <ImagePlay size={15} />
                 </Button>
