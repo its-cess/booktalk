@@ -34,7 +34,7 @@ export default function Layout() {
 
       {/* Header */}
       <header
-        className="bg-background border-b"
+        className="bg-background"
         style={{
           position: "sticky",
           top: 0,

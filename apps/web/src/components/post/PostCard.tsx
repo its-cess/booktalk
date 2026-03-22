@@ -331,7 +331,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
                 {displayBook && !hasCover && !bookCleared && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-accent text-foreground rounded-md"
+                    className="bg-pear/70 text-foreground rounded-md"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",

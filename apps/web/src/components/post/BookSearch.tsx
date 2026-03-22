@@ -85,14 +85,14 @@ export function BookSearchPanel({
   }, []);
 
   return (
-    <div className="border rounded-md" style={{ overflow: "hidden" }}>
+    <div className="border border-border rounded-md" style={{ overflow: "hidden" }}>
       {/* Search input */}
       <Input
         ref={inputRef}
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         placeholder="Search for a book..."
-        className="rounded-none border-0 border-b"
+        className="rounded-none border-0 border-b border-border"
       />
 
       {/* Results */}
@@ -113,8 +113,7 @@ export function BookSearchPanel({
             type="button"
             variant="ghost"
             onClick={() => onSelect(book)}
-            className="w-full justify-start gap-2.5 rounded-none border-b px-3 py-2 h-auto"
-            style={{ borderColor: "hsl(var(--muted))" }}
+            className="w-full justify-start gap-2.5 rounded-none border-b border-border px-3 py-2 h-auto"
           >
             {book.coverUrl ? (
               <img
@@ -150,7 +149,7 @@ export function BookSearchPanel({
 
       {/* Footer */}
       {onSwitchToManual && (
-        <div className="border-t" style={{ padding: "0.375rem 0.5rem" }}>
+        <div style={{ padding: "0.375rem 0.5rem" }}>
           <Button
             type="button"
             variant="link"

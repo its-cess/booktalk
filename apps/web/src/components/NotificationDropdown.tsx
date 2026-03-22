@@ -59,7 +59,7 @@ export default function NotificationDropdown({ onClose }: Props) {
 
   return (
     <div
-      className="bg-background border rounded-lg"
+      className="bg-background border border-border rounded-lg"
       style={{
         position: "absolute",
         top: "calc(100% + 0.5rem)",

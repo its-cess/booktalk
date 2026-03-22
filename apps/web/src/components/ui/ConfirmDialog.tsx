@@ -50,7 +50,7 @@ export default function ConfirmDialog({
           boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
         }}
       >
-        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", margin: 0 }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", margin: 0, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
           {title}
         </h3>
         <p style={{ fontSize: "0.875rem", color: "#737373", margin: 0, lineHeight: 1.5 }}>

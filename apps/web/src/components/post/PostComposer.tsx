@@ -192,7 +192,7 @@ export default function PostComposer() {
             type="button"
             variant="link"
             size="sm"
-            className="h-auto p-0 text-xs text-muted-foreground"
+            className="h-auto p-0 text-xs text-muted-foreground self-start"
             onClick={() => {
               picker.openSearch();
               setValue("bookTitle", "");
