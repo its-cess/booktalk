@@ -19,7 +19,7 @@ export default function FollowList() {
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", color: "#737373" }}>
+      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
         Loading…
       </div>
     );
@@ -27,7 +27,7 @@ export default function FollowList() {
 
   if (isError) {
     return (
-      <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", color: "#ef4444" }}>
+      <div className="text-destructive" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
         Failed to load {title.toLowerCase()}.
       </div>
     );
@@ -38,19 +38,20 @@ export default function FollowList() {
       <div style={{ marginBottom: "1.25rem" }}>
         <Link
           to={`/${username}`}
-          style={{ fontSize: "0.875rem", color: "#737373", textDecoration: "none" }}
+          className="text-muted-foreground"
+          style={{ fontSize: "0.875rem", textDecoration: "none" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "")}
         >
           ← @{username}
         </Link>
-        <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#171717", margin: "0.5rem 0 0" }}>
+        <h1 className="text-foreground" style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0.5rem 0 0" }}>
           {title}
         </h1>
       </div>
 
       {users?.length === 0 ? (
-        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>
+        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
           {type === "followers" ? "No followers yet." : "Not following anyone yet."}
         </p>
       ) : (
@@ -81,10 +82,8 @@ function UserRow({ user, showUnfollow }: { user: UserSummary; showUnfollow: bool
 
   return (
     <div
+      className="bg-background border rounded-lg"
       style={{
-        backgroundColor: "#ffffff",
-        border: "1px solid #e5e5e5",
-        borderRadius: "0.75rem",
         padding: "0.875rem 1rem",
         display: "flex",
         alignItems: "center",
@@ -94,12 +93,10 @@ function UserRow({ user, showUnfollow }: { user: UserSummary; showUnfollow: bool
       {/* Avatar */}
       <Link to={`/${user.username}`} style={{ textDecoration: "none", flexShrink: 0 }}>
         <div
+          className="bg-primary/10 text-primary rounded-full"
           style={{
             width: "2.5rem",
             height: "2.5rem",
-            borderRadius: "50%",
-            backgroundColor: "#e0e7ff",
-            color: "#4338ca",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -116,10 +113,10 @@ function UserRow({ user, showUnfollow }: { user: UserSummary; showUnfollow: bool
         to={`/${user.username}`}
         style={{ textDecoration: "none", flex: 1, minWidth: 0 }}
       >
-        <div style={{ fontWeight: 600, color: "#171717", fontSize: "0.9rem", lineHeight: 1.3 }}>
+        <div className="text-foreground" style={{ fontWeight: 600, fontSize: "0.9rem", lineHeight: 1.3 }}>
           {user.displayName}
         </div>
-        <div style={{ color: "#737373", fontSize: "0.8rem" }}>@{user.username}</div>
+        <div className="text-muted-foreground" style={{ fontSize: "0.8rem" }}>@{user.username}</div>
       </Link>
 
       {/* Unfollow button */}

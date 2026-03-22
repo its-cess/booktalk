@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile, useToggleFollow } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>();
@@ -49,7 +51,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", color: "#737373" }}>
+      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
         Loading…
       </div>
     );
@@ -57,7 +59,7 @@ export default function Profile() {
 
   if (isError || !profile) {
     return (
-      <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", color: "#ef4444" }}>
+      <div className="text-destructive" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
         User not found.
       </div>
     );
@@ -67,10 +69,8 @@ export default function Profile() {
     <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
       {/* Profile header */}
       <div
+        className="bg-background border rounded-lg"
         style={{
-          backgroundColor: "#ffffff",
-          border: "1px solid #e5e5e5",
-          borderRadius: "0.75rem",
           padding: "1.5rem",
           marginBottom: "1.5rem",
           display: "flex",
@@ -82,12 +82,10 @@ export default function Profile() {
         <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
           {/* Avatar */}
           <div
+            className="bg-primary/10 text-primary rounded-full"
             style={{
               width: "4rem",
               height: "4rem",
-              borderRadius: "50%",
-              backgroundColor: "#e0e7ff",
-              color: "#4338ca",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -114,7 +112,7 @@ export default function Profile() {
                 />
               ) : (
                 <>
-                  <span style={{ fontSize: "1.125rem", fontWeight: 700, color: "#171717" }}>
+                  <span className="text-foreground" style={{ fontSize: "1.125rem", fontWeight: 700 }}>
                     {profile.displayName}
                   </span>
                   {isOwn && (
@@ -124,7 +122,7 @@ export default function Profile() {
               )}
             </div>
 
-            <span style={{ fontSize: "0.875rem", color: "#737373" }}>@{profile.username}</span>
+            <span className="text-muted-foreground" style={{ fontSize: "0.875rem" }}>@{profile.username}</span>
 
             {/* Follower / following counts */}
             <div style={{ display: "flex", gap: "1.25rem", marginTop: "0.75rem" }}>
@@ -173,7 +171,7 @@ export default function Profile() {
               <p
                 style={{
                   fontSize: "0.9rem",
-                  color: profile.bio ? "#262626" : "#a3a3a3",
+                  color: profile.bio ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
                   lineHeight: 1.6,
                   margin: 0,
                 }}
@@ -190,11 +188,11 @@ export default function Profile() {
 
       {/* Posts */}
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", margin: 0 }}>
+        <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
           Posts
         </h2>
         {profile.posts.length === 0 ? (
-          <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>No posts yet.</p>
+          <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>No posts yet.</p>
         ) : (
           profile.posts.map((post) => (
             <PostCard
@@ -227,35 +225,27 @@ export default function Profile() {
 function Stat({ count, label }: { count: number; label: string }) {
   return (
     <span
-      style={{ fontSize: "0.875rem", color: "#525252" }}
+      className="text-foreground/60"
+      style={{ fontSize: "0.875rem" }}
       onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "#525252")}
+      onMouseLeave={(e) => (e.currentTarget.style.color = "")}
     >
-      <strong style={{ color: "#171717" }}>{count}</strong> {label}
+      <strong className="text-foreground">{count}</strong> {label}
     </span>
   );
 }
 
 function EditIconBtn({ onClick }: { onClick: () => void }) {
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={onClick}
       aria-label="Edit"
-      style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "#a3a3a3",
-        padding: "0.125rem",
-        display: "flex",
-        alignItems: "center",
-        flexShrink: 0,
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "#a3a3a3")}
+      className="h-6 w-6 text-muted-foreground flex-shrink-0"
     >
       <Pencil size={13} />
-    </button>
+    </Button>
   );
 }
 
@@ -276,40 +266,25 @@ function InlineEdit({
   multiline?: boolean;
   inputStyle?: React.CSSProperties;
 }) {
-  const baseInputStyle: React.CSSProperties = {
-    flex: 1,
-    border: "1px solid #a3a3a3",
-    borderRadius: "0.375rem",
-    padding: "0.25rem 0.5rem",
-    fontSize: "0.9rem",
-    fontFamily: "inherit",
-    color: "#171717",
-    outline: "none",
-    resize: "vertical",
-    ...inputStyle,
-  };
-
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: "0.375rem", width: "100%" }}>
       {multiline ? (
-        <textarea
+        <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
           autoFocus
-          style={baseInputStyle}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
+          className="flex-1 text-sm"
+          style={inputStyle}
         />
       ) : (
-        <input
+        <Input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoFocus
-          style={baseInputStyle}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#4338ca")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#a3a3a3")}
+          className="flex-1"
+          style={inputStyle}
         />
       )}
       <div style={{ display: "flex", gap: "0.25rem", paddingTop: "0.25rem" }}>
@@ -319,7 +294,8 @@ function InlineEdit({
           onClick={onSave}
           disabled={isPending || !value.trim()}
           aria-label="Save changes"
-          style={{ width: "1.75rem", height: "1.75rem", color: "#16a34a" }}
+          className="text-green-600"
+          style={{ width: "1.75rem", height: "1.75rem" }}
         >
           <Check size={14} />
         </Button>
@@ -329,7 +305,8 @@ function InlineEdit({
           onClick={onCancel}
           disabled={isPending}
           aria-label="Discard changes"
-          style={{ width: "1.75rem", height: "1.75rem", color: "#737373" }}
+          className="text-muted-foreground"
+          style={{ width: "1.75rem", height: "1.75rem" }}
         >
           <X size={14} />
         </Button>

@@ -53,7 +53,7 @@ export default function PostDetail() {
 
   if (postLoading) {
     return (
-      <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem", color: "#a3a3a3" }}>
+      <div className="text-muted-foreground" style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
         Loading…
       </div>
     );
@@ -61,7 +61,7 @@ export default function PostDetail() {
 
   if (postError || !post) {
     return (
-      <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem", color: "#ef4444" }}>
+      <div className="text-destructive" style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
         Post not found.
       </div>
     );
@@ -90,26 +90,15 @@ export default function PostDetail() {
   return (
     <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
       {/* Back */}
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => navigate(-1)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.375rem",
-          fontSize: "0.875rem",
-          color: "#737373",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          marginBottom: "1.25rem",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "#737373")}
+        className="mb-5 gap-1.5 px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
       >
         <ArrowLeft size={15} />
         Back
-      </button>
+      </Button>
 
       {/* Post */}
       <PostCard
@@ -136,10 +125,11 @@ export default function PostDetail() {
       {/* Comments section */}
       <div style={{ marginTop: "1.75rem" }}>
         <h2
+          className="text-foreground"
           style={{
             fontSize: "0.9rem",
-            fontWeight: 600,
-            color: "#171717",
+            fontWeight: 700,
+            fontFamily: '"Poppins", system-ui, sans-serif',
             marginBottom: "1rem",
           }}
         >
@@ -149,15 +139,12 @@ export default function PostDetail() {
         {/* Comments disabled notice */}
         {post.commentsDisabled && (
           <div
+            className="text-muted-foreground bg-muted/30 border rounded-lg"
             style={{
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
               fontSize: "0.875rem",
-              color: "#a3a3a3",
-              backgroundColor: "#fafafa",
-              border: "1px solid #f0f0f0",
-              borderRadius: "0.625rem",
               padding: "0.875rem 1rem",
               marginBottom: "1rem",
             }}
@@ -170,10 +157,8 @@ export default function PostDetail() {
         {/* Comment input */}
         {isAuthenticated && !post.commentsDisabled && (
           <div
+            className="bg-background border rounded-lg"
             style={{
-              backgroundColor: "#ffffff",
-              border: "1px solid #e5e5e5",
-              borderRadius: "0.625rem",
               padding: "0.875rem 1rem",
               marginBottom: "1.25rem",
               display: "flex",
@@ -206,13 +191,13 @@ export default function PostDetail() {
                   type="button"
                   onClick={() => setCommentGifUrl(null)}
                   aria-label="Remove GIF"
+                  className="rounded-full text-white"
                   style={{
                     position: "absolute",
                     top: "4px",
                     right: "4px",
-                    width: "18px",
-                    height: "18px",
-                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
                     backgroundColor: "rgba(0,0,0,0.55)",
                     border: "none",
                     cursor: "pointer",
@@ -220,10 +205,9 @@ export default function PostDetail() {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                    color: "#ffffff",
                   }}
                 >
-                  <X size={10} />
+                  <X size={11} />
                 </button>
               </div>
             )}
@@ -267,41 +251,27 @@ export default function PostDetail() {
                 </div>
               )}
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowEmojiPicker((v) => !v)}
-                  style={{
-                    padding: "0.25rem 0.375rem",
-                    borderRadius: "0.375rem",
-                    border: "1px solid #e5e5e5",
-                    background: showEmojiPicker ? "#f0f0f0" : "none",
-                    cursor: "pointer",
-                    color: "#525252",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
                   aria-label="Insert emoji"
+                  className={`h-8 w-8${showEmojiPicker ? " bg-muted" : ""}`}
                 >
                   <Smile size={15} />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowGifPicker((v) => !v)}
-                  style={{
-                    padding: "0.25rem 0.375rem",
-                    borderRadius: "0.375rem",
-                    border: "1px solid #e5e5e5",
-                    background: showGifPicker ? "#f0f0f0" : "none",
-                    cursor: "pointer",
-                    color: "#525252",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
                   aria-label="Insert GIF"
+                  className={`h-8 w-8${showGifPicker ? " bg-muted" : ""}`}
                 >
                   <ImagePlay size={15} />
-                </button>
-                <span style={{ fontSize: "0.72rem", color: "#a3a3a3" }}>
+                </Button>
+                <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
                   {commentText.length}/500
                 </span>
               </div>
@@ -319,7 +289,7 @@ export default function PostDetail() {
         {/* Comment list — hidden when comments are disabled */}
         {!post.commentsDisabled && (
           commentsLoading ? (
-            <p style={{ color: "#a3a3a3", fontSize: "0.875rem" }}>Loading comments…</p>
+            <p className="text-muted-foreground" style={{ fontSize: "0.875rem" }}>Loading comments…</p>
           ) : comments && comments.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
               {comments.map((comment) => (
@@ -334,8 +304,8 @@ export default function PostDetail() {
             </div>
           ) : (
             <p
+              className="text-muted-foreground"
               style={{
-                color: "#a3a3a3",
                 fontSize: "0.875rem",
                 textAlign: "center",
                 padding: "1.5rem 0",

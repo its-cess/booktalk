@@ -57,7 +57,7 @@ export default function Login() {
         boxSizing: "border-box",
       }}
     >
-      <h1 className="text-2xl font-bold" style={{ marginBottom: "1.5rem" }}>
+      <h1 className="text-2xl font-bold" style={{ marginBottom: "1.5rem", fontFamily: '"Poppins", system-ui, sans-serif' }}>
         Log in
       </h1>
       <form

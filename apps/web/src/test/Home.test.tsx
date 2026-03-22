@@ -46,8 +46,8 @@ describe("Home — unauthenticated", () => {
   it("shows the sign up / log in CTA", () => {
     render(<Home />);
     expect(screen.getByText("Sign up or log in to start posting and following.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /sign up/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /log in/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign up/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
   });
 });
 

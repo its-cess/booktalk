@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useFeed } from "@/lib/queries";
@@ -27,15 +27,15 @@ export default function Home() {
           padding: "2rem",
         }}
       >
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#171717", marginBottom: "0.75rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "1.75rem", fontWeight: 700, fontFamily: '"Poppins", system-ui, sans-serif', marginBottom: "0.75rem" }}>
           BookTok for Millennials
         </h2>
-        <p style={{ color: "#737373", marginBottom: "1.5rem" }}>
+        <p className="text-muted-foreground" style={{ marginBottom: "1.5rem" }}>
           Sign up or log in to start posting and following.
         </p>
         <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link to="/login"><Button variant="outline">Log in</Button></Link>
-          <Link to="/signup"><Button>Sign up</Button></Link>
+          <Button variant="outline" onClick={() => navigate("/login")}>Log in</Button>
+          <Button onClick={() => navigate("/signup")}>Sign up</Button>
         </div>
       </div>
     );
@@ -55,12 +55,12 @@ export default function Home() {
       >
         <Search
           size={16}
+          className="text-muted-foreground"
           style={{
             position: "absolute",
             left: "0.75rem",
             top: "50%",
             transform: "translateY(-50%)",
-            color: "#a3a3a3",
             pointerEvents: "none",
             zIndex: 1,
           }}
@@ -77,20 +77,20 @@ export default function Home() {
       <PostComposer />
 
       {/* Feed */}
-      <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", marginBottom: "1rem" }}>
+      <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 700, fontFamily: '"Poppins", system-ui, sans-serif', marginBottom: "1rem" }}>
         Your feed
       </h2>
 
       {isLoading && (
-        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>Loading…</p>
+        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>Loading…</p>
       )}
 
       {isError && (
-        <p style={{ color: "#ef4444", fontSize: "0.9rem" }}>Failed to load feed.</p>
+        <p className="text-destructive" style={{ fontSize: "0.9rem" }}>Failed to load feed.</p>
       )}
 
       {posts && posts.length === 0 && (
-        <p style={{ color: "#a3a3a3", fontSize: "0.9rem" }}>
+        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
           No posts yet. Be the first to post!
         </p>
       )}

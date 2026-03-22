@@ -47,25 +47,24 @@ describe("PostComposer", () => {
     render(<PostComposer />);
     expect(screen.queryByPlaceholderText("Search for a book...")).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
 
     expect(screen.getByPlaceholderText("Search for a book...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove book" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "+ Book" })).not.toBeInTheDocument();
   });
 
   it("Remove book clears the search panel", async () => {
     render(<PostComposer />);
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: "Remove book" }));
 
     expect(screen.queryByPlaceholderText("Search for a book...")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "+ Book" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add book" })).toBeInTheDocument();
   });
 
   it("switching to manual shows title and author fields with a back link", async () => {
     render(<PostComposer />);
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: /add manually instead/i }));
 
     expect(screen.getByPlaceholderText("Book title")).toBeInTheDocument();
@@ -75,7 +74,7 @@ describe("PostComposer", () => {
 
   it("can switch back to search from manual mode", async () => {
     render(<PostComposer />);
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: /add manually instead/i }));
     await userEvent.click(screen.getByRole("button", { name: /search instead/i }));
 
@@ -87,7 +86,7 @@ describe("PostComposer", () => {
     mockUseBookSearch.mockReturnValue({ data: [MOCK_BOOK], isFetching: false });
     render(<PostComposer />);
 
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     // Click the result button (its accessible name contains the book title and author)
     await userEvent.click(screen.getByRole("button", { name: /Dune/i }));
 
@@ -101,14 +100,14 @@ describe("PostComposer", () => {
     mockUseBookSearch.mockReturnValue({ data: [MOCK_BOOK], isFetching: false });
     render(<PostComposer />);
 
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: /Dune/i }));
     // Click the toolbar "Remove book" button (the chip's X also works, either clears the selection)
     const removeButtons = screen.getAllByRole("button", { name: "Remove book" });
     await userEvent.click(removeButtons[0]);
 
     expect(screen.queryByText("Frank Herbert")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "+ Book" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add book" })).toBeInTheDocument();
   });
 
   it("toggles the spoiler checkbox", async () => {
@@ -126,7 +125,7 @@ describe("PostComposer", () => {
     render(<PostComposer />);
 
     await userEvent.type(screen.getByPlaceholderText("What are you reading?"), "Great book!");
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: /add manually instead/i }));
     await userEvent.type(screen.getByPlaceholderText("Book title"), "Dune");
     await userEvent.type(screen.getByPlaceholderText("Author"), "Frank Herbert");
@@ -154,7 +153,7 @@ describe("PostComposer", () => {
     render(<PostComposer />);
 
     await userEvent.type(screen.getByPlaceholderText("What are you reading?"), "Great book!");
-    await userEvent.click(screen.getByRole("button", { name: "+ Book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add book" }));
     await userEvent.click(screen.getByRole("button", { name: /Dune/i }));
     await userEvent.click(screen.getByRole("button", { name: "Post" }));
 

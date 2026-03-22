@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Outlet, Link } from "react-router-dom";
-import { BookOpen, Bell, Home, LogOut, LogIn, User } from "lucide-react";
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Bell, Home, LogOut, LogIn, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/queries";
 import NotificationDropdown from "./NotificationDropdown";
+import { Button } from "@/components/ui/button";
 
 const HEADER_HEIGHT = "3.5rem";
 
@@ -29,17 +30,16 @@ export default function Layout() {
   }, [notifOpen]);
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
+    <div className="bg-muted/50" style={{ minHeight: "100vh" }}>
 
       {/* Header */}
       <header
+        className="bg-background border-b"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
           height: HEADER_HEIGHT,
-          backgroundColor: "#ffffff",
-          borderBottom: "1px solid #e5e5e5",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -49,17 +49,17 @@ export default function Layout() {
         {/* Logo */}
         <Link
           to="/"
+          className="text-foreground"
           style={{
             display: "flex",
             alignItems: "center",
             gap: "0.5rem",
             fontWeight: 700,
             fontSize: "1.1rem",
-            color: "#171717",
             textDecoration: "none",
+            fontFamily: '"Poppins", system-ui, sans-serif',
           }}
         >
-          <BookOpen size={20} />
           BookTalk
         </Link>
 
@@ -76,39 +76,18 @@ export default function Layout() {
 
               {/* Notification bell with badge + dropdown */}
               <div ref={bellRef} style={{ position: "relative" }}>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setNotifOpen((o) => !o)}
-                  title="Notifications"
                   aria-label="Notifications"
-                  style={{
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "2.25rem",
-                    height: "2.25rem",
-                    borderRadius: "0.5rem",
-                    color: notifOpen ? "#171717" : "#525252",
-                    background: notifOpen ? "#f0f0f0" : "none",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "background-color 0.15s, color 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "#f0f0f0";
-                    (e.currentTarget as HTMLElement).style.color = "#171717";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!notifOpen) {
-                      (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-                      (e.currentTarget as HTMLElement).style.color = "#525252";
-                    }
-                  }}
+                  className={`relative h-9 w-9${notifOpen ? " bg-muted" : ""}`}
                 >
                   <Bell size={18} />
                   {unreadCount > 0 && (
                     <span
                       data-testid="notification-badge"
+                      className="bg-destructive text-destructive-foreground"
                       style={{
                         position: "absolute",
                         top: "4px",
@@ -116,8 +95,6 @@ export default function Layout() {
                         minWidth: "16px",
                         height: "16px",
                         borderRadius: "8px",
-                        backgroundColor: "#ef4444",
-                        color: "#ffffff",
                         fontSize: "0.6rem",
                         fontWeight: 700,
                         display: "flex",
@@ -131,7 +108,7 @@ export default function Layout() {
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
-                </button>
+                </Button>
 
                 {notifOpen && (
                   <NotificationDropdown onClose={() => setNotifOpen(false)} />
@@ -173,55 +150,17 @@ function IconButton({
   icon: React.ReactNode;
   onClick?: () => void;
 }) {
-  const style: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "2.25rem",
-    height: "2.25rem",
-    borderRadius: "0.5rem",
-    color: "#525252",
-    textDecoration: "none",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    transition: "background-color 0.15s, color 0.15s",
-  };
-
-  const hoverIn = (e: React.MouseEvent<HTMLElement>) => {
-    (e.currentTarget as HTMLElement).style.backgroundColor = "#f0f0f0";
-    (e.currentTarget as HTMLElement).style.color = "#171717";
-  };
-  const hoverOut = (e: React.MouseEvent<HTMLElement>) => {
-    (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-    (e.currentTarget as HTMLElement).style.color = "#525252";
-  };
-
-  if (to) {
-    return (
-      <Link
-        to={to}
-        title={label}
-        aria-label={label}
-        style={style}
-        onMouseEnter={hoverIn}
-        onMouseLeave={hoverOut}
-      >
-        {icon}
-      </Link>
-    );
-  }
+  const navigate = useNavigate();
 
   return (
-    <button
-      onClick={onClick}
-      title={label}
+    <Button
+      variant="ghost"
+      size="icon"
       aria-label={label}
-      style={style}
-      onMouseEnter={hoverIn}
-      onMouseLeave={hoverOut}
+      onClick={to ? () => navigate(to) : onClick}
+      className="h-9 w-9 text-muted-foreground"
     >
       {icon}
-    </button>
+    </Button>
   );
 }

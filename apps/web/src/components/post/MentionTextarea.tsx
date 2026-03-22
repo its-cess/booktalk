@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useUserSearch } from "@/lib/queries";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MentionTextareaProps {
   value: string;
@@ -36,7 +37,6 @@ export default function MentionTextarea({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [mention, setMention] = useState<MentionState>(INACTIVE);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isFocused, setIsFocused] = useState(false);
 
   const { data: searchResults = [] } = useUserSearch(mention.active ? mention.query : "");
 
@@ -127,44 +127,27 @@ export default function MentionTextarea({
 
   return (
     <div style={{ position: "relative" }}>
-      <textarea
+      <Textarea
         ref={textareaRef}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
         rows={rows}
         maxLength={maxLength}
         disabled={disabled}
-        style={{
-          width: "100%",
-          resize: "vertical",
-          border: `1px solid ${isFocused ? "#a3a3a3" : "#e5e5e5"}`,
-          borderRadius: "0.5rem",
-          padding: "0.625rem 0.75rem",
-          fontSize: "0.9rem",
-          lineHeight: 1.6,
-          color: "#171717",
-          outline: "none",
-          fontFamily: "inherit",
-          boxSizing: "border-box",
-          ...style,
-        }}
+        style={style}
       />
 
       {showDropdown && (
         <div
           ref={dropdownRef}
+          className="bg-background border rounded-sm"
           style={{
             position: "absolute",
             bottom: "100%",
             left: 0,
             zIndex: 50,
-            backgroundColor: "#ffffff",
-            border: "1px solid #e5e5e5",
-            borderRadius: "0.5rem",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             minWidth: "180px",
             maxWidth: "280px",
@@ -186,17 +169,17 @@ export default function MentionTextarea({
                 gap: "0.5rem",
                 width: "100%",
                 padding: "0.5rem 0.75rem",
-                background: i === selectedIndex ? "#f5f5f5" : "none",
+                background: i === selectedIndex ? "hsl(var(--muted) / 0.5)" : "none",
                 border: "none",
                 cursor: "pointer",
                 textAlign: "left",
               }}
               onMouseEnter={() => setSelectedIndex(i)}
             >
-              <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "#171717" }}>
+              <span className="text-foreground" style={{ fontSize: "0.85rem", fontWeight: 500 }}>
                 @{user.username}
               </span>
-              <span style={{ fontSize: "0.75rem", color: "#737373" }}>
+              <span className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>
                 {user.displayName}
               </span>
             </button>
