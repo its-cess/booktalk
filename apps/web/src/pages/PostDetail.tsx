@@ -157,7 +157,7 @@ export default function PostDetail() {
         {/* Comment input */}
         {isAuthenticated && !post.commentsDisabled && (
           <div
-            className="bg-background border border-border rounded-sm"
+            className="bg-background rounded-sm"
             style={{
               padding: "0.875rem 1rem",
               marginBottom: "1.25rem",

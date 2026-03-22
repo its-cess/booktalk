@@ -69,7 +69,7 @@ export default function Profile() {
     <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
       {/* Profile header */}
       <div
-        className="bg-background border border-border rounded-sm"
+        className="bg-background rounded-sm"
         style={{
           padding: "1.5rem",
           marginBottom: "1.5rem",

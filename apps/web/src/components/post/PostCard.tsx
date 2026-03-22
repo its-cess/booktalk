@@ -146,7 +146,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
     <>
       <div
         onClick={handleCardClick}
-        className="bg-background border border-border rounded-sm"
+        className="bg-background rounded-sm"
         style={{
           padding: "1.25rem",
           display: "flex",

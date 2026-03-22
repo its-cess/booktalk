@@ -55,7 +55,7 @@ export default function FollowList() {
           {type === "followers" ? "No followers yet." : "Not following anyone yet."}
         </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {users?.map((user) => (
             <UserRow
               key={user.id}
@@ -82,7 +82,7 @@ function UserRow({ user, showUnfollow }: { user: UserSummary; showUnfollow: bool
 
   return (
     <div
-      className="bg-background border rounded-lg"
+      className="bg-background rounded-sm"
       style={{
         padding: "0.875rem 1rem",
         display: "flex",

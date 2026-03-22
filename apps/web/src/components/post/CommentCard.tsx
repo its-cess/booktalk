@@ -73,7 +73,7 @@ export default function CommentCard({
   return (
     <>
       <div
-        className="bg-muted/30 border border-[hsl(32,25%,82%)] rounded-sm"
+        className="bg-muted/30 rounded-sm"
         style={{
           display: "flex",
           gap: "0.625rem",

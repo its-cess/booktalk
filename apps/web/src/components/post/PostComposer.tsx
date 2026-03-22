@@ -103,7 +103,7 @@ export default function PostComposer() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-background border border-border rounded-sm"
+      className="bg-background rounded-sm"
       style={{
         padding: "1.25rem",
         display: "flex",
