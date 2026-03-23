@@ -7,6 +7,7 @@ const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockUseProfile = vi.hoisted(() => vi.fn());
 const mockUseUpdateProfile = vi.hoisted(() => vi.fn());
 const mockUseToggleFollow = vi.hoisted(() => vi.fn());
+const mockUseUploadAvatar = vi.hoisted(() => vi.fn());
 const mockUpdateMutateAsync = vi.hoisted(() => vi.fn());
 const mockFollowMutateAsync = vi.hoisted(() => vi.fn());
 const mockToastError = vi.hoisted(() => vi.fn());
@@ -16,6 +17,7 @@ vi.mock("@/lib/queries", () => ({
   useProfile: mockUseProfile,
   useUpdateProfile: mockUseUpdateProfile,
   useToggleFollow: mockUseToggleFollow,
+  useUploadAvatar: mockUseUploadAvatar,
 }));
 vi.mock("sonner", () => ({ toast: { error: mockToastError } }));
 vi.mock("react-router-dom", () => ({
@@ -61,6 +63,7 @@ describe("Profile — loading / error states", () => {
     mockUseAuth.mockReturnValue({ user: { id: "user-2", username: "bob" } });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
+    mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows the loading state", () => {
@@ -83,6 +86,7 @@ describe("Profile — viewing another user's profile", () => {
     mockUseProfile.mockReturnValue({ data: MOCK_PROFILE, isLoading: false, isError: false });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
+    mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows the display name, username, and bio", () => {
@@ -129,6 +133,7 @@ describe("Profile — own profile", () => {
     mockUseProfile.mockReturnValue({ data: MOCK_PROFILE, isLoading: false, isError: false });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
+    mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows edit buttons for display name and bio", () => {
@@ -230,6 +235,7 @@ describe("Profile — follow / unfollow", () => {
     mockUseAuth.mockReturnValue({ user: { id: "user-2", username: "bob" } });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
+    mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows a Follow button when not following", () => {
@@ -313,6 +319,7 @@ describe("Profile — follower/following links", () => {
     mockUseProfile.mockReturnValue({ data: MOCK_PROFILE, isLoading: false, isError: false });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
+    mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("renders followers count as a link to /:username/followers", () => {
