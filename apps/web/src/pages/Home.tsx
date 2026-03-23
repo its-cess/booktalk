@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useFeed } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
@@ -39,8 +40,10 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "1rem 1.5rem" }}>
-      {/* Composer */}
-      <PostComposer />
+      {/* Composer — hidden on mobile (use the nav button instead) */}
+      <div className="hidden md:block">
+        <PostComposer />
+      </div>
 
       {/* Feed */}
       <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "1rem" }}>
@@ -48,7 +51,9 @@ export default function Home() {
       </h2>
 
       {isLoading && (
-        <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>Loading…</p>
+        <div className="text-muted-foreground" style={{ display: "flex", justifyContent: "center", padding: "2rem 0" }}>
+          <Loader2 size={24} className="animate-spin" />
+        </div>
       )}
 
       {isError && (

@@ -53,9 +53,10 @@ interface PostCardProps {
   post: Post;
   isOwner?: boolean;
   isDetailView?: boolean;
+  disableAuthorLink?: boolean;
 }
 
-export default function PostCard({ post, isOwner = false, isDetailView = false }: PostCardProps) {
+export default function PostCard({ post, isOwner = false, isDetailView = false, disableAuthorLink = false }: PostCardProps) {
   const navigate = useNavigate();
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -183,38 +184,62 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
             )}
           </div>
 
-          <Link
-            to={`/${post.authorUsername}`}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: "0.375rem",
-              minWidth: 0,
-              textDecoration: "none",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
-                "#4338ca";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
-                "#737373";
-            }}
-          >
-            <span
-              className="text-foreground"
-              style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}
+          {disableAuthorLink ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.375rem",
+                minWidth: 0,
+              }}
             >
-              {post.authorDisplayName}
-            </span>
-            <span
-              className="author-handle text-muted-foreground"
-              style={{ fontSize: "0.75rem", transition: "color 0.15s" }}
+              <span
+                className="text-foreground"
+                style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}
+              >
+                {post.authorDisplayName}
+              </span>
+              <span
+                className="text-muted-foreground"
+                style={{ fontSize: "0.75rem" }}
+              >
+                @{post.authorUsername}
+              </span>
+            </div>
+          ) : (
+            <Link
+              to={`/${post.authorUsername}`}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.375rem",
+                minWidth: 0,
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
+                  "#4338ca";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
+                  "#737373";
+              }}
             >
-              @{post.authorUsername}
-            </span>
-          </Link>
+              <span
+                className="text-foreground"
+                style={{ fontSize: "0.875rem", fontWeight: 400, lineHeight: 1.3, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}
+              >
+                {post.authorDisplayName}
+              </span>
+              <span
+                className="author-handle text-muted-foreground"
+                style={{ fontSize: "0.75rem", transition: "color 0.15s" }}
+              >
+                @{post.authorUsername}
+              </span>
+            </Link>
+          )}
 
           <span
             className="text-muted-foreground"

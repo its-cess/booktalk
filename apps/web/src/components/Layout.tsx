@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Outlet, Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { Bell, Home, LogOut, LogIn, User, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Bell, Home, LogOut, LogIn, Pencil, User, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/queries";
 import NotificationPanel from "./NotificationDropdown";
+import PostComposer from "./post/PostComposer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -23,6 +25,7 @@ export default function Layout() {
 
   const [notifExpanded, setNotifExpanded] = useState(false);
   const [mobileNotifOpen, setMobileNotifOpen] = useState(false);
+  const [postModalOpen, setPostModalOpen] = useState(false);
 
   // Sync header search input with URL when on /search
   const urlQuery = location.pathname === "/search" ? (searchParams.get("q") ?? "") : "";
@@ -216,7 +219,7 @@ export default function Layout() {
 
                 {notifExpanded && (
                   <div style={{ marginBottom: "0.25rem" }}>
-                    <NotificationPanel onClose={() => setNotifExpanded(false)} />
+                    <NotificationPanel />
                   </div>
                 )}
 
@@ -228,15 +231,14 @@ export default function Layout() {
                   Profile
                 </Link>
 
-                <button
-                  data-testid="logout-button"
-                  onClick={logout}
-                  className={navClass(false)}
-                  style={{ border: "none", cursor: "pointer", background: "none" }}
+                <Button
+                  onClick={() => setPostModalOpen(true)}
+                  className="w-full mt-2 gap-3 justify-start px-3"
+                  style={{ fontFamily: '"Zalando Sans SemiExpanded", sans-serif', fontSize: "0.875rem" }}
                 >
-                  <LogOut size={16} />
-                  Log out
-                </button>
+                  <Pencil size={16} />
+                  Post
+                </Button>
               </>
             )}
 
@@ -247,6 +249,20 @@ export default function Layout() {
               </Link>
             )}
           </nav>
+
+          {isAuthenticated && (
+            <div style={{ padding: "0.75rem 0.5rem", borderTop: "1px solid hsl(var(--border))", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
+              <button
+                data-testid="logout-button"
+                onClick={logout}
+                className={navClass(false)}
+                style={{ border: "none", cursor: "pointer", background: "none" }}
+              >
+                <LogOut size={16} />
+                Log out
+              </button>
+            </div>
+          )}
         </aside>
 
         {/* Main content */}
@@ -301,6 +317,25 @@ export default function Layout() {
               )}
             </div>
 
+            <button
+              aria-label="New post"
+              onClick={() => setPostModalOpen(true)}
+              className="bg-primary text-primary-foreground"
+              style={{
+                border: "none",
+                cursor: "pointer",
+                borderRadius: "50%",
+                width: "2.75rem",
+                height: "2.75rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Pencil size={18} />
+            </button>
+
             <MobileNavBtn
               icon={<User size={21} />}
               label="Profile"
@@ -326,6 +361,41 @@ export default function Layout() {
           />
         )}
       </nav>
+
+      {/* ── Post modal ── */}
+      <Dialog.Root open={postModalOpen} onOpenChange={setPostModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay
+            className="bg-black/40"
+            style={{ position: "fixed", inset: 0, zIndex: 50 }}
+          />
+          <Dialog.Content
+            className="bg-background rounded-sm shadow-lg"
+            style={{
+              position: "fixed",
+              top: "20%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "calc(100% - 2rem)",
+              maxWidth: "38rem",
+              zIndex: 51,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "0.5rem 0.75rem 0" }}>
+              <Dialog.Close asChild>
+                <button
+                  aria-label="Close"
+                  className="text-muted-foreground hover:text-foreground"
+                  style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: "0.25rem" }}
+                >
+                  <X size={16} />
+                </button>
+              </Dialog.Close>
+            </div>
+            <PostComposer onSuccess={() => setPostModalOpen(false)} />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {/* ── Mobile notification Sheet ── */}
       <Sheet open={mobileNotifOpen} onOpenChange={setMobileNotifOpen}>
