@@ -42,7 +42,7 @@ describe("FollowList — loading / error states", () => {
   it("shows loading state", () => {
     mockUseFollowList.mockReturnValue({ data: undefined, isLoading: true, isError: false });
     render(<FollowList />);
-    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
   it("shows error state", () => {

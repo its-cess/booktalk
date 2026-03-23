@@ -15,7 +15,7 @@ import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
 
-export default function PostComposer() {
+export default function PostComposer({ onSuccess }: { onSuccess?: () => void } = {}) {
   const picker = useBookPicker();
   const createPost = useCreatePost();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -95,6 +95,7 @@ export default function PostComposer() {
       setGifUrl(null);
       setValue("bookTitle", "");
       setValue("bookAuthor", "");
+      onSuccess?.();
     } catch {
       toast.error("Failed to post. Please try again.");
     }
@@ -109,7 +110,7 @@ export default function PostComposer() {
         display: "flex",
         flexDirection: "column",
         gap: "0.875rem",
-        marginBottom: "1.5rem",
+        marginBottom: "0.5rem",
       }}
     >
       {/* Text area */}

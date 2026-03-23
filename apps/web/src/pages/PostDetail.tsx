@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircleOff, Smile, ImagePlay, X } from "lucide-react";
+import { ArrowLeft, Loader2, MessageCircleOff, Smile, ImagePlay, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
@@ -53,8 +53,8 @@ export default function PostDetail() {
 
   if (postLoading) {
     return (
-      <div className="text-muted-foreground" style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
-        Loading…
+      <div className="text-muted-foreground" style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem", display: "flex", justifyContent: "center" }}>
+        <Loader2 size={24} className="animate-spin" />
       </div>
     );
   }
@@ -290,7 +290,9 @@ export default function PostDetail() {
         {/* Comment list — hidden when comments are disabled */}
         {!post.commentsDisabled && (
           commentsLoading ? (
-            <p className="text-muted-foreground" style={{ fontSize: "0.875rem" }}>Loading comments…</p>
+            <div className="text-muted-foreground" style={{ display: "flex", justifyContent: "center", padding: "1rem 0" }}>
+              <Loader2 size={20} className="animate-spin" />
+            </div>
           ) : comments && comments.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
               {comments.map((comment) => (

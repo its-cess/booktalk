@@ -69,7 +69,7 @@ describe("Profile — loading / error states", () => {
   it("shows the loading state", () => {
     mockUseProfile.mockReturnValue({ data: undefined, isLoading: true, isError: false });
     render(<Profile />);
-    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
   it("shows an error when the user is not found", () => {

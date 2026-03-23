@@ -1,4 +1,5 @@
 import { useParams, Link, useLocation } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useFollowList, useToggleFollow } from "@/lib/queries";
@@ -19,8 +20,8 @@ export default function FollowList() {
 
   if (isLoading) {
     return (
-      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
-        Loading…
+      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", display: "flex", justifyContent: "center" }}>
+        <Loader2 size={24} className="animate-spin" />
       </div>
     );
   }

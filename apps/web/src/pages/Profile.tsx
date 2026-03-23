@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Camera, Check, Pencil, X } from "lucide-react";
+import { Camera, Check, Loader2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "@/lib/queries";
@@ -70,8 +70,8 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
-        Loading…
+      <div className="text-muted-foreground" style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem", display: "flex", justifyContent: "center" }}>
+        <Loader2 size={24} className="animate-spin" />
       </div>
     );
   }
@@ -276,6 +276,7 @@ export default function Profile() {
                 isLiked: post.isLiked,
               }}
               isOwner={isOwn}
+              disableAuthorLink
             />
           ))
         )}

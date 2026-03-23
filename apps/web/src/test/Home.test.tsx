@@ -59,7 +59,7 @@ describe("Home — authenticated", () => {
   it("shows the loading state while the feed is fetching", () => {
     mockUseFeed.mockReturnValue({ data: undefined, isLoading: true, isError: false });
     render(<Home />);
-    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
   it("shows the error state when the feed fails to load", () => {
