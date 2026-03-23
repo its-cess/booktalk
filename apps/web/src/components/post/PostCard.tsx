@@ -37,7 +37,7 @@ export interface Post {
   authorUsername: string;
   authorAvatarUrl?: string | null;
   content: string;
-  book?: { title: string; author: string; coverUrl: string | null } | null;
+  book?: { id: string; title: string; author: string; coverUrl: string | null } | null;
   bookTitle?: string;
   bookAuthor?: string;
   hasSpoilers: boolean;
@@ -68,6 +68,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
   const [manualTitle, setManualTitle] = useState("");
   const [manualAuthor, setManualAuthor] = useState("");
 
+  const [coverHovered, setCoverHovered] = useState(false);
   const deletePost = useDeletePost();
   const updatePost = useUpdatePost();
   const toggleLike = useTogglePostLike();
@@ -335,17 +336,39 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                   onClick={(e) => e.stopPropagation()}
                   style={{ position: "relative", flexShrink: 0, width: "72px" }}
                 >
-                  <img
-                    src={displayBook!.coverUrl!}
-                    alt={displayBook!.title}
-                    className="rounded-sm"
-                    style={{
-                      width: "72px",
-                      objectFit: "cover",
-                      display: "block",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-                    }}
-                  />
+                  {post.book?.id && !isEditing ? (
+                    <Link
+                      to={`/books/${post.book.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseEnter={() => setCoverHovered(true)}
+                      onMouseLeave={() => setCoverHovered(false)}
+                      style={{ display: "block", borderRadius: "2px", outline: coverHovered ? "2px solid hsl(74 80% 60%)" : "2px solid transparent", outlineOffset: "2px", transition: "outline-color 0.15s" }}
+                    >
+                      <img
+                        src={displayBook!.coverUrl!}
+                        alt={displayBook!.title}
+                        className="rounded-sm"
+                        style={{
+                          width: "72px",
+                          objectFit: "cover",
+                          display: "block",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                        }}
+                      />
+                    </Link>
+                  ) : (
+                    <img
+                      src={displayBook!.coverUrl!}
+                      alt={displayBook!.title}
+                      className="rounded-sm"
+                      style={{
+                        width: "72px",
+                        objectFit: "cover",
+                        display: "block",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                      }}
+                    />
+                  )}
                   {isOwner && isEditing && (
                     <Button
                       variant="ghost"
@@ -377,10 +400,22 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                     }}
                   >
                     <BookOpen size={12} style={{ flexShrink: 0 }} />
-                    <span>
-                      {displayBook.title}
-                      {displayBook.author && ` · ${displayBook.author}`}
-                    </span>
+                    {post.book?.id && !isEditing ? (
+                      <Link
+                        to={`/books/${post.book.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-foreground hover:underline"
+                        style={{ textDecoration: "none" }}
+                      >
+                        {displayBook.title}
+                        {displayBook.author && ` · ${displayBook.author}`}
+                      </Link>
+                    ) : (
+                      <span>
+                        {displayBook.title}
+                        {displayBook.author && ` · ${displayBook.author}`}
+                      </span>
+                    )}
                     {isOwner && isEditing && (
                       <Button
                         variant="ghost"

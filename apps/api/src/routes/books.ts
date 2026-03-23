@@ -7,7 +7,12 @@ const bookSelect = {
   title: true,
   author: true,
   coverUrl: true,
+  description: true,
 };
+
+interface OpenLibraryWorkResponse {
+  description?: string | { type: string; value: string };
+}
 
 interface OpenLibraryDoc {
   key: string;
@@ -20,7 +25,63 @@ interface OpenLibraryResponse {
   docs: OpenLibraryDoc[];
 }
 
+const postAuthorSelect = {
+  id: true,
+  username: true,
+  displayName: true,
+  avatarUrl: true,
+};
+
 export default async function bookRoutes(app: FastifyInstance) {
+  // GET /books/:id — book detail with cached description + posts
+  app.get("/:id", async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    let book = await prisma.book.findUnique({ where: { id }, select: bookSelect });
+    if (!book) return reply.status(404).send({ error: "Book not found" });
+
+    // Fetch and cache description if missing
+    if (!book.description) {
+      try {
+        const url = `https://openlibrary.org${book.openLibraryKey}.json`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const data = (await res.json()) as OpenLibraryWorkResponse;
+          const raw = data.description;
+          const description = typeof raw === "string" ? raw : raw?.value ?? null;
+          if (description) {
+            book = await prisma.book.update({
+              where: { id },
+              data: { description },
+              select: bookSelect,
+            });
+          }
+        }
+      } catch (err) {
+        app.log.warn(err, "OpenLibrary description fetch failed, serving book without description");
+      }
+    }
+
+    const posts = await prisma.post.findMany({
+      where: { bookId: id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: { select: postAuthorSelect },
+        _count: { select: { comments: true, likes: true } },
+      },
+    });
+
+    return reply.send({
+      book,
+      posts: posts.map(({ _count, ...post }) => ({
+        ...post,
+        likeCount: _count.likes,
+        commentCount: _count.comments,
+        isLiked: false,
+      })),
+    });
+  });
+
   // GET /books/search?q= — search OpenLibrary and cache results in DB
   app.get("/search", async (request, reply) => {
     const { q } = request.query as { q?: string };
