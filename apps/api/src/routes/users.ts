@@ -259,6 +259,13 @@ export default async function userRoutes(app: FastifyInstance) {
     return reply.send({ uploadUrl, publicUrl });
   });
 
+  // DELETE /users/me — permanently delete own account and all associated data
+  app.delete("/me", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    await prisma.user.delete({ where: { id: payload.userId } });
+    return reply.status(204).send();
+  });
+
   // PATCH /users/me — update own profile
   app.patch("/me", { preHandler: [requireAuth] }, async (request, reply) => {
     const payload = request.user as { userId: string };

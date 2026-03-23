@@ -37,6 +37,7 @@ const MOCK_COMMENT: CommentWithAuthor = {
     id: "user-2",
     username: "bob",
     displayName: "Bob",
+    avatarUrl: null,
   },
   likeCount: 0,
   isLiked: false,

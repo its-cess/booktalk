@@ -362,7 +362,7 @@ describe("PostCard — card navigation", () => {
 
 const BOOK_POST = {
   ...MOCK_POST,
-  book: { title: "Dune", author: "Frank Herbert", coverUrl: "https://example.com/cover.jpg" },
+  book: { id: "book-1", title: "Dune", author: "Frank Herbert", coverUrl: "https://example.com/cover.jpg" },
 };
 
 const MANUAL_BOOK_POST = {
