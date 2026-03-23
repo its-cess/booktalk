@@ -31,8 +31,8 @@ export default function Settings() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      const msg = err?.response?.data?.error;
+    } catch (err) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       toast.error(msg === "Current password is incorrect" ? "Current password is incorrect." : "Failed to update password.");
     }
   }
