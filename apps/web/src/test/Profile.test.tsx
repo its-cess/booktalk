@@ -8,11 +8,9 @@ const mockUseProfile = vi.hoisted(() => vi.fn());
 const mockUseUpdateProfile = vi.hoisted(() => vi.fn());
 const mockUseToggleFollow = vi.hoisted(() => vi.fn());
 const mockUseUploadAvatar = vi.hoisted(() => vi.fn());
-const mockUseDeleteAccount = vi.hoisted(() => vi.fn());
 const mockUpdateMutateAsync = vi.hoisted(() => vi.fn());
 const mockFollowMutateAsync = vi.hoisted(() => vi.fn());
 const mockToastError = vi.hoisted(() => vi.fn());
-const mockNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/auth-context", () => ({ useAuth: mockUseAuth }));
 vi.mock("@/lib/queries", () => ({
@@ -20,12 +18,10 @@ vi.mock("@/lib/queries", () => ({
   useUpdateProfile: mockUseUpdateProfile,
   useToggleFollow: mockUseToggleFollow,
   useUploadAvatar: mockUseUploadAvatar,
-  useDeleteAccount: mockUseDeleteAccount,
 }));
 vi.mock("sonner", () => ({ toast: { error: mockToastError } }));
 vi.mock("react-router-dom", () => ({
   useParams: () => ({ username: "alice" }),
-  useNavigate: () => mockNavigate,
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>
   ),
@@ -68,7 +64,6 @@ describe("Profile — loading / error states", () => {
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows the loading state", () => {
@@ -92,7 +87,6 @@ describe("Profile — viewing another user's profile", () => {
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows the display name, username, and bio", () => {
@@ -140,7 +134,6 @@ describe("Profile — own profile", () => {
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows edit buttons for display name and bio", () => {
@@ -243,7 +236,6 @@ describe("Profile — follow / unfollow", () => {
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("shows a Follow button when not following", () => {
@@ -320,77 +312,25 @@ describe("Profile — follow / unfollow", () => {
   });
 });
 
-describe("Profile — delete account", () => {
-  const mockLogout = vi.fn();
-  const mockDeleteMutateAsync = vi.fn();
-
+describe("Profile — settings link", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ user: { id: "user-1", username: "alice" }, logout: mockLogout });
     mockUseProfile.mockReturnValue({ data: MOCK_PROFILE, isLoading: false, isError: false });
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: mockDeleteMutateAsync, isPending: false });
   });
 
-  it("shows the '...' menu button on own profile", () => {
+  it("shows the settings gear link on own profile", () => {
+    mockUseAuth.mockReturnValue({ user: { id: "user-1", username: "alice" } });
     render(<Profile />);
-    expect(screen.getByRole("button", { name: "Account settings" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Account settings" })).toHaveAttribute("href", "/settings");
   });
 
-  it("does not show the '...' menu button on another user's profile", () => {
-    mockUseAuth.mockReturnValue({ user: { id: "user-2", username: "bob" }, logout: mockLogout });
+  it("does not show the settings gear link on another user's profile", () => {
+    mockUseAuth.mockReturnValue({ user: { id: "user-2", username: "bob" } });
     render(<Profile />);
-    expect(screen.queryByRole("button", { name: "Account settings" })).not.toBeInTheDocument();
-  });
-
-  it("opens a menu with 'Delete account' when '...' is clicked", async () => {
-    render(<Profile />);
-    await userEvent.click(screen.getByRole("button", { name: "Account settings" }));
-    expect(screen.getByText("Delete account")).toBeInTheDocument();
-  });
-
-  it("shows the confirmation dialog when 'Delete account' is clicked", async () => {
-    render(<Profile />);
-    await userEvent.click(screen.getByRole("button", { name: "Account settings" }));
-    await userEvent.click(screen.getByText("Delete account"));
-    expect(screen.getByText("This will permanently delete your account and all associated posts, comments, and activity. This cannot be undone.")).toBeInTheDocument();
-  });
-
-  it("closes the dialog without deleting when Cancel is clicked", async () => {
-    render(<Profile />);
-    await userEvent.click(screen.getByRole("button", { name: "Account settings" }));
-    await userEvent.click(screen.getByText("Delete account"));
-    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(mockDeleteMutateAsync).not.toHaveBeenCalled();
-    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
-  });
-
-  it("calls mutateAsync, logs out, and navigates to '/' on confirm", async () => {
-    mockDeleteMutateAsync.mockResolvedValueOnce(undefined);
-    render(<Profile />);
-    await userEvent.click(screen.getByRole("button", { name: "Account settings" }));
-    await userEvent.click(screen.getByText("Delete account"));
-    await userEvent.click(screen.getByRole("button", { name: "Delete account" }));
-    await waitFor(() => {
-      expect(mockDeleteMutateAsync).toHaveBeenCalled();
-      expect(mockLogout).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith("/");
-    });
-  });
-
-  it("shows an error toast and keeps the dialog open when deletion fails", async () => {
-    mockDeleteMutateAsync.mockRejectedValueOnce(new Error("Server error"));
-    render(<Profile />);
-    await userEvent.click(screen.getByRole("button", { name: "Account settings" }));
-    await userEvent.click(screen.getByText("Delete account"));
-    await userEvent.click(screen.getByRole("button", { name: "Delete account" }));
-    await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith("Failed to delete account.");
-    });
-    expect(mockLogout).not.toHaveBeenCalled();
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(screen.queryByRole("link", { name: "Account settings" })).not.toBeInTheDocument();
   });
 });
 
@@ -402,7 +342,6 @@ describe("Profile — follower/following links", () => {
     mockUseUpdateProfile.mockReturnValue({ mutateAsync: mockUpdateMutateAsync, isPending: false });
     mockUseToggleFollow.mockReturnValue({ mutateAsync: mockFollowMutateAsync, isPending: false });
     mockUseUploadAvatar.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
-    mockUseDeleteAccount.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("renders followers count as a link to /:username/followers", () => {

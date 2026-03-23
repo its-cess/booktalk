@@ -199,6 +199,14 @@ export function useUpdateProfile() {
   });
 }
 
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      await api.post("/auth/change-password", data);
+    },
+  });
+}
+
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: async () => {

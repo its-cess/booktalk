@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { loginSchema, signupRequestSchema } from "@booktalk/shared";
+import { loginSchema, signupRequestSchema, changePasswordSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { signToken } from "../utils/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -70,6 +70,42 @@ export default async function authRoutes(app: FastifyInstance) {
 
       const token = signToken({ userId: user.id });
       return reply.status(201).send({ user, token });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.status(400).send({ errors: err.issues });
+      }
+      console.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  });
+
+  // POST /auth/change-password — change password for logged-in user
+  app.post("/change-password", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    try {
+      const { currentPassword, newPassword } = changePasswordSchema.parse(request.body);
+
+      const userWithAuth = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        include: { auth: true },
+      });
+
+      if (!userWithAuth?.auth) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      const isValid = await bcrypt.compare(currentPassword, userWithAuth.auth.passwordHash);
+      if (!isValid) {
+        return reply.status(400).send({ error: "Current password is incorrect" });
+      }
+
+      const newHash = await bcrypt.hash(newPassword, 10);
+      await prisma.authCredential.update({
+        where: { userId: payload.userId },
+        data: { passwordHash: newHash },
+      });
+
+      return reply.status(204).send();
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.status(400).send({ errors: err.issues });
