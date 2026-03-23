@@ -54,9 +54,11 @@ interface PostCardProps {
   isOwner?: boolean;
   isDetailView?: boolean;
   disableAuthorLink?: boolean;
+  isFollowingAuthor?: boolean;
+  onFollowAuthor?: () => void;
 }
 
-export default function PostCard({ post, isOwner = false, isDetailView = false, disableAuthorLink = false }: PostCardProps) {
+export default function PostCard({ post, isOwner = false, isDetailView = false, disableAuthorLink = false, isFollowingAuthor, onFollowAuthor }: PostCardProps) {
   const navigate = useNavigate();
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -252,6 +254,20 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
           >
             {formatDate(post.createdAt)}
           </span>
+
+          {/* Follow button — shown only for non-owners not yet followed */}
+          {!isOwner && onFollowAuthor && !isFollowingAuthor && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onFollowAuthor}
+                style={{ fontSize: "0.7rem", height: "1.5rem", padding: "0 0.5rem", flexShrink: 0 }}
+              >
+                Follow
+              </Button>
+            </div>
+          )}
 
           {/* Owner controls — stopPropagation so clicks here don't trigger card navigation */}
           {isOwner && (
