@@ -64,6 +64,19 @@ export function useFeed() {
   });
 }
 
+export const TRENDING_KEY = ["posts", "trending"] as const;
+
+export function useTrendingFeed(enabled: boolean) {
+  return useQuery({
+    queryKey: TRENDING_KEY,
+    queryFn: async () => {
+      const res = await api.get<{ posts: PostWithAuthor[] }>("/posts/trending");
+      return res.data.posts;
+    },
+    enabled,
+  });
+}
+
 export function usePost(id: string) {
   return useQuery({
     queryKey: ["posts", id],

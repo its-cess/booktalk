@@ -52,6 +52,7 @@ export interface PostWithAuthor {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  isFollowingAuthor?: boolean;
 }
 
 export const createCommentSchema = z.object({

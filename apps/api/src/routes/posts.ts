@@ -30,12 +30,15 @@ async function getOptionalUserId(request: any): Promise<string | null> {
 }
 
 export default async function postRoutes(app: FastifyInstance) {
-  // GET /posts — feed (newest first)
+  // GET /posts — following feed (newest first, only authors the user follows)
   app.get("/", async (request, reply) => {
     const userId = await getOptionalUserId(request);
 
-    const [posts, userLikes] = await Promise.all([
+    const [posts, userLikes, userFollowing] = await Promise.all([
       prisma.post.findMany({
+        where: userId
+          ? { author: { followers: { some: { followerId: userId } } } }
+          : {},
         orderBy: { createdAt: "desc" },
         include: {
           author: { select: authorSelect },
@@ -46,9 +49,13 @@ export default async function postRoutes(app: FastifyInstance) {
       userId
         ? prisma.postLike.findMany({ where: { userId }, select: { postId: true } })
         : Promise.resolve([]),
+      userId
+        ? prisma.follow.findMany({ where: { followerId: userId }, select: { followingId: true } })
+        : Promise.resolve([]),
     ]);
 
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
+    const followingIds = new Set(userFollowing.map((f) => f.followingId));
 
     return reply.send({
       posts: posts.map(({ _count, ...post }) => ({
@@ -56,8 +63,47 @@ export default async function postRoutes(app: FastifyInstance) {
         likeCount: _count.likes,
         commentCount: _count.comments,
         isLiked: likedPostIds.has(post.id),
+        isFollowingAuthor: followingIds.has(post.author.id),
       })),
     });
+  });
+
+  // GET /posts/trending — all posts scored by likes + (comments * 2), newest as tiebreaker
+  app.get("/trending", async (request, reply) => {
+    const userId = await getOptionalUserId(request);
+
+    const [posts, userLikes, userFollowing] = await Promise.all([
+      prisma.post.findMany({
+        include: {
+          author: { select: authorSelect },
+          book: { select: bookSelect },
+          _count: { select: { comments: true, likes: true } },
+        },
+      }),
+      userId
+        ? prisma.postLike.findMany({ where: { userId }, select: { postId: true } })
+        : Promise.resolve([]),
+      userId
+        ? prisma.follow.findMany({ where: { followerId: userId }, select: { followingId: true } })
+        : Promise.resolve([]),
+    ]);
+
+    const likedPostIds = new Set(userLikes.map((l) => l.postId));
+    const followingIds = new Set(userFollowing.map((f) => f.followingId));
+
+    const scored = posts
+      .map(({ _count, ...post }) => ({
+        ...post,
+        likeCount: _count.likes,
+        commentCount: _count.comments,
+        isLiked: likedPostIds.has(post.id),
+        isFollowingAuthor: followingIds.has(post.author.id),
+        score: _count.likes + _count.comments * 2,
+      }))
+      .sort((a, b) => b.score - a.score || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .map(({ score, ...post }) => post);
+
+    return reply.send({ posts: scored });
   });
 
   // GET /posts/search?q= — full-text search across content and book fields
