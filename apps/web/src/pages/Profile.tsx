@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Check, Pencil, X } from "lucide-react";
+import { Camera, Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { useProfile, useUpdateProfile, useToggleFollow } from "@/lib/queries";
+import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ export default function Profile() {
   const { data: profile, isLoading, isError } = useProfile(username!);
   const updateProfile = useUpdateProfile();
   const toggleFollow = useToggleFollow();
+  const uploadAvatar = useUploadAvatar();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isOwn = me?.username === username;
 
@@ -38,6 +40,23 @@ export default function Profile() {
       setEditingField(null);
     } catch {
       toast.error("Failed to save changes.");
+    }
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5 MB.");
+      return;
+    }
+    try {
+      await uploadAvatar.mutateAsync(file);
+      toast.success("Avatar updated!");
+    } catch {
+      toast.error("Failed to upload avatar.");
+    } finally {
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
     }
   }
 
@@ -81,20 +100,62 @@ export default function Profile() {
         {/* Avatar + names row */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
           {/* Avatar */}
-          <div
-            className="bg-primary/10 text-primary rounded-full"
-            style={{
-              width: "4rem",
-              height: "4rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              flexShrink: 0,
-            }}
-          >
-            {profile.displayName[0].toUpperCase()}
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div
+              className="bg-primary/10 text-primary rounded-full"
+              style={{
+                width: "4rem",
+                height: "4rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                overflow: "hidden",
+              }}
+            >
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.displayName}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                profile.displayName[0].toUpperCase()
+              )}
+            </div>
+            {isOwn && (
+              <>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  style={{ display: "none" }}
+                  onChange={handleAvatarChange}
+                />
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploadAvatar.isPending}
+                  aria-label="Change avatar"
+                  className="bg-background text-muted-foreground hover:text-foreground rounded-full"
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: "1.5rem",
+                    height: "1.5rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px solid hsl(var(--border))",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  <Camera size={11} />
+                </button>
+              </>
+            )}
           </div>
 
           {/* Names + stats */}
@@ -201,6 +262,7 @@ export default function Profile() {
                 id: post.id,
                 authorDisplayName: post.author.displayName,
                 authorUsername: post.author.username,
+                authorAvatarUrl: post.author.avatarUrl,
                 content: post.content,
                 book: post.book ?? null,
                 bookTitle: post.bookTitle ?? undefined,

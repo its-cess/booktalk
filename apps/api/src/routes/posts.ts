@@ -9,6 +9,7 @@ const authorSelect = {
   id: true,
   username: true,
   displayName: true,
+  avatarUrl: true,
 };
 
 const bookSelect = {

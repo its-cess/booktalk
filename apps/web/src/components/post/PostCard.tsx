@@ -35,6 +35,7 @@ export interface Post {
   id: string;
   authorDisplayName: string;
   authorUsername: string;
+  authorAvatarUrl?: string | null;
   content: string;
   book?: { title: string; author: string; coverUrl: string | null } | null;
   bookTitle?: string;
@@ -168,9 +169,18 @@ export default function PostCard({ post, isOwner = false, isDetailView = false }
               fontSize: "0.875rem",
               fontWeight: 700,
               flexShrink: 0,
+              overflow: "hidden",
             }}
           >
-            {post.authorDisplayName[0].toUpperCase()}
+            {post.authorAvatarUrl ? (
+              <img
+                src={post.authorAvatarUrl}
+                alt={post.authorDisplayName}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              post.authorDisplayName[0].toUpperCase()
+            )}
           </div>
 
           <Link

@@ -174,6 +174,35 @@ export function useUpdateProfile() {
   });
 }
 
+export function useUploadAvatar() {
+  const { user: me } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      // 1. Get presigned upload URL from our API
+      const { data } = await api.post<{ uploadUrl: string; publicUrl: string }>(
+        "/users/me/avatar-upload-url",
+        { contentType: file.type }
+      );
+      // 2. PUT the file directly to R2
+      await fetch(data.uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+      // 3. Save the public URL on the user's profile
+      const res = await api.patch<{ user: UserProfile }>("/users/me", { avatarUrl: data.publicUrl });
+      return res.data.user;
+    },
+    onSuccess: (user) => {
+      queryClient.invalidateQueries({ queryKey: ["users", user.username] });
+      if (me?.username) {
+        queryClient.invalidateQueries({ queryKey: ["users", me.username] });
+      }
+    },
+  });
+}
+
 export function useToggleFollow() {
   const queryClient = useQueryClient();
   const { user: me } = useAuth();

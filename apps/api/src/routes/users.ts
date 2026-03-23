@@ -1,8 +1,20 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { randomUUID } from "crypto";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { updateProfileSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
 
 const userSummarySelect = {
   id: true,
@@ -218,6 +230,33 @@ export default async function userRoutes(app: FastifyInstance) {
         isFollowing: viewerFollowingIds.has(f.following.id),
       })),
     });
+  });
+
+  // POST /users/me/avatar-upload-url — get presigned R2 URL to upload an avatar
+  app.post("/me/avatar-upload-url", { preHandler: [requireAuth] }, async (request, reply) => {
+    const payload = request.user as { userId: string };
+    const { contentType } = request.body as { contentType?: string };
+
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!contentType || !allowed.includes(contentType)) {
+      return reply.status(400).send({ error: "contentType must be jpeg, png, webp, or gif" });
+    }
+
+    const ext = contentType.split("/")[1];
+    const key = `avatars/${payload.userId}/${randomUUID()}.${ext}`;
+
+    const uploadUrl = await getSignedUrl(
+      r2,
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+        ContentType: contentType,
+      }),
+      { expiresIn: 300 }
+    );
+
+    const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+    return reply.send({ uploadUrl, publicUrl });
   });
 
   // PATCH /users/me — update own profile

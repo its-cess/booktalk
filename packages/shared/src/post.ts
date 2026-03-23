@@ -46,6 +46,7 @@ export interface PostWithAuthor {
     id: string;
     username: string;
     displayName: string;
+    avatarUrl: string | null;
   };
   likeCount: number;
   commentCount: number;
@@ -75,6 +76,7 @@ export interface CommentWithAuthor {
     id: string;
     username: string;
     displayName: string;
+    avatarUrl: string | null;
   };
   likeCount: number;
   isLiked: boolean;
