@@ -145,14 +145,14 @@ export default function MentionTextarea({
           className="bg-background border rounded-sm"
           style={{
             position: "absolute",
-            bottom: "100%",
+            top: "100%",
             left: 0,
             zIndex: 50,
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             minWidth: "180px",
             maxWidth: "280px",
             overflow: "hidden",
-            marginBottom: "0.25rem",
+            marginTop: "0.25rem",
           }}
         >
           {searchResults.map((user, i) => (

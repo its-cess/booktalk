@@ -199,6 +199,14 @@ export function useUpdateProfile() {
   });
 }
 
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      await api.delete("/users/me");
+    },
+  });
+}
+
 export function useUploadAvatar() {
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
