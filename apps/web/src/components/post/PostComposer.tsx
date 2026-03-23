@@ -95,6 +95,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
       setGifUrl(null);
       setValue("bookTitle", "");
       setValue("bookAuthor", "");
+      toast.success("Post created!");
       onSuccess?.();
     } catch {
       toast.error("Failed to post. Please try again.");

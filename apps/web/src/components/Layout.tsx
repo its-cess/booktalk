@@ -18,6 +18,11 @@ export default function Layout() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  function handleLogout() {
+    logout();
+    navigate("/");
+  }
   const [searchParams] = useSearchParams();
 
   const { data: notifData } = useNotifications();
@@ -254,7 +259,7 @@ export default function Layout() {
             <div style={{ padding: "0.75rem 0.5rem", borderTop: "1px solid hsl(var(--border))", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
               <button
                 data-testid="logout-button"
-                onClick={logout}
+                onClick={handleLogout}
                 className={navClass(false)}
                 style={{ border: "none", cursor: "pointer", background: "none" }}
               >
@@ -346,7 +351,7 @@ export default function Layout() {
             <MobileNavBtn
               icon={<LogOut size={21} />}
               label="Log out"
-              onClick={logout}
+              onClick={handleLogout}
               active={false}
             />
           </>

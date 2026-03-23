@@ -1,37 +1,27 @@
 import { useState, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Camera, Check, Loader2, MoreHorizontal, Pencil, X } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
+import { Camera, Check, Loader2, Pencil, Settings, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar, useDeleteAccount } from "@/lib/queries";
+import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>();
-  const { user: me, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user: me } = useAuth();
   const { data: profile, isLoading, isError } = useProfile(username!);
   const updateProfile = useUpdateProfile();
   const toggleFollow = useToggleFollow();
   const uploadAvatar = useUploadAvatar();
-  const deleteAccount = useDeleteAccount();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isOwn = me?.username === username;
 
   const [editingField, setEditingField] = useState<"displayName" | "bio" | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   function startEdit(field: "displayName" | "bio", current: string) {
     setEditingField(field);
@@ -67,16 +57,6 @@ export default function Profile() {
       toast.error("Failed to upload avatar.");
     } finally {
       if (avatarInputRef.current) avatarInputRef.current.value = "";
-    }
-  }
-
-  async function handleDeleteAccount() {
-    try {
-      await deleteAccount.mutateAsync();
-      logout();
-      navigate("/");
-    } catch {
-      toast.error("Failed to delete account.");
     }
   }
 
@@ -235,23 +215,13 @@ export default function Profile() {
             </Button>
           )}
 
-          {/* Settings menu for own profile */}
+          {/* Settings link for own profile */}
           {isOwn && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" style={{ flexShrink: 0 }}>
-                  <MoreHorizontal size={18} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  Delete account
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" style={{ flexShrink: 0 }} asChild>
+              <Link to="/settings">
+                <Settings size={18} />
+              </Link>
+            </Button>
           )}
         </div>
 
@@ -285,16 +255,6 @@ export default function Profile() {
           )}
         </div>
       </div>
-
-      <ConfirmDialog
-        open={showDeleteConfirm}
-        title="Delete account"
-        description="This will permanently delete your account and all associated posts, comments, and activity. This cannot be undone."
-        confirmLabel="Delete account"
-        isPending={deleteAccount.isPending}
-        onConfirm={handleDeleteAccount}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
 
       {/* Posts */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>

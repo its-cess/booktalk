@@ -10,6 +10,7 @@ import PostDetail from "@/pages/PostDetail";
 import FollowList from "@/pages/FollowList";
 import SearchPage from "@/pages/Search";
 import BookDetail from "@/pages/BookDetail";
+import Settings from "@/pages/Settings";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="search" element={<SearchPage />} />
             <Route path="posts/:id" element={<PostDetail />} />
             <Route path="books/:id" element={<BookDetail />} />
+            <Route path="settings" element={<Settings />} />
             <Route path=":username/followers" element={<FollowList />} />
             <Route path=":username/following" element={<FollowList />} />
             <Route path=":username" element={<Profile />} />
