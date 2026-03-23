@@ -21,7 +21,7 @@ export default async function commentRoutes(app: FastifyInstance) {
         where: { id },
         data: { content: data.content },
         include: {
-          author: { select: { id: true, username: true, displayName: true } },
+          author: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
           _count: { select: { likes: true } },
         },
       });

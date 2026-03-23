@@ -93,9 +93,18 @@ export default function CommentCard({
             fontWeight: 700,
             flexShrink: 0,
             marginTop: "0.1rem",
+            overflow: "hidden",
           }}
         >
-          {comment.author.displayName[0].toUpperCase()}
+          {comment.author.avatarUrl ? (
+            <img
+              src={comment.author.avatarUrl}
+              alt={comment.author.displayName}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            comment.author.displayName[0].toUpperCase()
+          )}
         </div>
 
         {/* Content area */}

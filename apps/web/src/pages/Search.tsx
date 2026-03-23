@@ -51,6 +51,7 @@ export default function SearchPage() {
               id: post.id,
               authorDisplayName: post.author.displayName,
               authorUsername: post.author.username,
+              authorAvatarUrl: post.author.avatarUrl,
               content: post.content,
               book: post.book ?? null,
               bookTitle: post.bookTitle ?? undefined,
