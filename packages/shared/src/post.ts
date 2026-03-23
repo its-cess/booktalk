@@ -30,6 +30,7 @@ export interface BookResult {
   title: string;
   author: string;
   coverUrl: string | null;
+  description: string | null;
 }
 
 export interface PostWithAuthor {

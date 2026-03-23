@@ -14,6 +14,18 @@ import type {
 
 export const FEED_KEY = ["posts", "feed"] as const;
 
+export function useBookDetail(id: string) {
+  return useQuery({
+    queryKey: ["books", id],
+    queryFn: async () => {
+      const res = await api.get<{ book: BookResult; posts: PostWithAuthor[] }>(`/books/${id}`);
+      return res.data;
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useBookSearch(query: string) {
   return useQuery({
     queryKey: ["books", "search", query],
