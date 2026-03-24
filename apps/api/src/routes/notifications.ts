@@ -20,12 +20,13 @@ export default async function notificationRoutes(app: FastifyInstance) {
     const unreadCount = notifications.filter((n) => !n.read).length;
 
     // Group by (type, postId) — multiple events on same post+type become one row
+    // FOLLOW notifications have no postId and are grouped together as one item
     const groupMap = new Map<
       string,
       {
         ids: string[];
         type: NotificationType;
-        postId: string;
+        postId?: string;
         commentId?: string;
         actorMap: Map<string, NotificationActor>;
         read: boolean;
@@ -34,8 +35,10 @@ export default async function notificationRoutes(app: FastifyInstance) {
     >();
 
     for (const n of notifications) {
-      if (!n.postId) continue;
-      const key = `${n.type}:${n.postId}`;
+      // FOLLOW: group all follows into a single "FOLLOW" key
+      // Others: group by type+postId (skip if no postId)
+      const key = n.type === "FOLLOW" ? "FOLLOW" : n.postId ? `${n.type}:${n.postId}` : null;
+      if (!key) continue;
       const existing = groupMap.get(key);
       if (existing) {
         existing.ids.push(n.id);
@@ -47,7 +50,7 @@ export default async function notificationRoutes(app: FastifyInstance) {
         groupMap.set(key, {
           ids: [n.id],
           type: n.type as NotificationType,
-          postId: n.postId,
+          postId: n.postId ?? undefined,
           commentId: n.commentId ?? undefined,
           actorMap: new Map([[n.actorId, n.actor as NotificationActor]]),
           read: n.read,

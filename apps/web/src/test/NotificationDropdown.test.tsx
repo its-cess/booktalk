@@ -137,6 +137,38 @@ describe("NotificationDropdown", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/posts/post-42");
   });
 
+  it("renders a FOLLOW notification as '<name> started following you'", () => {
+    mockUseNotifications.mockReturnValue({
+      data: { notifications: [makeNotif({ type: "FOLLOW", postId: undefined })], unreadCount: 1 },
+    });
+    render(<NotificationDropdown onClose={onClose} />);
+    expect(screen.getByText("Alice started following you")).toBeInTheDocument();
+  });
+
+  it("clicking a FOLLOW notification navigates to the actor's profile", async () => {
+    mockUseNotifications.mockReturnValue({
+      data: {
+        notifications: [makeNotif({ id: "notif-2", type: "FOLLOW", postId: undefined, actors: [{ id: "u1", username: "alice", displayName: "Alice" }] })],
+        unreadCount: 1,
+      },
+    });
+    render(<NotificationDropdown onClose={onClose} />);
+    await userEvent.click(screen.getByText("Alice started following you"));
+    expect(mockMarkOneMutate).toHaveBeenCalledWith("notif-2");
+    expect(mockNavigate).toHaveBeenCalledWith("/alice");
+  });
+
+  it("groups multiple followers as '<name> and X others started following you'", () => {
+    mockUseNotifications.mockReturnValue({
+      data: {
+        notifications: [makeNotif({ type: "FOLLOW", postId: undefined, totalActors: 3 })],
+        unreadCount: 1,
+      },
+    });
+    render(<NotificationDropdown onClose={onClose} />);
+    expect(screen.getByText("Alice and 2 others started following you")).toBeInTheDocument();
+  });
+
   it("unread notification has a visible dot indicator", () => {
     mockUseNotifications.mockReturnValue({
       data: { notifications: [makeNotif({ read: false })], unreadCount: 1 },

@@ -164,6 +164,16 @@ export default async function userRoutes(app: FastifyInstance) {
       await prisma.follow.create({
         data: { followerId: payload.userId, followingId: targetUser.id },
       });
+      // Notify the followed user (non-blocking)
+      prisma.notification
+        .create({
+          data: {
+            userId: targetUser.id,
+            actorId: payload.userId,
+            type: "FOLLOW",
+          },
+        })
+        .catch(console.error);
       return reply.send({ isFollowing: true });
     }
   });
