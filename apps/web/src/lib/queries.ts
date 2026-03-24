@@ -167,8 +167,15 @@ export function useTogglePostLike() {
       const res = await api.post<{ isLiked: boolean }>(`/posts/${postId}/like`);
       return { postId, isLiked: res.data.isLiked };
     },
-    onSuccess: ({ postId }, { authorUsername }) => {
-      queryClient.invalidateQueries({ queryKey: FEED_KEY });
+    onSuccess: ({ postId, isLiked }, { authorUsername }) => {
+      const updatePosts = (posts: PostWithAuthor[] | undefined) =>
+        posts?.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked, likeCount: p.likeCount + (isLiked ? 1 : -1) }
+            : p
+        );
+      queryClient.setQueryData<PostWithAuthor[]>(FEED_KEY, updatePosts);
+      queryClient.setQueryData<PostWithAuthor[]>(TRENDING_KEY, updatePosts);
       queryClient.invalidateQueries({ queryKey: ["posts", postId] });
       queryClient.invalidateQueries({ queryKey: ["users", authorUsername] });
     },
