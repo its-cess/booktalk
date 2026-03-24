@@ -2,7 +2,8 @@ export type NotificationType =
   | "POST_LIKE"
   | "COMMENT"
   | "MENTION_POST"
-  | "MENTION_COMMENT";
+  | "MENTION_COMMENT"
+  | "FOLLOW";
 
 export interface NotificationActor {
   id: string;
@@ -16,7 +17,7 @@ export interface GroupedNotification {
   // All notification IDs in this group (for bulk mark-read)
   ids: string[];
   type: NotificationType;
-  postId: string;
+  postId?: string;
   commentId?: string;
   // Up to 2 most recent actors
   actors: NotificationActor[];

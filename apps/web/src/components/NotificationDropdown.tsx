@@ -36,6 +36,8 @@ function notificationText(n: GroupedNotification): string {
       return `${actor} mentioned you in a post`;
     case "MENTION_COMMENT":
       return `${actor} mentioned you in a comment`;
+    case "FOLLOW":
+      return `${actor} started following you`;
   }
 }
 
@@ -54,7 +56,11 @@ export default function NotificationPanel({ onClose }: Props) {
   function handleClick(n: GroupedNotification) {
     markOne.mutate(n.id);
     onClose?.();
-    navigate(`/posts/${n.postId}`);
+    if (n.type === "FOLLOW") {
+      navigate(`/${n.actors[0]?.username}`);
+    } else {
+      navigate(`/posts/${n.postId}`);
+    }
   }
 
   return (
