@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -75,7 +75,12 @@ export default function Login() {
         </div>
 
         <div>
-          <Label>Password</Label>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.375rem" }}>
+            <Label>Password</Label>
+            <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground" style={{ fontSize: "0.8rem" }}>
+              Forgot password?
+            </Link>
+          </div>
           <Input type="password" {...register("password")} />
           {errors.password && (
             <p className="text-red-500 text-sm">
