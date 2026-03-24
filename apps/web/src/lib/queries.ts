@@ -156,6 +156,7 @@ export function useDeletePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: TRENDING_KEY });
     },
   });
 }
@@ -289,6 +290,7 @@ export function useCreatePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
+      queryClient.invalidateQueries({ queryKey: TRENDING_KEY });
     },
   });
 }
