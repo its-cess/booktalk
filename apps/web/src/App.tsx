@@ -11,6 +11,8 @@ import FollowList from "@/pages/FollowList";
 import SearchPage from "@/pages/Search";
 import BookDetail from "@/pages/BookDetail";
 import Settings from "@/pages/Settings";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="posts/:id" element={<PostDetail />} />
             <Route path="books/:id" element={<BookDetail />} />

@@ -1,10 +1,14 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { randomBytes } from "crypto";
+import { Resend } from "resend";
 import { loginSchema, signupRequestSchema, changePasswordSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { signToken } from "../utils/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function authRoutes(app: FastifyInstance) {
   // Protected: current user (requires valid JWT)
@@ -113,6 +117,76 @@ export default async function authRoutes(app: FastifyInstance) {
       console.error(err);
       return reply.status(500).send({ error: "Internal server error" });
     }
+  });
+
+  // POST /auth/forgot-password — send password reset email
+  app.post("/forgot-password", async (request, reply) => {
+    const { email } = request.body as { email?: string };
+    if (!email) return reply.status(400).send({ error: "Email is required" });
+
+    // Always return 204 to avoid leaking whether the email exists
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return reply.status(204).send();
+
+    // Invalidate any existing unused tokens
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id, usedAt: null },
+    });
+
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+
+    await prisma.passwordResetToken.create({
+      data: { userId: user.id, token, expiresAt },
+    });
+
+    const resetUrl = `${process.env.APP_URL ?? "http://localhost:5173"}/reset-password?token=${token}`;
+
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL!,
+      to: email,
+      subject: "Reset your BookTalk password",
+      html: `
+        <p>Hi ${user.displayName},</p>
+        <p>Click the link below to reset your password. This link expires in 1 hour.</p>
+        <p><a href="${resetUrl}">${resetUrl}</a></p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+      `,
+    });
+
+    return reply.status(204).send();
+  });
+
+  // POST /auth/reset-password — set new password using reset token
+  app.post("/reset-password", async (request, reply) => {
+    const { token, newPassword } = request.body as { token?: string; newPassword?: string };
+    if (!token || !newPassword) {
+      return reply.status(400).send({ error: "Token and new password are required" });
+    }
+    if (newPassword.length < 8) {
+      return reply.status(400).send({ error: "Password must be at least 8 characters" });
+    }
+
+    const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+
+    if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+      return reply.status(400).send({ error: "Invalid or expired reset link" });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+
+    await prisma.$transaction([
+      prisma.authCredential.update({
+        where: { userId: resetToken.userId },
+        data: { passwordHash: newHash },
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    return reply.status(204).send();
   });
 
   app.post("/login", async (request, reply) => {
