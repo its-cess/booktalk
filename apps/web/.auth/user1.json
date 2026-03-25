@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "authToken",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW42OGc1anYwMDJrdzZpdDJpYTYzOW42IiwiaWF0IjoxNzc0NDU0NTk0LCJleHAiOjE3NzUwNTkzOTR9.Jd54hAp3n0FZNHj03C9DOOTtlYGATGIYbTfTR0tYoLc"
+        },
+        {
+          "name": "user",
+          "value": "{\"id\":\"cmn68g5jv002kw6it2ia639n6\",\"email\":\"e2e_user1@booktalk.test\",\"username\":\"e2euser1\",\"displayName\":\"E2E User One\"}"
+        }
+      ]
+    }
+  ]
+}
