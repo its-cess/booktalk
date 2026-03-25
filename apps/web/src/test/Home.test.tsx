@@ -93,12 +93,6 @@ describe("Home — authenticated", () => {
     expect(screen.getByText("Failed to load feed.")).toBeInTheDocument();
   });
 
-  it("shows 'Your feed' heading when there are posts", () => {
-    mockUseFeed.mockReturnValue({ data: [MOCK_POST], isLoading: false, isError: false });
-    renderWithClient(<Home />);
-    expect(screen.getByText("Your feed")).toBeInTheDocument();
-  });
-
   it("renders a PostCard for each post in the feed", () => {
     mockUseFeed.mockReturnValue({
       data: [MOCK_POST, { ...MOCK_POST, id: "2", content: "Reading Stormlight now" }],
@@ -110,14 +104,6 @@ describe("Home — authenticated", () => {
     expect(cards).toHaveLength(2);
     expect(screen.getByText("Just finished Dune!")).toBeInTheDocument();
     expect(screen.getByText("Reading Stormlight now")).toBeInTheDocument();
-  });
-
-  it("shows 'Trending' heading and hint when following feed is empty", () => {
-    mockUseFeed.mockReturnValue({ data: [], isLoading: false, isError: false });
-    mockUseTrendingFeed.mockReturnValue({ data: [MOCK_POST], isLoading: false });
-    renderWithClient(<Home />);
-    expect(screen.getByText("Trending")).toBeInTheDocument();
-    expect(screen.getByText(/follow people to see their posts/i)).toBeInTheDocument();
   });
 
   it("renders trending posts when following feed is empty", () => {

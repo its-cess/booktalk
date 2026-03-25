@@ -16,7 +16,6 @@ export default function Home() {
   const { data: feedPosts, isLoading: feedLoading, isError: feedError } = useFeed();
   const { data: trendingPosts, isLoading: trendingLoading } = useTrendingFeed(true);
 
-  const isFeedEmpty = !feedLoading && !feedError && feedPosts?.length === 0;
   const isLoading = feedLoading || trendingLoading;
 
   const feedIds = new Set(feedPosts?.map((p) => p.id) ?? []);
@@ -92,16 +91,6 @@ export default function Home() {
       <div className="hidden md:block">
         <PostComposer />
       </div>
-
-      <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: isFeedEmpty ? "0.25rem" : "1rem" }}>
-        {isFeedEmpty ? "Trending" : "Your feed"}
-      </h2>
-
-      {isFeedEmpty && (
-        <p className="text-muted-foreground" style={{ fontSize: "0.8rem", marginBottom: "1rem" }}>
-          Follow people to see their posts here. In the meantime, here's what's popular.
-        </p>
-      )}
 
       {isLoading && (
         <div className="text-muted-foreground" style={{ display: "flex", justifyContent: "center", padding: "2rem 0" }}>
