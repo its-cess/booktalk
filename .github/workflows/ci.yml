@@ -143,18 +143,10 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Restore build artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            apps/web/node_modules
-            apps/api/node_modules
-            packages/shared/node_modules
-            packages/shared/dist
-          key: build-${{ github.sha }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Rebuild shared package
+      - name: Build shared package
         run: pnpm --filter @booktalk/shared build
 
       - name: Install Playwright browsers
