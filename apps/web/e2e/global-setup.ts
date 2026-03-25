@@ -35,6 +35,24 @@ async function getToken(user: typeof TEST_USER_1): Promise<string> {
   return data.token;
 }
 
+// Warm the books search cache so the books test can fall back to DB even if
+// OpenLibrary is slow or unavailable in CI. Retries until Dune is cached or
+// we give up (test will fail with a clear message about missing results).
+async function warmBooksCache(): Promise<void> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const res = await fetch(`${API_URL}/books/search?q=Dune`);
+      if (res.ok) {
+        const { books } = (await res.json()) as { books: { title: string }[] };
+        if (books.some((b) => /dune/i.test(b.title))) return;
+      }
+    } catch {
+      // ignore network errors
+    }
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 4000));
+  }
+}
+
 async function ensurePost(token: string, content: string): Promise<void> {
   // Check if the post already exists to avoid duplicates on re-runs
   const feedRes = await fetch(`${API_URL}/posts/trending`, {
@@ -96,6 +114,10 @@ export default async function globalSetup() {
   // Ensure user2 has a post for the social follow test
   const user2Token = await getToken(TEST_USER_2);
   await ensurePost(user2Token, TEST_POST_CONTENT);
+
+  // Pre-populate the books cache so the books test doesn't depend on
+  // OpenLibrary being reachable during the test itself
+  await warmBooksCache();
 
   // Save browser auth state for both users
   await saveAuthState(TEST_USER_1, path.join(AUTH_DIR, "user1.json"));
