@@ -146,9 +146,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared package
-        run: pnpm --filter @booktalk/shared build
-
       - name: Install Playwright browsers
         run: pnpm --filter web exec playwright install --with-deps chromium
 
