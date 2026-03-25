@@ -17,8 +17,6 @@ export default async function notificationRoutes(app: FastifyInstance) {
       },
     });
 
-    const unreadCount = notifications.filter((n) => !n.read).length;
-
     // Group by (type, postId) — multiple events on same post+type become one row
     // FOLLOW notifications have no postId and are grouped together as one item
     const groupMap = new Map<
@@ -76,6 +74,7 @@ export default async function notificationRoutes(app: FastifyInstance) {
       }
     );
 
+    const unreadCount = groups.filter((g) => !g.read).length;
     return reply.send({ notifications: groups, unreadCount });
   });
 
