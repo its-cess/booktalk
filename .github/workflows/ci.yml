@@ -126,3 +126,46 @@ jobs:
 
       - name: Unit Tests
         run: pnpm --filter web test
+
+  e2e:
+    name: E2E Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - name: Set up API test environment
+        run: cp apps/api/.env.test apps/api/.env
+
+      - name: Set up web test environment
+        run: cp apps/web/.env.test apps/web/.env
+
+      - name: Migrate test database
+        working-directory: apps/api
+        run: npx prisma migrate deploy && npx prisma generate
+
+      - name: Run E2E tests
+        run: pnpm --filter web e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
