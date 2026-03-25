@@ -154,7 +154,7 @@ jobs:
 
       - name: Migrate test database
         working-directory: apps/api
-        run: npx prisma migrate deploy
+        run: npx prisma migrate deploy && npx prisma generate
 
       - name: Run E2E tests
         run: pnpm --filter web e2e
