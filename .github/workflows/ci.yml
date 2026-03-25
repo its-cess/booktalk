@@ -152,6 +152,9 @@ jobs:
       - name: Set up API test environment
         run: cp apps/api/.env.test apps/api/.env
 
+      - name: Set up web test environment
+        run: cp apps/web/.env.test apps/web/.env
+
       - name: Migrate test database
         working-directory: apps/api
         run: npx prisma migrate deploy && npx prisma generate
