@@ -104,6 +104,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
 
   return (
     <form
+      data-testid="post-composer"
       onSubmit={handleSubmit(onSubmit)}
       className="bg-background rounded-sm"
       style={{
