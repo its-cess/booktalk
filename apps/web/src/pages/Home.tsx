@@ -11,8 +11,6 @@ import type { PostWithAuthor } from "@booktalk/shared";
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
   const { data: feedPosts, isLoading: feedLoading, isError: feedError } = useFeed();
   const { data: trendingPosts, isLoading: trendingLoading } = useTrendingFeed(true);
 
@@ -22,12 +20,18 @@ export default function Home() {
   const paddedTrending = trendingPosts?.filter((p) => !feedIds.has(p.id)) ?? [];
   const posts = [...(feedPosts ?? []), ...paddedTrending];
 
+  const queryClient = useQueryClient();
   const toggleFollow = useToggleFollow();
 
   async function handleFollow(post: PostWithAuthor) {
-    await toggleFollow.mutateAsync(post.author.username);
-    queryClient.invalidateQueries({ queryKey: FEED_KEY });
-    queryClient.invalidateQueries({ queryKey: TRENDING_KEY });
+    const { isFollowing } = await toggleFollow.mutateAsync(post.author.username);
+    // Patch isFollowingAuthor in both caches in-place — no refetch, no reorder.
+    const patch = (posts: PostWithAuthor[] | undefined) =>
+      posts?.map((p) =>
+        p.author.id === post.author.id ? { ...p, isFollowingAuthor: isFollowing } : p
+      );
+    queryClient.setQueryData<PostWithAuthor[]>(FEED_KEY, patch);
+    queryClient.setQueryData<PostWithAuthor[]>(TRENDING_KEY, patch);
   }
 
   if (!isAuthenticated) {
