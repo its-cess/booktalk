@@ -150,7 +150,6 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
   return (
     <>
       <div
-        data-testid="post-card"
         onClick={handleCardClick}
         className="bg-background rounded-sm"
         style={{
@@ -351,7 +350,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
               {hasCover && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  style={{ position: "relative", flexShrink: 0, width: "72px", minHeight: "108px" }}
+                  style={{ position: "relative", flexShrink: 0, width: "72px" }}
                 >
                   {post.book?.id && !isEditing ? (
                     <Link
@@ -367,7 +366,6 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                         className="rounded-sm"
                         style={{
                           width: "72px",
-                          aspectRatio: "2/3",
                           objectFit: "cover",
                           display: "block",
                           boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
@@ -381,7 +379,6 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                       className="rounded-sm"
                       style={{
                         width: "72px",
-                        aspectRatio: "2/3",
                         objectFit: "cover",
                         display: "block",
                         boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
