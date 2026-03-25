@@ -1,6 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import userRoutes from "./routes/users.js";
@@ -23,6 +24,9 @@ app.register(cors, {
 app.register(jwt, {
   secret: process.env.JWT_SECRET! ?? "dev-secret-change-me",
 });
+
+// Rate limiting — strict limits on auth endpoints, disabled in test env
+await app.register(rateLimit, { global: false });
 
 // Health check
 app.get("/health", async () => {

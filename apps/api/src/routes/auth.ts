@@ -31,7 +31,7 @@ export default async function authRoutes(app: FastifyInstance) {
     return reply.send({ user });
   });
 
-  app.post("/signup", async (request, reply) => {
+  app.post("/signup", { config: { rateLimit: { max: 10, timeWindow: "15 minutes" } } }, async (request, reply) => {
     try {
       // Validate request body
       const data = signupRequestSchema.parse(request.body);
@@ -120,7 +120,7 @@ export default async function authRoutes(app: FastifyInstance) {
   });
 
   // POST /auth/forgot-password — send password reset email
-  app.post("/forgot-password", async (request, reply) => {
+  app.post("/forgot-password", { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } }, async (request, reply) => {
     const { email } = request.body as { email?: string };
     if (!email) return reply.status(400).send({ error: "Email is required" });
 
@@ -158,7 +158,7 @@ export default async function authRoutes(app: FastifyInstance) {
   });
 
   // POST /auth/reset-password — set new password using reset token
-  app.post("/reset-password", async (request, reply) => {
+  app.post("/reset-password", { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } }, async (request, reply) => {
     const { token, newPassword } = request.body as { token?: string; newPassword?: string };
     if (!token || !newPassword) {
       return reply.status(400).send({ error: "Token and new password are required" });
@@ -189,7 +189,7 @@ export default async function authRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.post("/login", async (request, reply) => {
+  app.post("/login", { config: { rateLimit: { max: 10, timeWindow: "15 minutes" } } }, async (request, reply) => {
     try {
       const data = loginSchema.parse(request.body);
 
