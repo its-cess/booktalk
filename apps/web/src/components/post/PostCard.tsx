@@ -191,8 +191,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
             <div
               style={{
                 display: "flex",
-                alignItems: "baseline",
-                gap: "0.375rem",
+                flexDirection: "column",
+                gap: "0.1rem",
                 minWidth: 0,
               }}
             >
@@ -215,8 +215,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
               onClick={(e) => e.stopPropagation()}
               style={{
                 display: "flex",
-                alignItems: "baseline",
-                gap: "0.375rem",
+                flexDirection: "column",
+                gap: "0.1rem",
                 minWidth: 0,
                 textDecoration: "none",
               }}
@@ -237,7 +237,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
               </span>
               <span
                 className="author-handle text-muted-foreground"
-                style={{ fontSize: "0.75rem", transition: "color 0.15s" }}
+                style={{ fontSize: "0.7rem", transition: "color 0.15s" }}
               >
                 @{post.authorUsername}
               </span>
