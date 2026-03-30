@@ -1,6 +1,7 @@
 node_modules
 .env
 dist
+!packages/shared/dist
 *.db
 *.db-journal
 *.db-wal
