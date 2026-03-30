@@ -156,8 +156,8 @@ export default function CommentCard({
               {formatDate(comment.createdAt)}
             </span>
 
-            {/* Actions menu — always visible when not editing */}
-            {!isEditing && (
+            {/* Options menu for owners; direct share icon for non-owners */}
+            {!isEditing && (canDelete || isOwner ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -195,7 +195,18 @@ export default function CommentCard({
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Share comment as image"
+                onClick={handleShare}
+                className="text-muted-foreground"
+                style={{ flexShrink: 0, width: "1.5rem", height: "1.5rem" }}
+              >
+                <Share2 size={13} />
+              </Button>
+            ))}
 
             {/* Save/discard buttons in edit mode */}
             {isEditing && (
