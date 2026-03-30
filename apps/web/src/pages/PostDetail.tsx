@@ -10,6 +10,7 @@ import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
 import GifPicker from "@/components/post/GifPicker";
+import { SHOW_GIPHY } from "@/lib/config";
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -238,7 +239,7 @@ export default function PostDetail() {
                   />
                 </div>
               )}
-              {showGifPicker && (
+              {SHOW_GIPHY && showGifPicker && (
                 <div
                   ref={gifPickerRef}
                   style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "2.5rem", zIndex: 50 }}
@@ -262,16 +263,18 @@ export default function PostDetail() {
                 >
                   <Smile size={15} />
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowGifPicker((v) => !v)}
-                  aria-label="Insert GIF"
-                  className={showGifPicker ? "bg-muted" : ""}
-                >
-                  <ImagePlay size={15} />
-                </Button>
+                {SHOW_GIPHY && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowGifPicker((v) => !v)}
+                    aria-label="Insert GIF"
+                    className={showGifPicker ? "bg-muted" : ""}
+                  >
+                    <ImagePlay size={15} />
+                  </Button>
+                )}
                 <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
                   {commentText.length}/500
                 </span>

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
+import { SHOW_GIPHY } from "@/lib/config";
 
 export default function PostComposer({ onSuccess }: { onSuccess?: () => void } = {}) {
   const picker = useBookPicker();
@@ -227,7 +228,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
           </div>
         )}
 
-        {showGifPicker && (
+        {SHOW_GIPHY && showGifPicker && (
           <div
             ref={gifPickerRef}
             style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "4.5rem", zIndex: 50 }}
@@ -278,16 +279,18 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
         </Button>
 
         {/* GIF */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowGifPicker((v) => !v)}
-          aria-label="Insert GIF"
-          className={showGifPicker ? "bg-muted" : ""}
-        >
-          <ImagePlay size={15} />
-        </Button>
+        {SHOW_GIPHY && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowGifPicker((v) => !v)}
+            aria-label="Insert GIF"
+            className={showGifPicker ? "bg-muted" : ""}
+          >
+            <ImagePlay size={15} />
+          </Button>
+        )}
 
         <Button
           type="submit"
