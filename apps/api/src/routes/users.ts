@@ -51,12 +51,12 @@ export default async function userRoutes(app: FastifyInstance) {
     const users = await prisma.user.findMany({
       where: {
         OR: [
-          { username: { contains: term } },
-          { displayName: { contains: term } },
+          { username: { contains: term, mode: "insensitive" } },
+          { displayName: { contains: term, mode: "insensitive" } },
         ],
       },
-      select: { id: true, username: true, displayName: true },
-      take: 8,
+      select: { id: true, username: true, displayName: true, avatarUrl: true },
+      take: 10,
       orderBy: { username: "asc" },
     });
     return reply.send({ users });

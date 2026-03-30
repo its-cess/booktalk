@@ -53,7 +53,7 @@ export default function Login() {
         width: "100%",
         maxWidth: "28rem",
         margin: "2rem auto 0",
-        padding: 0,
+        padding: "0 1.25rem",
         boxSizing: "border-box",
       }}
     >

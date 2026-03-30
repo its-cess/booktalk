@@ -40,6 +40,20 @@ export function useBookSearch(query: string) {
   });
 }
 
+export function useSearchUsers(query: string) {
+  return useQuery({
+    queryKey: ["users", "search", query],
+    queryFn: async () => {
+      const res = await api.get<{ users: { id: string; username: string; displayName: string | null; avatarUrl: string | null }[] }>(
+        `/users/search?q=${encodeURIComponent(query)}`
+      );
+      return res.data.users;
+    },
+    enabled: query.trim().length >= 2,
+    staleTime: 30 * 1000,
+  });
+}
+
 export function useSearchPosts(query: string) {
   return useQuery({
     queryKey: ["posts", "search", query],
