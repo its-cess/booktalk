@@ -42,8 +42,8 @@ app.register(bookRoutes, { prefix: "/books" });
 app.register(notificationRoutes, { prefix: "/notifications" });
 app.register(gifRoutes, { prefix: "/gifs" });
 
-const port = 3000;
+const port = Number(process.env.PORT) || 3000;
 
-app.listen({ port }, () => {
+app.listen({ port, host: "0.0.0.0" }, () => {
   console.log(`API running on http://localhost:${port}`);
 });
