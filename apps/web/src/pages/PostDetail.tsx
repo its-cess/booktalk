@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, MessageCircleOff, Smile, ImagePlay, X } from "lucide-react";
+import { ArrowLeft, Loader2, MessageCircleOff, Smile, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
@@ -10,7 +10,6 @@ import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
 import GifPicker from "@/components/post/GifPicker";
-import { SHOW_GIPHY } from "@/lib/config";
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -239,7 +238,7 @@ export default function PostDetail() {
                   />
                 </div>
               )}
-              {SHOW_GIPHY && showGifPicker && (
+              {showGifPicker && (
                 <div
                   ref={gifPickerRef}
                   style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "2.5rem", zIndex: 50 }}
@@ -263,18 +262,16 @@ export default function PostDetail() {
                 >
                   <Smile size={15} />
                 </Button>
-                {SHOW_GIPHY && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowGifPicker((v) => !v)}
-                    aria-label="Insert GIF"
-                    className={showGifPicker ? "bg-muted" : ""}
-                  >
-                    <ImagePlay size={15} />
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowGifPicker((v) => !v)}
+                  aria-label="Insert GIF"
+                  className={showGifPicker ? "bg-muted" : ""}
+                >
+                  <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
+                </Button>
                 <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
                   {commentText.length}/500
                 </span>

@@ -3,7 +3,7 @@ import { useBookPicker } from "./useBookPicker";
 import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Smile, ImagePlay, X } from "lucide-react";
+import { BookOpen, Smile, X } from "lucide-react";
 import { toast } from "sonner";
 import { createPostSchema, type CreatePostData, type CreatePostInput } from "@booktalk/shared";
 import { useCreatePost } from "@/lib/queries";
@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
-import { SHOW_GIPHY } from "@/lib/config";
 
 export default function PostComposer({ onSuccess }: { onSuccess?: () => void } = {}) {
   const picker = useBookPicker();
@@ -228,7 +227,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
           </div>
         )}
 
-        {SHOW_GIPHY && showGifPicker && (
+        {showGifPicker && (
           <div
             ref={gifPickerRef}
             style={{ position: "absolute", top: "calc(100% + 0.5rem)", left: "4.5rem", zIndex: 50 }}
@@ -279,18 +278,16 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
         </Button>
 
         {/* GIF */}
-        {SHOW_GIPHY && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowGifPicker((v) => !v)}
-            aria-label="Insert GIF"
-            className={showGifPicker ? "bg-muted" : ""}
-          >
-            <ImagePlay size={15} />
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowGifPicker((v) => !v)}
+          aria-label="Insert GIF"
+          className={showGifPicker ? "bg-muted" : ""}
+        >
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
+        </Button>
 
         <Button
           type="submit"

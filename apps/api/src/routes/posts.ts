@@ -121,11 +121,11 @@ export default async function postRoutes(app: FastifyInstance) {
       prisma.post.findMany({
         where: {
           OR: [
-            { content: { contains: term } },
-            { bookTitle: { contains: term } },
-            { bookAuthor: { contains: term } },
-            { book: { title: { contains: term } } },
-            { book: { author: { contains: term } } },
+            { content: { contains: term, mode: "insensitive" } },
+            { bookTitle: { contains: term, mode: "insensitive" } },
+            { bookAuthor: { contains: term, mode: "insensitive" } },
+            { book: { title: { contains: term, mode: "insensitive" } } },
+            { book: { author: { contains: term, mode: "insensitive" } } },
           ],
         },
         orderBy: { createdAt: "desc" },
