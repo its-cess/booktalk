@@ -8,11 +8,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@booktalk/shared": ["../../packages/shared/src/index.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src"]
 }
