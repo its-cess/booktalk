@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createPostSchema = z.object({
-  content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long"),
+  content: z.string().min(1, "Post cannot be empty").max(500, "Post is too long"),
   bookId: z.string().optional(),
   bookTitle: z.string().optional(),
   bookAuthor: z.string().optional(),
@@ -13,7 +13,7 @@ export type CreatePostData = z.infer<typeof createPostSchema>;
 export type CreatePostInput = z.input<typeof createPostSchema>;
 
 export const updatePostSchema = z.object({
-  content: z.string().min(1, "Post cannot be empty").max(1000, "Post is too long").optional(),
+  content: z.string().min(1, "Post cannot be empty").max(500, "Post is too long").optional(),
   hasSpoilers: z.boolean().optional(),
   commentsDisabled: z.boolean().optional(),
   clearBook: z.boolean().optional(),
