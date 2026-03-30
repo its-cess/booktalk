@@ -41,17 +41,20 @@ export default function Home() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
+          justifyContent: "flex-start",
+          paddingTop: "4rem",
           textAlign: "center",
-          padding: "2rem",
+          padding: "4rem 2rem 2rem",
         }}
       >
-        <h2 className="text-foreground" style={{ fontSize: "1.75rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "0.75rem" }}>
-          BookTok for Millennials
+        <h2 className="text-foreground" style={{ fontSize: "1.75rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "0.25rem" }}>
+          BookTalk
         </h2>
+        <p className="text-foreground" style={{ fontSize: "1.1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "0.75rem" }}>
+          Read. Post. Discover.
+        </p>
         <p className="text-muted-foreground" style={{ marginBottom: "1.5rem" }}>
-          Sign up or log in to start posting and following.
+          Join the conversation — share reviews, discover new reads, and connect with fellow book lovers.
         </p>
         <div style={{ display: "flex", gap: "0.75rem" }}>
           <Button variant="outline" onClick={() => navigate("/login")}>Log in</Button>

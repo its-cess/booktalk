@@ -119,8 +119,11 @@ export function useUpdatePost() {
       return res.data.post;
     },
     onSuccess: (post, { authorUsername }) => {
-      queryClient.invalidateQueries({ queryKey: FEED_KEY });
-      queryClient.invalidateQueries({ queryKey: ["posts", post.id] });
+      const updatePosts = (posts: PostWithAuthor[] | undefined) =>
+        posts?.map((p) => (p.id === post.id ? { ...p, ...post } : p));
+      queryClient.setQueryData<PostWithAuthor[]>(FEED_KEY, updatePosts);
+      queryClient.setQueryData<PostWithAuthor[]>(TRENDING_KEY, updatePosts);
+      queryClient.setQueryData<PostWithAuthor>(["posts", post.id], post);
       queryClient.invalidateQueries({ queryKey: ["users", authorUsername] });
     },
   });
@@ -142,8 +145,11 @@ export function useToggleCommentsDisabled() {
       return res.data.post;
     },
     onSuccess: (post) => {
-      queryClient.invalidateQueries({ queryKey: FEED_KEY });
-      queryClient.invalidateQueries({ queryKey: ["posts", post.id] });
+      const updatePosts = (posts: PostWithAuthor[] | undefined) =>
+        posts?.map((p) => (p.id === post.id ? { ...p, commentsDisabled: post.commentsDisabled } : p));
+      queryClient.setQueryData<PostWithAuthor[]>(FEED_KEY, updatePosts);
+      queryClient.setQueryData<PostWithAuthor[]>(TRENDING_KEY, updatePosts);
+      queryClient.setQueryData<PostWithAuthor>(["posts", post.id], post);
     },
   });
 }
