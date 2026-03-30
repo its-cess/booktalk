@@ -8,6 +8,7 @@ import {
   Heart,
   MessageCircle,
   MoreHorizontal,
+  Share2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ import {
   useTogglePostLike,
   useToggleCommentsDisabled,
 } from "@/lib/queries";
+import { sharePost } from "@/lib/shareCard";
 
 export interface Post {
   id: string;
@@ -128,6 +130,22 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
     } catch {
       toast.error("Failed to like post.");
     }
+  }
+
+  function handleShare() {
+    sharePost({
+      content: post.content,
+      authorDisplayName: post.authorDisplayName,
+      authorUsername: post.authorUsername,
+      authorAvatarUrl: post.authorAvatarUrl,
+      likeCount: post.likeCount,
+      commentCount: post.commentCount,
+      bookTitle: post.book?.title ?? post.bookTitle ?? null,
+      bookAuthor: post.book?.author ?? post.bookAuthor ?? null,
+      bookCoverUrl: post.book?.coverUrl ?? null,
+      gifUrl: post.gifUrl,
+      hasSpoilers: post.hasSpoilers,
+    });
   }
 
   async function handleToggleComments() {
@@ -269,69 +287,82 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
             </div>
           )}
 
-          {/* Owner controls — stopPropagation so clicks here don't trigger card navigation */}
-          {isOwner && (
-            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center" }}>
-              {isEditing ? (
-                <>
+          {/* Post controls */}
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center" }}>
+            {isOwner && isEditing ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSave}
+                  disabled={updatePost.isPending || !editContent.trim()}
+                  aria-label="Save changes"
+                  className="text-primary"
+                  style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                >
+                  <Check size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDiscard}
+                  disabled={updatePost.isPending}
+                  aria-label="Discard changes"
+                  className="text-destructive"
+                  style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                >
+                  <X size={14} />
+                </Button>
+              </>
+            ) : isOwner ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={handleSave}
-                    disabled={updatePost.isPending || !editContent.trim()}
-                    aria-label="Save changes"
-                    className="text-primary"
+                    aria-label="Post options"
+                    className="text-muted-foreground"
                     style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
-                    <Check size={14} />
+                    <MoreHorizontal size={16} />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleDiscard}
-                    disabled={updatePost.isPending}
-                    aria-label="Discard changes"
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    Edit post
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleToggleComments}
+                    disabled={toggleComments.isPending}
+                  >
+                    {post.commentsDisabled ? "Enable comments" : "Disable comments"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 size={13} />
+                    Share as image
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setConfirmOpen(true)}
                     className="text-destructive"
-                    style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
                   >
-                    <X size={14} />
-                  </Button>
-                </>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Post options"
-                      className="text-muted-foreground"
-                      style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-                    >
-                      <MoreHorizontal size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      Edit post
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleToggleComments}
-                      disabled={toggleComments.isPending}
-                    >
-                      {post.commentsDisabled ? "Enable comments" : "Disable comments"}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => setConfirmOpen(true)}
-                      className="text-destructive"
-                    >
-                      Delete post
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          )}
+                    Delete post
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Share post as image"
+                onClick={handleShare}
+                className="text-muted-foreground"
+                style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+              >
+                <Share2 size={15} />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Book + content section — two-column when cover is available */}

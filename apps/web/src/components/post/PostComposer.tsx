@@ -121,6 +121,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
           onChange={(val) => setValue("content", val, { shouldValidate: true })}
           placeholder="What are you reading?"
           rows={3}
+          maxLength={500}
         />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.25rem" }}>
           {errors.content ? (
@@ -128,8 +129,8 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
           ) : (
             <span />
           )}
-          <span className={content.length > 900 ? "text-destructive" : "text-muted-foreground"} style={{ fontSize: "0.75rem" }}>
-            {content.length}/1000
+          <span className={content.length > 450 ? "text-destructive" : "text-muted-foreground"} style={{ fontSize: "0.75rem" }}>
+            {content.length}/500
           </span>
         </div>
       </div>

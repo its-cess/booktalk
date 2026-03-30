@@ -86,6 +86,11 @@ describe("CommentCard — display", () => {
     expect(screen.queryByRole("button", { name: "Comment options" })).not.toBeInTheDocument();
   });
 
+  it("shows a direct share button when not owner or post owner", () => {
+    render(<CommentCard {...DEFAULT_PROPS} />);
+    expect(screen.getByRole("button", { name: "Share comment as image" })).toBeInTheDocument();
+  });
+
   it("shows the options menu when isOwner is true", () => {
     render(<CommentCard {...DEFAULT_PROPS} isOwner />);
     expect(screen.getByRole("button", { name: "Comment options" })).toBeInTheDocument();

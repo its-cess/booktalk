@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Camera, Check, Loader2, Pencil, Settings, X } from "lucide-react";
+import { Camera, Check, Loader2, Pencil, Settings, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "@/lib/queries";
+import { shareProfile } from "@/lib/shareCard";
 import PostCard from "@/components/post/PostCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,26 +203,61 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Follow / Unfollow button for other users */}
+          {/* Follow / Unfollow + Share for other users */}
           {!isOwn && me && (
-            <Button
-              variant={profile.isFollowing ? "outline" : "default"}
-              size="sm"
-              onClick={handleFollow}
-              disabled={toggleFollow.isPending}
-              style={{ flexShrink: 0 }}
-            >
-              {profile.isFollowing ? "Unfollow" : "Follow"}
-            </Button>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+              <Button
+                variant={profile.isFollowing ? "outline" : "default"}
+                size="sm"
+                onClick={handleFollow}
+                disabled={toggleFollow.isPending}
+              >
+                {profile.isFollowing ? "Unfollow" : "Follow"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Share profile"
+                className="h-8 w-8 text-muted-foreground"
+                onClick={() => shareProfile({
+                  displayName: profile.displayName,
+                  username: profile.username,
+                  bio: profile.bio,
+                  avatarUrl: profile.avatarUrl,
+                  followersCount: profile.followersCount,
+                  followingCount: profile.followingCount,
+                })}
+              >
+                <Share2 size={16} />
+              </Button>
+            </div>
           )}
 
-          {/* Settings link for own profile */}
+          {/* Settings + Share for own profile */}
           {isOwn && (
-            <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" style={{ flexShrink: 0 }} asChild>
-              <Link to="/settings">
-                <Settings size={18} />
-              </Link>
-            </Button>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", flexShrink: 0 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Share profile"
+                className="h-8 w-8 text-muted-foreground"
+                onClick={() => shareProfile({
+                  displayName: profile.displayName,
+                  username: profile.username,
+                  bio: profile.bio,
+                  avatarUrl: profile.avatarUrl,
+                  followersCount: profile.followersCount,
+                  followingCount: profile.followingCount,
+                })}
+              >
+                <Share2 size={16} />
+              </Button>
+              <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" asChild>
+                <Link to="/settings">
+                  <Settings size={18} />
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
 
