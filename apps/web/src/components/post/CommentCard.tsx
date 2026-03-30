@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Heart, MoreHorizontal, Pencil, Trash2, X } from "lucide-react";
+import { Check, Heart, MoreHorizontal, Pencil, Share2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useUpdateComment, useDeleteComment, useToggleCommentLike } from "@/lib/queries";
+import { shareComment } from "@/lib/shareCard";
 import { Textarea } from "@/components/ui/textarea";
 import type { CommentWithAuthor } from "@booktalk/shared";
 
@@ -58,6 +60,16 @@ export default function CommentCard({
     } catch {
       toast.error("Failed to delete comment.");
     }
+  }
+
+  function handleShare() {
+    shareComment({
+      content: comment.content,
+      authorDisplayName: comment.author.displayName,
+      authorUsername: comment.author.username,
+      authorAvatarUrl: comment.author.avatarUrl,
+      likeCount: comment.likeCount,
+    });
   }
 
   async function handleLike() {
@@ -144,8 +156,8 @@ export default function CommentCard({
               {formatDate(comment.createdAt)}
             </span>
 
-            {/* Actions menu */}
-            {(isOwner || canDelete) && !isEditing && (
+            {/* Actions menu — always visible when not editing */}
+            {!isEditing && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -153,11 +165,7 @@ export default function CommentCard({
                     size="icon"
                     aria-label="Comment options"
                     className="text-muted-foreground"
-                  style={{
-                      flexShrink: 0,
-                      width: "1.5rem",
-                      height: "1.5rem",
-                    }}
+                    style={{ flexShrink: 0, width: "1.5rem", height: "1.5rem" }}
                   >
                     <MoreHorizontal size={13} />
                   </Button>
@@ -169,14 +177,21 @@ export default function CommentCard({
                       Edit comment
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 size={13} />
+                    Share as image
+                  </DropdownMenuItem>
                   {canDelete && (
-                    <DropdownMenuItem
-                      onClick={() => setConfirmOpen(true)}
-                      className="text-destructive"
-                    >
-                      <Trash2 size={13} />
-                      Delete comment
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setConfirmOpen(true)}
+                        className="text-destructive"
+                      >
+                        <Trash2 size={13} />
+                        Delete comment
+                      </DropdownMenuItem>
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
