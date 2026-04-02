@@ -3,7 +3,12 @@ import { z } from "zod";
 /** Request body for POST /auth/signup. API accepts these four fields only. */
 export const signupRequestSchema = z.object({
   email: z.string().email("Invalid email"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must be at most 30 characters")
+    .trim()
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
   displayName: z.string().min(1, "Display name is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });

@@ -45,7 +45,7 @@ export default function MentionTextarea({
     (text: string, cursorPos: number) => {
       const textBeforeCursor = text.slice(0, cursorPos);
       // Find the last @ that starts a word
-      const match = textBeforeCursor.match(/@(\w*)$/);
+      const match = textBeforeCursor.match(/@([\w-]*)$/);
       if (match) {
         const startIndex = textBeforeCursor.lastIndexOf("@");
         setMention({ active: true, query: match[1], startIndex });

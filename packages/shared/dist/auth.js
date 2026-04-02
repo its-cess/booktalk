@@ -5,7 +5,12 @@ const zod_1 = require("zod");
 /** Request body for POST /auth/signup. API accepts these four fields only. */
 exports.signupRequestSchema = zod_1.z.object({
     email: zod_1.z.string().email("Invalid email"),
-    username: zod_1.z.string().min(3, "Username must be at least 3 characters"),
+    username: zod_1.z
+        .string()
+        .min(3, "Username must be at least 3 characters")
+        .max(30, "Username must be at most 30 characters")
+        .trim()
+        .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
     displayName: zod_1.z.string().min(1, "Display name is required"),
     password: zod_1.z.string().min(8, "Password must be at least 8 characters"),
 });

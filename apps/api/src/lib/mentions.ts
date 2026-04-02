@@ -1,6 +1,6 @@
 import { prisma } from "../prisma.js";
 
-const MENTION_RE = /@([a-zA-Z0-9_]+)/g;
+const MENTION_RE = /@([a-zA-Z0-9_-]+)/g;
 
 /** Extract unique usernames mentioned in content (without the @ prefix). */
 export function parseMentionUsernames(content: string): string[] {
