@@ -131,6 +131,15 @@ describe("MentionTextarea", () => {
     expect(finalValue).toContain("@alice");
   });
 
+  it("keeps the dropdown open and passes query with hyphen when typing a hyphenated username", async () => {
+    const hyphenUser = [{ id: "u3", username: "K-way", displayName: "K Way" }];
+    mockUseUserSearch.mockReturnValue({ data: hyphenUser });
+    render(<Wrapper />);
+    await userEvent.type(screen.getByPlaceholderText("Type here"), "@K-");
+    expect(mockUseUserSearch).toHaveBeenCalledWith("K-");
+    expect(screen.getByRole("button", { name: /@K-way/ })).toBeInTheDocument();
+  });
+
   it("does not fire onKeyDown for ArrowDown when dropdown is open", async () => {
     mockUseUserSearch.mockReturnValue({ data: USERS });
     const onKeyDown = vi.fn();
