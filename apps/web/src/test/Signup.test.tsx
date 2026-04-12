@@ -64,6 +64,15 @@ describe("Signup", () => {
     expect(mockApiPost).not.toHaveBeenCalled();
   });
 
+  it("shows a validation error and does not call the API when username contains invalid characters", async () => {
+    const { container } = render(<Signup />);
+    await fillForm(container.querySelectorAll("input"), { username: "K-way" });
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(await screen.findByText(/only contain letters, numbers, and underscores/i)).toBeInTheDocument();
+    expect(mockApiPost).not.toHaveBeenCalled();
+  });
+
   it("calls the API, stores credentials, and navigates home on success", async () => {
     const authUser = {
       id: "1",
