@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Outlet, Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { Bell, Home, LogOut, LogIn, Pencil, User, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Bell, Home, LogOut, LogIn, Megaphone, Pencil, User, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/queries";
 import NotificationPanel from "./NotificationDropdown";
 import PostComposer from "./post/PostComposer";
+import FeedbackDialog from "./FeedbackDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -31,6 +32,7 @@ export default function Layout() {
   const [notifExpanded, setNotifExpanded] = useState(false);
   const [mobileNotifOpen, setMobileNotifOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   // Sync header search input with URL when on /search
   const urlQuery = location.pathname === "/search" ? (searchParams.get("q") ?? "") : "";
@@ -155,6 +157,16 @@ export default function Layout() {
             )}
           </form>
         </div>
+
+        {/* Mobile feedback — header icon (bottom nav is full) */}
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          aria-label="Send feedback"
+          className="flex md:hidden items-center text-muted-foreground"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "0 1.5rem 0 0.5rem", flexShrink: 0 }}
+        >
+          <Megaphone size={20} />
+        </button>
       </header>
 
       {/* ── Below header: sidebar + main ── */}
@@ -255,8 +267,16 @@ export default function Layout() {
             )}
           </nav>
 
-          {isAuthenticated && (
-            <div style={{ padding: "0.75rem 0.5rem", borderTop: "1px solid hsl(var(--border))", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
+          <div style={{ padding: "0.75rem 0.5rem", borderTop: "1px solid hsl(var(--border))", fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className={navClass(false)}
+              style={{ border: "none", cursor: "pointer", background: "none" }}
+            >
+              <Megaphone size={16} />
+              Feedback
+            </button>
+            {isAuthenticated && (
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
@@ -266,8 +286,8 @@ export default function Layout() {
                 <LogOut size={16} />
                 Log out
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </aside>
 
         {/* Main content */}
@@ -412,6 +432,9 @@ export default function Layout() {
           <NotificationPanel onClose={() => setMobileNotifOpen(false)} />
         </SheetContent>
       </Sheet>
+
+      {/* ── Feedback modal ── */}
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </div>
   );
 }

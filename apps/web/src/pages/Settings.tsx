@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import FeedbackDialog from "@/components/FeedbackDialog";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -18,6 +19,7 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -67,6 +69,21 @@ export default function Settings() {
             <span className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>Username</span>
             <span className="text-foreground" style={{ fontSize: "0.875rem" }}>@{user?.username}</span>
           </div>
+        </div>
+      </section>
+
+      {/* Feedback */}
+      <section style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>
+          Feedback
+        </h2>
+        <div className="bg-background rounded-sm" style={{ padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", border: "1px solid hsl(var(--border))" }}>
+          <p className="text-muted-foreground" style={{ fontSize: "0.875rem", margin: 0 }}>
+            Report a bug or request a feature.
+          </p>
+          <Button variant="outline" size="sm" style={{ flexShrink: 0 }} onClick={() => setFeedbackOpen(true)}>
+            Send feedback
+          </Button>
         </div>
       </section>
 
@@ -147,6 +164,8 @@ export default function Settings() {
         onConfirm={handleDeleteAccount}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </div>
   );
 }

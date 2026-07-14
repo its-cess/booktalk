@@ -94,8 +94,11 @@ jobs:
             packages/shared/dist
           key: build-${{ github.sha }}
 
-      - name: Typecheck
-        run: pnpm --filter web typecheck
+      # Full production build (tsc -b + vite build) — matches the Cloudflare
+      # Pages build, so type errors in test files (noUnusedLocals) and build
+      # failures are caught on the PR instead of at deploy time.
+      - name: Build web
+        run: pnpm --filter web build
 
   unit-tests:
     name: Unit Tests

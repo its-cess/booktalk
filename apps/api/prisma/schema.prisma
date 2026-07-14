@@ -37,8 +37,9 @@ model User {
   notifications      Notification[] @relation("RecipientNotifications")
   actorNotifications Notification[] @relation("ActorNotifications")
 
-  ratings BookRating[]
-  shelves Shelf[]
+  ratings  BookRating[]
+  shelves  Shelf[]
+  feedback Feedback[]
 }
 
 model AuthCredential {
@@ -250,4 +251,21 @@ model ShelfItem {
   @@unique([shelfId, bookId])
   @@index([shelfId])
   @@index([bookId])
+}
+
+// User-submitted feedback (bug report / feature request / other). Emailed to
+// the site owner and stored so nothing is lost if email delivery fails.
+model Feedback {
+  id        String  @id @default(cuid())
+  userId    String?
+  type      String // "bug" | "feature" | "other"
+  message   String
+  url       String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }

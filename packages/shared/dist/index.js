@@ -21,3 +21,4 @@ __exportStar(require("./user"), exports);
 __exportStar(require("./notification"), exports);
 __exportStar(require("./rating"), exports);
 __exportStar(require("./shelf"), exports);
+__exportStar(require("./feedback"), exports);

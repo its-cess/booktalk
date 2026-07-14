@@ -15,6 +15,7 @@ import type {
   ShelfWithBooks,
   ShelfMembership,
   CreateShelfData,
+  FeedbackData,
 } from "@booktalk/shared";
 
 interface BookDetailResponse {
@@ -620,5 +621,15 @@ export function useRemoveFromShelf() {
       await api.delete(`/shelves/${shelfId}/items/${bookId}`);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+// --- Feedback ---
+
+export function useSendFeedback() {
+  return useMutation({
+    mutationFn: async (data: FeedbackData) => {
+      await api.post("/feedback", data);
+    },
   });
 }

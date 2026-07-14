@@ -18,6 +18,7 @@ vi.mock("@/lib/queries", () => ({
   useDeleteAccount: mockUseDeleteAccount,
 }));
 vi.mock("sonner", () => ({ toast: { success: mockToastSuccess, error: mockToastError } }));
+vi.mock("@/components/FeedbackDialog", () => ({ default: () => null }));
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
