@@ -6,6 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { updateProfileSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
+import { loadAuthorBookRatings, postRatingFor } from "../lib/rating.js";
 
 const r2 = new S3Client({
   region: "auto",
@@ -90,9 +91,11 @@ export default async function userRoutes(app: FastifyInstance) {
             bookAuthor: true,
             hasSpoilers: true,
             commentsDisabled: true,
+            gifUrl: true,
+            showsRating: true,
             createdAt: true,
             author: {
-              select: { id: true, username: true, displayName: true },
+              select: { id: true, username: true, displayName: true, avatarUrl: true },
             },
             _count: { select: { comments: true, likes: true } },
           },
@@ -121,6 +124,9 @@ export default async function userRoutes(app: FastifyInstance) {
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
 
     const { _count, posts, ...rest } = user;
+    const ratingMap = await loadAuthorBookRatings(
+      posts.map((p) => ({ authorId: user.id, bookId: p.bookId, showsRating: p.showsRating }))
+    );
     return reply.send({
       user: {
         ...rest,
@@ -129,6 +135,10 @@ export default async function userRoutes(app: FastifyInstance) {
         isFollowing: !!followRecord,
         posts: posts.map(({ _count: postCount, ...post }) => ({
           ...post,
+          ...postRatingFor(
+            { authorId: user.id, bookId: post.bookId, showsRating: post.showsRating },
+            ratingMap
+          ),
           likeCount: postCount.likes,
           commentCount: postCount.comments,
           isLiked: likedPostIds.has(post.id),

@@ -36,6 +36,8 @@ model User {
 
   notifications      Notification[] @relation("RecipientNotifications")
   actorNotifications Notification[] @relation("ActorNotifications")
+
+  ratings BookRating[]
 }
 
 model AuthCredential {
@@ -75,7 +77,8 @@ model Book {
 
   createdAt DateTime @default(now())
 
-  posts Post[]
+  posts   Post[]
+  ratings BookRating[]
 }
 
 model Post {
@@ -91,6 +94,11 @@ model Post {
   hasSpoilers      Boolean @default(false)
   commentsDisabled Boolean @default(false)
   gifUrl           String?
+
+  // Whether this post displays the author's rating of the linked book. The
+  // value shown is the author's *current* BookRating (see BookRating), not a
+  // snapshot — so changing the rating anywhere updates it everywhere.
+  showsRating Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -184,4 +192,25 @@ model Notification {
 
   @@index([userId, createdAt])
   @@index([userId, postId, type])
+}
+
+// One rating per user per book. Value is either a star rating (halfStars 0–10,
+// where 10 = 5★) or DNF (dnf = true, halfStars = null). The two are mutually
+// exclusive; enforced in the API/shared schema.
+model BookRating {
+  id     String @id @default(cuid())
+  userId String
+  bookId String
+
+  halfStars Int?    // 0–10; null when dnf
+  dnf       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([bookId])
 }
