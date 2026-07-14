@@ -319,6 +319,8 @@ export default function Profile() {
                 likeCount: post.likeCount,
                 commentCount: post.commentCount,
                 isLiked: post.isLiked,
+                rating: post.rating,
+                dnf: post.dnf,
               }}
               isOwner={isOwn}
               disableAuthorLink

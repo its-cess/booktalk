@@ -10,7 +10,16 @@ import type {
   UserSummary,
   BookResult,
   GroupedNotification,
+  MyBookRating,
 } from "@booktalk/shared";
+
+interface BookDetailResponse {
+  book: BookResult;
+  posts: PostWithAuthor[];
+  myRating: MyBookRating | null;
+  averageRating: number | null;
+  ratingCount: number;
+}
 
 export const FEED_KEY = ["posts", "feed"] as const;
 
@@ -18,11 +27,45 @@ export function useBookDetail(id: string) {
   return useQuery({
     queryKey: ["books", id],
     queryFn: async () => {
-      const res = await api.get<{ book: BookResult; posts: PostWithAuthor[] }>(`/books/${id}`);
+      const res = await api.get<BookDetailResponse>(`/books/${id}`);
       return res.data;
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Ratings are shown live on posts too, so refresh the surfaces that render them.
+function invalidateRatingSurfaces(queryClient: ReturnType<typeof useQueryClient>, bookId: string, myUsername?: string) {
+  queryClient.invalidateQueries({ queryKey: ["books", bookId] });
+  queryClient.invalidateQueries({ queryKey: FEED_KEY });
+  queryClient.invalidateQueries({ queryKey: TRENDING_KEY });
+  if (myUsername) queryClient.invalidateQueries({ queryKey: ["users", myUsername] });
+}
+
+export function useRateBook(bookId: string) {
+  const queryClient = useQueryClient();
+  const { user: me } = useAuth();
+  return useMutation({
+    mutationFn: async ({ rating, dnf }: { rating: number | null; dnf: boolean }) => {
+      const res = await api.put<{ myRating: MyBookRating }>(`/books/${bookId}/rating`, {
+        rating,
+        dnf,
+      });
+      return res.data.myRating;
+    },
+    onSuccess: () => invalidateRatingSurfaces(queryClient, bookId, me?.username),
+  });
+}
+
+export function useRemoveRating(bookId: string) {
+  const queryClient = useQueryClient();
+  const { user: me } = useAuth();
+  return useMutation({
+    mutationFn: async () => {
+      await api.delete(`/books/${bookId}/rating`);
+    },
+    onSuccess: () => invalidateRatingSurfaces(queryClient, bookId, me?.username),
   });
 }
 
@@ -113,6 +156,8 @@ export function useUpdatePost() {
       bookId,
       bookTitle,
       bookAuthor,
+      rating,
+      dnf,
     }: {
       postId: string;
       content: string;
@@ -122,6 +167,8 @@ export function useUpdatePost() {
       bookId?: string;
       bookTitle?: string;
       bookAuthor?: string;
+      rating?: number | null;
+      dnf?: boolean;
     }) => {
       const res = await api.patch<{ post: PostWithAuthor }>(`/posts/${postId}`, {
         content,
@@ -129,6 +176,8 @@ export function useUpdatePost() {
         ...(clearBook && { clearBook: true }),
         ...(bookId && { bookId }),
         ...(bookTitle && !bookId && { bookTitle, bookAuthor }),
+        ...(rating !== undefined && { rating }),
+        ...(dnf !== undefined && { dnf }),
       });
       return res.data.post;
     },

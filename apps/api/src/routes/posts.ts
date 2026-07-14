@@ -4,6 +4,12 @@ import { createPostSchema, updatePostSchema, createCommentSchema } from "@bookta
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { notifyMentions } from "../lib/mentions.js";
+import {
+  halfStarsToRating,
+  ratingToHalfStars,
+  loadAuthorBookRatings,
+  postRatingFor,
+} from "../lib/rating.js";
 
 const authorSelect = {
   id: true,
@@ -56,10 +62,12 @@ export default async function postRoutes(app: FastifyInstance) {
 
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
     const followingIds = new Set(userFollowing.map((f) => f.followingId));
+    const ratingMap = await loadAuthorBookRatings(posts);
 
     return reply.send({
       posts: posts.map(({ _count, ...post }) => ({
         ...post,
+        ...postRatingFor(post, ratingMap),
         likeCount: _count.likes,
         commentCount: _count.comments,
         isLiked: likedPostIds.has(post.id),
@@ -90,10 +98,12 @@ export default async function postRoutes(app: FastifyInstance) {
 
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
     const followingIds = new Set(userFollowing.map((f) => f.followingId));
+    const ratingMap = await loadAuthorBookRatings(posts);
 
     const scored = posts
       .map(({ _count, ...post }) => ({
         ...post,
+        ...postRatingFor(post, ratingMap),
         likeCount: _count.likes,
         commentCount: _count.comments,
         isLiked: likedPostIds.has(post.id),
@@ -142,10 +152,12 @@ export default async function postRoutes(app: FastifyInstance) {
     ]);
 
     const likedPostIds = new Set(userLikes.map((l) => l.postId));
+    const ratingMap = await loadAuthorBookRatings(posts);
 
     return reply.send({
       posts: posts.map(({ _count, ...post }) => ({
         ...post,
+        ...postRatingFor(post, ratingMap),
         likeCount: _count.likes,
         commentCount: _count.comments,
         isLiked: likedPostIds.has(post.id),
@@ -175,10 +187,12 @@ export default async function postRoutes(app: FastifyInstance) {
         }))
       : false;
 
+    const ratingMap = await loadAuthorBookRatings([post]);
     const { _count, ...postData } = post;
     return reply.send({
       post: {
         ...postData,
+        ...postRatingFor(post, ratingMap),
         likeCount: _count.likes,
         commentCount: _count.comments,
         isLiked,
@@ -192,12 +206,19 @@ export default async function postRoutes(app: FastifyInstance) {
       const payload = request.user as { userId: string };
       const data = createPostSchema.parse(request.body);
 
+      // A rating only attaches to a post that references a real Book.
+      // dnf takes precedence over a star value if both are somehow provided.
+      const wantsRating = !!data.bookId && (data.dnf === true || data.rating != null);
+      const ratingDnf = wantsRating ? data.dnf === true : false;
+      const ratingHalfStars = wantsRating && !ratingDnf ? ratingToHalfStars(data.rating) : null;
+
       const post = await prisma.post.create({
         data: {
           authorId: payload.userId,
           content: data.content,
           hasSpoilers: data.hasSpoilers,
           gifUrl: data.gifUrl ?? null,
+          showsRating: wantsRating,
           // OpenLibrary book takes precedence; fall back to manual fields
           ...(data.bookId
             ? { bookId: data.bookId }
@@ -213,6 +234,20 @@ export default async function postRoutes(app: FastifyInstance) {
         },
       });
 
+      // Keep the canonical per-user/per-book rating in sync with the snapshot
+      if (wantsRating && data.bookId) {
+        await prisma.bookRating.upsert({
+          where: { userId_bookId: { userId: payload.userId, bookId: data.bookId } },
+          update: { halfStars: ratingHalfStars, dnf: ratingDnf },
+          create: {
+            userId: payload.userId,
+            bookId: data.bookId,
+            halfStars: ratingHalfStars,
+            dnf: ratingDnf,
+          },
+        });
+      }
+
       // Fire mention notifications (non-blocking)
       notifyMentions({
         content: data.content,
@@ -225,6 +260,8 @@ export default async function postRoutes(app: FastifyInstance) {
       return reply.status(201).send({
         post: {
           ...postData,
+          rating: wantsRating && !ratingDnf ? halfStarsToRating(ratingHalfStars) : null,
+          dnf: wantsRating ? ratingDnf : false,
           likeCount: _count.likes,
           commentCount: _count.comments,
           isLiked: false,
@@ -250,19 +287,34 @@ export default async function postRoutes(app: FastifyInstance) {
       if (!post) return reply.status(404).send({ error: "Post not found" });
       if (post.authorId !== payload.userId) return reply.status(403).send({ error: "Forbidden" });
 
+      // Resolve the rating snapshot. Removing the book clears any rating;
+      // otherwise a rating attaches only when the post still references a Book.
+      const ratingProvided = data.rating !== undefined || data.dnf !== undefined;
+      const effectiveBookId = data.clearBook ? null : data.bookId ?? post.bookId;
+      const snapDnf = data.dnf === true;
+      const snapHalfStars = snapDnf ? null : ratingToHalfStars(data.rating ?? null);
+      const applyRating = ratingProvided && !data.clearBook && !!effectiveBookId;
+      const willShowRating = snapHalfStars != null || snapDnf;
+
       const updated = await prisma.post.update({
         where: { id },
         data: {
           ...(data.content !== undefined && { content: data.content }),
           ...(data.hasSpoilers !== undefined && { hasSpoilers: data.hasSpoilers }),
           ...(data.commentsDisabled !== undefined && { commentsDisabled: data.commentsDisabled }),
-          ...(data.clearBook && { bookId: null, bookTitle: null, bookAuthor: null }),
+          ...(data.clearBook && {
+            bookId: null,
+            bookTitle: null,
+            bookAuthor: null,
+            showsRating: false,
+          }),
           ...(data.bookId && { bookId: data.bookId, bookTitle: null, bookAuthor: null }),
           ...(data.bookTitle && !data.bookId && {
             bookTitle: data.bookTitle,
             bookAuthor: data.bookAuthor ?? null,
             bookId: null,
           }),
+          ...(applyRating && { showsRating: willShowRating }),
         },
         include: {
           author: { select: authorSelect },
@@ -270,6 +322,27 @@ export default async function postRoutes(app: FastifyInstance) {
           _count: { select: { comments: true, likes: true } },
         },
       });
+
+      // Keep the canonical per-user/per-book rating in sync with the snapshot.
+      // An empty rating (no stars and not DNF) means the user cleared it.
+      if (applyRating && effectiveBookId) {
+        if (snapHalfStars === null && !snapDnf) {
+          await prisma.bookRating.deleteMany({
+            where: { userId: payload.userId, bookId: effectiveBookId },
+          });
+        } else {
+          await prisma.bookRating.upsert({
+            where: { userId_bookId: { userId: payload.userId, bookId: effectiveBookId } },
+            update: { halfStars: snapHalfStars, dnf: snapDnf },
+            create: {
+              userId: payload.userId,
+              bookId: effectiveBookId,
+              halfStars: snapHalfStars,
+              dnf: snapDnf,
+            },
+          });
+        }
+      }
 
       // Fire mention notifications for newly added @mentions (non-blocking)
       if (data.content !== undefined) {
@@ -285,10 +358,12 @@ export default async function postRoutes(app: FastifyInstance) {
         where: { postId_userId: { postId: id, userId: payload.userId } },
       }));
 
+      const ratingMap = await loadAuthorBookRatings([updated]);
       const { _count, ...postData } = updated;
       return reply.send({
         post: {
           ...postData,
+          ...postRatingFor(updated, ratingMap),
           likeCount: _count.likes,
           commentCount: _count.comments,
           isLiked,

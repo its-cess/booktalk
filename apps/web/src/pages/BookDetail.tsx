@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { useBookDetail } from "@/lib/queries";
+import { useBookDetail, useRateBook, useRemoveRating } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
+import StarRating, { DnfBadge } from "@/components/ui/StarRating";
 import PostCard from "@/components/post/PostCard";
 
 export default function BookDetail() {
@@ -10,6 +13,9 @@ export default function BookDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, isLoading, isError } = useBookDetail(id!);
+  const rate = useRateBook(id!);
+  const removeRating = useRemoveRating(id!);
+  const [ratingEditing, setRatingEditing] = useState(false);
 
   if (isLoading) {
     return (
@@ -27,7 +33,30 @@ export default function BookDetail() {
     );
   }
 
-  const { book, posts } = data;
+  const { book, posts, myRating, averageRating, ratingCount } = data;
+
+  function handleRate(value: number) {
+    setRatingEditing(false);
+    rate.mutate(
+      { rating: value, dnf: false },
+      { onError: () => toast.error("Failed to save your rating.") }
+    );
+  }
+  function handleDnf() {
+    setRatingEditing(false);
+    rate.mutate(
+      { rating: null, dnf: true },
+      { onError: () => toast.error("Failed to save your rating.") }
+    );
+  }
+  function handleClearRating() {
+    setRatingEditing(false);
+    removeRating.mutate(undefined, {
+      onError: () => toast.error("Failed to clear your rating."),
+    });
+  }
+
+  const hasMyRating = !!myRating && (myRating.rating != null || myRating.dnf);
 
   return (
     <div style={{ maxWidth: "42rem", margin: "0 auto", padding: "2rem 1rem" }}>
@@ -65,6 +94,77 @@ export default function BookDetail() {
           <p className="text-muted-foreground" style={{ fontSize: "0.9rem", marginBottom: "1rem" }}>
             {book.author}
           </p>
+
+          {/* Ratings */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+            {averageRating != null ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <StarRating value={averageRating} readOnly size={18} />
+                <span className="text-muted-foreground" style={{ fontSize: "0.8rem" }}>
+                  {averageRating.toFixed(1)} · {ratingCount} rating{ratingCount === 1 ? "" : "s"}
+                </span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground" style={{ fontSize: "0.8rem" }}>
+                Not enough ratings yet
+              </span>
+            )}
+
+            {user && (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                {(hasMyRating || ratingEditing) && (
+                  <span
+                    className="text-foreground basis-full md:basis-auto"
+                    style={{ fontSize: "0.8rem", fontWeight: 600 }}
+                  >
+                    Your rating:
+                  </span>
+                )}
+
+                {ratingEditing ? (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <StarRating
+                      value={myRating && !myRating.dnf ? myRating.rating : null}
+                      dnf={myRating?.dnf ?? false}
+                      onChange={handleRate}
+                      onDnf={handleDnf}
+                      onClear={handleClearRating}
+                      size={24}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRatingEditing(false)}
+                      className="text-muted-foreground hover:text-foreground"
+                      style={{ fontSize: "0.75rem", background: "none", border: "none", cursor: "pointer" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : hasMyRating ? (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                    {myRating!.dnf ? (
+                      <DnfBadge />
+                    ) : (
+                      <StarRating value={myRating!.rating} readOnly size={22} />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setRatingEditing(true)}
+                      aria-label="Edit rating"
+                      className="text-muted-foreground h-7 w-7"
+                    >
+                      <Pencil size={13} />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setRatingEditing(true)}>
+                    Rate this book
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
 
           {book.description ? (
             <p className="text-foreground" style={{ fontSize: "0.875rem", lineHeight: 1.7, whiteSpace: "pre-line" }}>
@@ -111,6 +211,8 @@ export default function BookDetail() {
                 likeCount: post.likeCount,
                 commentCount: post.commentCount,
                 isLiked: post.isLiked,
+                rating: post.rating,
+                dnf: post.dnf,
               }}
               isOwner={user?.id === post.author.id}
             />

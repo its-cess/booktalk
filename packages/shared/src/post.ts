@@ -7,6 +7,10 @@ export const createPostSchema = z.object({
   bookAuthor: z.string().optional(),
   hasSpoilers: z.boolean().default(false),
   gifUrl: z.string().url().optional(),
+  // Optional rating snapshot; only honored by the API when a real bookId is set.
+  // rating is 0–5 in 0.5 steps (null = no star value), dnf marks "did not finish".
+  rating: z.number().min(0).max(5).multipleOf(0.5).nullable().optional(),
+  dnf: z.boolean().optional(),
 });
 
 export type CreatePostData = z.infer<typeof createPostSchema>;
@@ -20,6 +24,8 @@ export const updatePostSchema = z.object({
   bookId: z.string().optional(),
   bookTitle: z.string().optional(),
   bookAuthor: z.string().optional(),
+  rating: z.number().min(0).max(5).multipleOf(0.5).nullable().optional(),
+  dnf: z.boolean().optional(),
 });
 
 export type UpdatePostData = z.infer<typeof updatePostSchema>;
@@ -42,6 +48,10 @@ export interface PostWithAuthor {
   hasSpoilers: boolean;
   commentsDisabled: boolean;
   gifUrl: string | null;
+  // Rating snapshot shown on the post. rating is 0–5 (null when DNF or unrated);
+  // dnf true means the author marked the book "did not finish".
+  rating: number | null;
+  dnf: boolean;
   createdAt: string;
   author: {
     id: string;

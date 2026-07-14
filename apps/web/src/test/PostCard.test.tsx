@@ -226,6 +226,61 @@ describe("PostCard — edit", () => {
   });
 });
 
+const RATED_BOOK_POST = {
+  ...MOCK_POST,
+  book: { id: "book-1", title: "Dune", author: "Frank Herbert", coverUrl: null },
+  rating: null,
+  dnf: false,
+};
+
+describe("PostCard — edit rating", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  async function enterEdit() {
+    await openMenu();
+    await userEvent.click(screen.getByRole("menuitem", { name: /edit post/i }));
+  }
+
+  it("shows the rating control in edit mode when the post has a real book", async () => {
+    render(<PostCard post={RATED_BOOK_POST} isOwner />);
+    await enterEdit();
+    expect(screen.getByText("Your rating:")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "4 stars" })).toBeInTheDocument();
+  });
+
+  it("does not show the rating control when the post has no real book", async () => {
+    render(<PostCard post={MOCK_POST} isOwner />);
+    await enterEdit();
+    expect(screen.queryByText("Your rating:")).not.toBeInTheDocument();
+  });
+
+  it("saves an added rating for a previously unrated post", async () => {
+    mockUpdateMutateAsync.mockResolvedValueOnce({});
+    render(<PostCard post={RATED_BOOK_POST} isOwner />);
+    await enterEdit();
+    await userEvent.click(screen.getByRole("button", { name: "4 stars" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ postId: "post-1", rating: 4, dnf: false })
+      );
+    });
+  });
+
+  it("does not send a rating when it was left untouched", async () => {
+    mockUpdateMutateAsync.mockResolvedValueOnce({});
+    render(<PostCard post={{ ...RATED_BOOK_POST, rating: 3 }} isOwner />);
+    await enterEdit();
+    const textarea = screen.getByRole("textbox", { name: "Edit post content" });
+    await userEvent.clear(textarea);
+    await userEvent.type(textarea, "New text");
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync.mock.calls[0][0]).not.toHaveProperty("rating");
+    });
+  });
+});
+
 const SPOILER_POST = { ...MOCK_POST, hasSpoilers: true, content: "Dumbledore dies." };
 
 describe("PostCard — spoilers", () => {

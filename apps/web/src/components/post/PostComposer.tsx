@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import StarRating from "@/components/ui/StarRating";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
 import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
@@ -23,6 +24,14 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
   const [showGifPicker, setShowGifPicker] = useState(false);
   const gifPickerRef = useRef<HTMLDivElement>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
+  // Rating attaches only to a searched (real) book, not a manual title.
+  const [rating, setRating] = useState<number | null>(null);
+  const [dnf, setDnf] = useState(false);
+
+  function resetRating() {
+    setRating(null);
+    setDnf(false);
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -66,6 +75,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
   function handleBookButtonClick() {
     if (picker.bookMode !== "none" || picker.selectedBook) {
       picker.clear();
+      resetRating();
       setValue("bookTitle", "");
       setValue("bookAuthor", "");
     } else {
@@ -84,7 +94,10 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
         hasSpoilers: data.hasSpoilers,
         ...(gifUrl && { gifUrl }),
         ...(picker.selectedBook
-          ? { bookId: picker.selectedBook.id }
+          ? {
+              bookId: picker.selectedBook.id,
+              ...((rating != null || dnf) && { rating: dnf ? null : rating, dnf }),
+            }
           : {
               bookTitle: data.bookTitle || undefined,
               bookAuthor: data.bookAuthor || undefined,
@@ -92,6 +105,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
       });
       reset();
       picker.clear();
+      resetRating();
       setGifUrl(null);
       setValue("bookTitle", "");
       setValue("bookAuthor", "");
@@ -168,9 +182,36 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
         </div>
       )}
 
-      {/* Selected book chip */}
+      {/* Selected book chip + rating */}
       {picker.selectedBook && (
-        <SelectedBookChip book={picker.selectedBook} onRemove={picker.clear} />
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <SelectedBookChip
+            book={picker.selectedBook}
+            onRemove={() => {
+              picker.clear();
+              resetRating();
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexWrap: "wrap" }}>
+            <span className="text-muted-foreground" style={{ fontSize: "0.8rem" }}>
+              Your rating:
+            </span>
+            <StarRating
+              value={dnf ? null : rating}
+              dnf={dnf}
+              onChange={(v) => {
+                setRating(v);
+                setDnf(false);
+              }}
+              onDnf={() => {
+                setDnf(true);
+                setRating(null);
+              }}
+              onClear={resetRating}
+              size={22}
+            />
+          </div>
+        </div>
       )}
 
       {/* Book search panel */}
