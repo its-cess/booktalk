@@ -14,6 +14,7 @@ vi.mock("@/lib/queries", () => ({
 }));
 
 // Stub out the notification panel so Layout tests stay focused on the bell itself
+vi.mock("@/components/FeedbackDialog", () => ({ default: () => null }));
 vi.mock("@/components/NotificationDropdown", () => ({
   default: ({ onClose }: { onClose?: () => void }) => (
     <div data-testid="notification-dropdown">
