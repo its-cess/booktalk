@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, BookmarkPlus, Loader2, Pencil, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useBookDetail, useRateBook, useRemoveRating } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import StarRating, { DnfBadge } from "@/components/ui/StarRating";
+import AddToShelfMenu from "@/components/shelf/AddToShelfMenu";
 import PostCard from "@/components/post/PostCard";
 
 export default function BookDetail() {
@@ -158,13 +159,23 @@ export default function BookDetail() {
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => setRatingEditing(true)}>
-                    Rate this book
+                  <Button variant="outline" size="sm" onClick={() => setRatingEditing(true)} className="gap-1.5">
+                    <Star size={14} /> Add rating
                   </Button>
                 )}
               </div>
             )}
           </div>
+
+          {user && (
+            <div style={{ marginBottom: "1rem" }}>
+              <AddToShelfMenu bookId={book.id}>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <BookmarkPlus size={14} /> Add to shelf
+                </Button>
+              </AddToShelfMenu>
+            </div>
+          )}
 
           {book.description ? (
             <p className="text-foreground" style={{ fontSize: "0.875rem", lineHeight: 1.7, whiteSpace: "pre-line" }}>

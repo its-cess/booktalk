@@ -1,6 +1,6 @@
 import { useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { useSearchPosts, useSearchUsers } from "@/lib/queries";
+import { useSearchPosts, useSearchUsers, useBookSearch } from "@/lib/queries";
 import PostCard from "@/components/post/PostCard";
 
 export default function SearchPage() {
@@ -10,9 +10,10 @@ export default function SearchPage() {
   const urlQuery = searchParams.get("q") ?? "";
   const { data: posts, isFetching: postsFetching, isError } = useSearchPosts(urlQuery);
   const { data: users, isFetching: usersFetching } = useSearchUsers(urlQuery);
+  const { data: books, isFetching: booksFetching } = useBookSearch(urlQuery);
 
-  const isFetching = postsFetching || usersFetching;
-  const hasResults = (users?.length ?? 0) > 0 || (posts?.length ?? 0) > 0;
+  const isFetching = postsFetching || usersFetching || booksFetching;
+  const hasResults = (users?.length ?? 0) > 0 || (posts?.length ?? 0) > 0 || (books?.length ?? 0) > 0;
 
   return (
     <div style={{ maxWidth: "38rem", margin: "0 auto", padding: "2rem 1.5rem" }}>
@@ -43,6 +44,51 @@ export default function SearchPage() {
         <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
           No results found for "{urlQuery}".
         </p>
+      )}
+
+      {/* Book results */}
+      {books && books.length > 0 && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <h3
+            className="text-muted-foreground"
+            style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.625rem" }}
+          >
+            Books
+          </h3>
+          <div className="bg-background rounded-sm" style={{ display: "flex", flexDirection: "column" }}>
+            {books.map((book, i) => (
+              <Link
+                key={book.id}
+                to={`/books/${book.id}`}
+                className="hover:bg-muted/50 transition-colors"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  padding: "0.75rem 1rem",
+                  borderBottom: i < books.length - 1 ? "1px solid var(--border)" : "none",
+                  textDecoration: "none",
+                }}
+              >
+                {book.coverUrl ? (
+                  <img src={book.coverUrl} alt="" style={{ width: "40px", height: "60px", objectFit: "cover", flexShrink: 0, borderRadius: "2px" }} />
+                ) : (
+                  <div className="bg-muted text-muted-foreground rounded-sm" style={{ width: "40px", height: "60px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", fontWeight: 700 }}>
+                    {book.title[0]?.toUpperCase() ?? "?"}
+                  </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem", minWidth: 0 }}>
+                  <span className="text-foreground" style={{ fontSize: "0.875rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {book.title}
+                  </span>
+                  <span className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>
+                    {book.author}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* User results */}
@@ -110,7 +156,7 @@ export default function SearchPage() {
       {/* Post results */}
       {posts && posts.length > 0 && (
         <div>
-          {users && users.length > 0 && (
+          {((users?.length ?? 0) > 0 || (books?.length ?? 0) > 0) && (
             <h3
               className="text-muted-foreground"
               style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.625rem" }}

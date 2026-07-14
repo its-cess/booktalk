@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Tooltip } from "@/components/ui/tooltip";
 import StarRating from "@/components/ui/StarRating";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
@@ -296,40 +297,46 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
         </div>
 
         {/* Book */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={handleBookButtonClick}
-          aria-label={picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "Add book"}
-          className={picker.bookMode !== "none" || picker.selectedBook ? "bg-muted" : ""}
-        >
-          <BookOpen size={15} />
-        </Button>
+        <Tooltip label={picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "Add book"}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleBookButtonClick}
+            aria-label={picker.selectedBook || picker.bookMode !== "none" ? "Remove book" : "Add book"}
+            className={picker.bookMode !== "none" || picker.selectedBook ? "bg-muted" : ""}
+          >
+            <BookOpen size={15} />
+          </Button>
+        </Tooltip>
 
         {/* Emoji */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowEmojiPicker((v) => !v)}
-          aria-label="Insert emoji"
-          className={showEmojiPicker ? "bg-muted" : ""}
-        >
-          <Smile size={15} />
-        </Button>
+        <Tooltip label="Emoji">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowEmojiPicker((v) => !v)}
+            aria-label="Insert emoji"
+            className={showEmojiPicker ? "bg-muted" : ""}
+          >
+            <Smile size={15} />
+          </Button>
+        </Tooltip>
 
         {/* GIF */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowGifPicker((v) => !v)}
-          aria-label="Insert GIF"
-          className={showGifPicker ? "bg-muted" : ""}
-        >
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
-        </Button>
+        <Tooltip label="GIF">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowGifPicker((v) => !v)}
+            aria-label="Insert GIF"
+            className={showGifPicker ? "bg-muted" : ""}
+          >
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
+          </Button>
+        </Tooltip>
 
         <Button
           type="submit"

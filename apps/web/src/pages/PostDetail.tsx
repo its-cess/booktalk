@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, MessageCircleOff, Smile, X } from "lucide-react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { usePost, useComments, useCreateComment } from "@/lib/queries";
@@ -254,26 +255,30 @@ export default function PostDetail() {
                 </div>
               )}
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowEmojiPicker((v) => !v)}
-                  aria-label="Insert emoji"
-                  className={showEmojiPicker ? "bg-muted" : ""}
-                >
-                  <Smile size={15} />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowGifPicker((v) => !v)}
-                  aria-label="Insert GIF"
-                  className={showGifPicker ? "bg-muted" : ""}
-                >
-                  <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
-                </Button>
+                <Tooltip label="Emoji">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowEmojiPicker((v) => !v)}
+                    aria-label="Insert emoji"
+                    className={showEmojiPicker ? "bg-muted" : ""}
+                  >
+                    <Smile size={15} />
+                  </Button>
+                </Tooltip>
+                <Tooltip label="GIF">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowGifPicker((v) => !v)}
+                    aria-label="Insert GIF"
+                    className={showGifPicker ? "bg-muted" : ""}
+                  >
+                    <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em" }}>GIF</span>
+                  </Button>
+                </Tooltip>
                 <span className="text-muted-foreground" style={{ fontSize: "0.72rem" }}>
                   {commentText.length}/500
                 </span>

@@ -11,6 +11,10 @@ import type {
   BookResult,
   GroupedNotification,
   MyBookRating,
+  ShelfSummary,
+  ShelfWithBooks,
+  ShelfMembership,
+  CreateShelfData,
 } from "@booktalk/shared";
 
 interface BookDetailResponse {
@@ -188,6 +192,8 @@ export function useUpdatePost() {
       queryClient.setQueryData<PostWithAuthor[]>(TRENDING_KEY, updatePosts);
       queryClient.setQueryData<PostWithAuthor>(["posts", post.id], post);
       queryClient.invalidateQueries({ queryKey: ["users", authorUsername] });
+      // Editing a post's rating updates the book's canonical rating too.
+      if (post.book?.id) queryClient.invalidateQueries({ queryKey: ["books", post.book.id] });
     },
   });
 }
@@ -357,9 +363,11 @@ export function useCreatePost() {
       const res = await api.post<{ post: PostWithAuthor }>("/posts", data);
       return res.data.post;
     },
-    onSuccess: () => {
+    onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: FEED_KEY });
       queryClient.invalidateQueries({ queryKey: TRENDING_KEY });
+      // A rating attached to the post updates the book's canonical rating.
+      if (post.book?.id) queryClient.invalidateQueries({ queryKey: ["books", post.book.id] });
     },
   });
 }
@@ -510,5 +518,107 @@ export function useMarkNotificationRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
     },
+  });
+}
+
+// --- Shelves ---
+
+export function useUserShelves(username: string) {
+  return useQuery({
+    queryKey: ["shelves", "user", username],
+    queryFn: async () => {
+      const res = await api.get<{ shelves: ShelfSummary[] }>(`/users/${username}/shelves`);
+      return res.data.shelves;
+    },
+    enabled: !!username,
+  });
+}
+
+export function useShelf(shelfId: string) {
+  return useQuery({
+    queryKey: ["shelves", "detail", shelfId],
+    queryFn: async () => {
+      const res = await api.get<{ shelf: ShelfWithBooks }>(`/shelves/${shelfId}`);
+      return res.data.shelf;
+    },
+    enabled: !!shelfId,
+  });
+}
+
+/** The current user's shelves, optionally annotated with membership for a book. */
+export function useMyShelves(bookId?: string) {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: ["shelves", "me", bookId ?? "all"],
+    queryFn: async () => {
+      const res = await api.get<{ shelves: ShelfMembership[] }>(
+        `/shelves/me${bookId ? `?bookId=${encodeURIComponent(bookId)}` : ""}`
+      );
+      return res.data.shelves;
+    },
+    enabled: isAuthenticated,
+  });
+}
+
+export function useCreateShelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreateShelfData) => {
+      const res = await api.post<{ shelf: ShelfSummary }>("/shelves", data);
+      return res.data.shelf;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+export function useRenameShelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ shelfId, name }: { shelfId: string; name: string }) => {
+      const res = await api.patch<{ shelf: ShelfSummary }>(`/shelves/${shelfId}`, { name });
+      return res.data.shelf;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+export function useSetShelfPrivacy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ shelfId, isPrivate }: { shelfId: string; isPrivate: boolean }) => {
+      const res = await api.patch<{ shelf: ShelfSummary }>(`/shelves/${shelfId}`, { isPrivate });
+      return res.data.shelf;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+export function useDeleteShelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (shelfId: string) => {
+      await api.delete(`/shelves/${shelfId}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+export function useAddToShelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ shelfId, bookId }: { shelfId: string; bookId: string }) => {
+      await api.post(`/shelves/${shelfId}/items`, { bookId });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+export function useRemoveFromShelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ shelfId, bookId }: { shelfId: string; bookId: string }) => {
+      await api.delete(`/shelves/${shelfId}/items/${bookId}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
   });
 }

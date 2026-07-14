@@ -7,6 +7,7 @@ import { loginSchema, signupRequestSchema, changePasswordSchema } from "@booktal
 import { prisma } from "../prisma.js";
 import { signToken } from "../utils/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
+import { ensureWantToRead } from "../lib/shelves.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -71,6 +72,9 @@ export default async function authRoutes(app: FastifyInstance) {
           displayName: true,
         },
       });
+
+      // Seed the system "Want to Read" shelf (non-blocking)
+      ensureWantToRead(user.id).catch(console.error);
 
       const token = signToken({ userId: user.id });
       return reply.status(201).send({ user, token });
