@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useBookPicker } from "./useBookPicker";
 import { SelectedBookChip, BookSearchPanel } from "./BookSearch";
 import {
+  BookmarkPlus,
   BookOpen,
   Check,
   Heart,
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import StarRating, { DnfBadge } from "@/components/ui/StarRating";
+import { Tooltip } from "@/components/ui/tooltip";
+import AddToShelfMenu from "@/components/shelf/AddToShelfMenu";
+import { useAuth } from "@/lib/auth-context";
 import {
   useDeletePost,
   useUpdatePost,
@@ -65,6 +69,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, isOwner = false, isDetailView = false, disableAuthorLink = false, isFollowingAuthor, onFollowAuthor }: PostCardProps) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -333,17 +338,19 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
               </>
             ) : isOwner ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Post options"
-                    className="text-muted-foreground"
-                    style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-                  >
-                    <MoreHorizontal size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
+                <Tooltip label="Options">
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Post options"
+                      className="text-muted-foreground"
+                      style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                    >
+                      <MoreHorizontal size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </Tooltip>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setIsEditing(true)}>
                     Edit post
@@ -368,16 +375,18 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Share post as image"
-                onClick={handleShare}
-                className="text-muted-foreground"
-                style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
-              >
-                <Share2 size={15} />
-              </Button>
+              <Tooltip label="Share">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Share post as image"
+                  onClick={handleShare}
+                  className="text-muted-foreground"
+                  style={{ flexShrink: 0, width: "1.75rem", height: "1.75rem" }}
+                >
+                  <Share2 size={15} />
+                </Button>
+              </Tooltip>
             )}
           </div>
         </div>
@@ -701,31 +710,52 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
             }}
           >
             {/* Like */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLike}
-              disabled={toggleLike.isPending}
-              aria-label={post.isLiked ? "Unlike post" : "Like post"}
-              className={`gap-1 px-2 h-7 text-xs ${post.isLiked ? "text-primary" : "text-muted-foreground"}`}
-            >
-              <Heart size={15} fill={post.isLiked ? "currentColor" : "none"} className="flex-shrink-0" />
-              <span>{post.likeCount}</span>
-            </Button>
-
-            {/* Comment — hidden when comments are disabled */}
-            {!post.commentsDisabled && (
+            <Tooltip label="Love">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
-                aria-label="View comments"
-                className="gap-1 px-2 h-7 text-xs text-muted-foreground"
-                style={{ cursor: isDetailView ? "default" : "pointer" }}
+                onClick={handleLike}
+                disabled={toggleLike.isPending}
+                aria-label={post.isLiked ? "Unlike post" : "Like post"}
+                className={`gap-1 px-2 h-7 text-xs ${post.isLiked ? "text-primary" : "text-muted-foreground"}`}
               >
-                <MessageCircle size={15} className="flex-shrink-0" />
-                <span>{post.commentCount}</span>
+                <Heart size={15} fill={post.isLiked ? "currentColor" : "none"} className="flex-shrink-0" />
+                <span>{post.likeCount}</span>
               </Button>
+            </Tooltip>
+
+            {/* Comment — hidden when comments are disabled */}
+            {!post.commentsDisabled && (
+              <Tooltip label="Comment">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => !isDetailView && navigate(`/posts/${post.id}`)}
+                  aria-label="View comments"
+                  className="gap-1 px-2 h-7 text-xs text-muted-foreground"
+                  style={{ cursor: isDetailView ? "default" : "pointer" }}
+                >
+                  <MessageCircle size={15} className="flex-shrink-0" />
+                  <span>{post.commentCount}</span>
+                </Button>
+              </Tooltip>
+            )}
+
+            {/* Add to shelf — only for posts tied to a real book */}
+            {post.book?.id && isAuthenticated && (
+              <Tooltip label="Add to shelf">
+                <AddToShelfMenu bookId={post.book.id}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Add to shelf"
+                    className="gap-1 px-2 h-7 text-xs text-muted-foreground"
+                    style={{ marginLeft: "auto" }}
+                  >
+                    <BookmarkPlus size={15} className="flex-shrink-0" />
+                  </Button>
+                </AddToShelfMenu>
+              </Tooltip>
             )}
           </div>
         )}

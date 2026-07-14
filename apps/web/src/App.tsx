@@ -10,6 +10,7 @@ import PostDetail from "@/pages/PostDetail";
 import FollowList from "@/pages/FollowList";
 import SearchPage from "@/pages/Search";
 import BookDetail from "@/pages/BookDetail";
+import ShelfDetail from "@/pages/ShelfDetail";
 import Settings from "@/pages/Settings";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path=":username/followers" element={<FollowList />} />
             <Route path=":username/following" element={<FollowList />} />
+            <Route path=":username/shelves/:shelfId" element={<ShelfDetail />} />
             <Route path=":username" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -10,6 +10,7 @@ import commentRoutes from "./routes/comments.js";
 import bookRoutes from "./routes/books.js";
 import notificationRoutes from "./routes/notifications.js";
 import gifRoutes from "./routes/gifs.js";
+import shelfRoutes from "./routes/shelves.js";
 import jwt from "@fastify/jwt";
 
 const app = Fastify({
@@ -42,6 +43,7 @@ app.register(commentRoutes, { prefix: "/comments" });
 app.register(bookRoutes, { prefix: "/books" });
 app.register(notificationRoutes, { prefix: "/notifications" });
 app.register(gifRoutes, { prefix: "/gifs" });
+app.register(shelfRoutes, { prefix: "/shelves" });
 
 const port = Number(process.env.PORT) || 3000;
 

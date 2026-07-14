@@ -27,6 +27,7 @@ vi.mock("@/components/post/PostCard", () => ({
     <div data-testid="post-card">{post.content}</div>
   ),
 }));
+vi.mock("@/components/shelf/AddToShelfMenu", () => ({ default: () => null }));
 
 import BookDetail from "@/pages/BookDetail";
 
@@ -222,7 +223,7 @@ describe("BookDetail — ratings", () => {
       isError: false,
     });
     render(<BookDetail />);
-    await userEvent.click(screen.getByRole("button", { name: /rate this book/i }));
+    await userEvent.click(screen.getByRole("button", { name: /add rating/i }));
     await userEvent.click(screen.getByRole("button", { name: "4 stars" }));
     expect(mockRate).toHaveBeenCalledWith({ rating: 4, dnf: false }, expect.anything());
   });
@@ -235,7 +236,7 @@ describe("BookDetail — ratings", () => {
       isError: false,
     });
     render(<BookDetail />);
-    expect(screen.getByRole("button", { name: /rate this book/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /add rating/i })).toBeInTheDocument();
     expect(screen.queryByText(/your rating/i)).not.toBeInTheDocument();
   });
 
@@ -260,7 +261,7 @@ describe("BookDetail — ratings", () => {
       isError: false,
     });
     render(<BookDetail />);
-    await userEvent.click(screen.getByRole("button", { name: /rate this book/i }));
+    await userEvent.click(screen.getByRole("button", { name: /add rating/i }));
     await userEvent.click(screen.getByRole("button", { name: "3.5 stars" }));
     expect(mockRate).toHaveBeenCalledWith({ rating: 3.5, dnf: false }, expect.anything());
   });
@@ -273,7 +274,7 @@ describe("BookDetail — ratings", () => {
       isError: false,
     });
     render(<BookDetail />);
-    await userEvent.click(screen.getByRole("button", { name: /rate this book/i }));
+    await userEvent.click(screen.getByRole("button", { name: /add rating/i }));
     await userEvent.click(screen.getByRole("button", { name: "DNF" }));
     expect(mockRate).toHaveBeenCalledWith({ rating: null, dnf: true }, expect.anything());
   });

@@ -20,3 +20,4 @@ __exportStar(require("./post"), exports);
 __exportStar(require("./user"), exports);
 __exportStar(require("./notification"), exports);
 __exportStar(require("./rating"), exports);
+__exportStar(require("./shelf"), exports);

@@ -7,6 +7,7 @@ import { updateProfileSchema } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { loadAuthorBookRatings, postRatingFor } from "../lib/rating.js";
+import { ensureWantToRead, shelfListInclude, shelfSummary } from "../lib/shelves.js";
 
 const r2 = new S3Client({
   region: "auto",
@@ -250,6 +251,31 @@ export default async function userRoutes(app: FastifyInstance) {
         isFollowing: viewerFollowingIds.has(f.following.id),
       })),
     });
+  });
+
+  // GET /users/:username/shelves — public list of a user's shelves
+  app.get("/:username/shelves", async (request, reply) => {
+    const { username } = request.params as { username: string };
+    const viewerId = await getOptionalUserId(request);
+
+    const user = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (!user) return reply.status(404).send({ error: "User not found" });
+
+    const isOwner = viewerId === user.id;
+    // Ensure the owner always sees their system "Want to Read" shelf.
+    if (isOwner) await ensureWantToRead(user.id);
+
+    const shelves = await prisma.shelf.findMany({
+      where: {
+        userId: user.id,
+        // Hide private shelves from everyone but the owner.
+        ...(isOwner ? {} : { isPrivate: false }),
+      },
+      orderBy: [{ isSystem: "desc" }, { createdAt: "asc" }],
+      include: shelfListInclude,
+    });
+
+    return reply.send({ shelves: shelves.map(shelfSummary) });
   });
 
   // POST /users/me/avatar-upload-url — get presigned R2 URL to upload an avatar

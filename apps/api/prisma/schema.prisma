@@ -38,6 +38,7 @@ model User {
   actorNotifications Notification[] @relation("ActorNotifications")
 
   ratings BookRating[]
+  shelves Shelf[]
 }
 
 model AuthCredential {
@@ -77,8 +78,9 @@ model Book {
 
   createdAt DateTime @default(now())
 
-  posts   Post[]
-  ratings BookRating[]
+  posts      Post[]
+  ratings    BookRating[]
+  shelfItems ShelfItem[]
 }
 
 model Post {
@@ -212,5 +214,40 @@ model BookRating {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
+  @@index([bookId])
+}
+
+// A user's bookshelf. Custom shelves are user-created and fully editable; the
+// system "Want to Read" shelf (isSystem = true) is auto-created per user and
+// cannot be renamed or deleted. Shelves are public (shown on profiles).
+model Shelf {
+  id        String  @id @default(cuid())
+  userId    String
+  name      String
+  isSystem  Boolean @default(false)
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ShelfItem[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model ShelfItem {
+  id      String @id @default(cuid())
+  shelfId String
+  bookId  String
+
+  addedAt DateTime @default(now())
+
+  shelf Shelf @relation(fields: [shelfId], references: [id], onDelete: Cascade)
+  book  Book  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([shelfId, bookId])
+  @@index([shelfId])
   @@index([bookId])
 }

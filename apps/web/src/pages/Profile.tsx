@@ -1,12 +1,14 @@
-import { useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useRef, type ReactNode } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Camera, Check, Loader2, Pencil, Settings, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "@/lib/queries";
 import { shareProfile } from "@/lib/shareCard";
 import PostCard from "@/components/post/PostCard";
+import ShelvesSection from "@/components/shelf/ShelvesSection";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -18,6 +20,11 @@ export default function Profile() {
   const toggleFollow = useToggleFollow();
   const uploadAvatar = useUploadAvatar();
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  // Keep the active tab in the URL so returning from a shelf restores it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: "posts" | "shelves" = searchParams.get("tab") === "shelves" ? "shelves" : "posts";
+  const setTab = (next: "posts" | "shelves") =>
+    setSearchParams(next === "shelves" ? { tab: "shelves" } : {}, { replace: true });
 
   const isOwn = me?.username === username;
 
@@ -214,49 +221,55 @@ export default function Profile() {
               >
                 {profile.isFollowing ? "Unfollow" : "Follow"}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Share profile"
-                className="h-8 w-8 text-muted-foreground"
-                onClick={() => shareProfile({
-                  displayName: profile.displayName,
-                  username: profile.username,
-                  bio: profile.bio,
-                  avatarUrl: profile.avatarUrl,
-                  followersCount: profile.followersCount,
-                  followingCount: profile.followingCount,
-                })}
-              >
-                <Share2 size={16} />
-              </Button>
+              <Tooltip label="Share profile">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Share profile"
+                  className="h-8 w-8 text-muted-foreground"
+                  onClick={() => shareProfile({
+                    displayName: profile.displayName,
+                    username: profile.username,
+                    bio: profile.bio,
+                    avatarUrl: profile.avatarUrl,
+                    followersCount: profile.followersCount,
+                    followingCount: profile.followingCount,
+                  })}
+                >
+                  <Share2 size={16} />
+                </Button>
+              </Tooltip>
             </div>
           )}
 
           {/* Settings + Share for own profile */}
           {isOwn && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", flexShrink: 0 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Share profile"
-                className="h-8 w-8 text-muted-foreground"
-                onClick={() => shareProfile({
-                  displayName: profile.displayName,
-                  username: profile.username,
-                  bio: profile.bio,
-                  avatarUrl: profile.avatarUrl,
-                  followersCount: profile.followersCount,
-                  followingCount: profile.followingCount,
-                })}
-              >
-                <Share2 size={16} />
-              </Button>
-              <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" asChild>
-                <Link to="/settings">
-                  <Settings size={18} />
-                </Link>
-              </Button>
+              <Tooltip label="Share profile">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Share profile"
+                  className="h-8 w-8 text-muted-foreground"
+                  onClick={() => shareProfile({
+                    displayName: profile.displayName,
+                    username: profile.username,
+                    bio: profile.bio,
+                    avatarUrl: profile.avatarUrl,
+                    followersCount: profile.followersCount,
+                    followingCount: profile.followingCount,
+                  })}
+                >
+                  <Share2 size={16} />
+                </Button>
+              </Tooltip>
+              <Tooltip label="Settings">
+                <Button variant="ghost" size="icon" aria-label="Account settings" className="h-8 w-8 text-muted-foreground" asChild>
+                  <Link to="/settings">
+                    <Settings size={18} />
+                  </Link>
+                </Button>
+              </Tooltip>
             </div>
           )}
         </div>
@@ -292,15 +305,20 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Posts */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <h2 className="text-foreground" style={{ fontSize: "1rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif', marginBottom: "1rem" }}>
-          Posts
-        </h2>
-        {profile.posts.length === 0 ? (
-          <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>No posts yet.</p>
-        ) : (
-          profile.posts.map((post) => (
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid hsl(var(--border))", marginBottom: "1rem" }}>
+        <TabButton active={tab === "posts"} onClick={() => setTab("posts")}>Posts</TabButton>
+        <TabButton active={tab === "shelves"} onClick={() => setTab("shelves")}>Shelves</TabButton>
+      </div>
+
+      {tab === "shelves" ? (
+        <ShelvesSection username={username!} isOwner={isOwn} />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {profile.posts.length === 0 ? (
+            <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>No posts yet.</p>
+          ) : (
+            profile.posts.map((post) => (
             <PostCard
               key={post.id}
               post={{
@@ -326,9 +344,32 @@ export default function Profile() {
               disableAuthorLink
             />
           ))
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={active ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: "0.5rem 0.25rem",
+        fontSize: "0.9rem",
+        fontWeight: 600,
+        fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
+        borderBottom: active ? "2px solid hsl(var(--primary))" : "2px solid transparent",
+        marginBottom: "-1px",
+      }}
+    >
+      {children}
+    </button>
   );
 }
 

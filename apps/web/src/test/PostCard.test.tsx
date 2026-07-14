@@ -23,6 +23,10 @@ vi.mock("sonner", () => ({
   toast: { error: mockToastError },
 }));
 
+vi.mock("@/lib/auth-context", () => ({
+  useAuth: () => ({ isAuthenticated: false, user: null }),
+}));
+
 vi.mock("react-router-dom", () => ({
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>

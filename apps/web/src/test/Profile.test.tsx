@@ -22,10 +22,12 @@ vi.mock("@/lib/queries", () => ({
 vi.mock("sonner", () => ({ toast: { error: mockToastError } }));
 vi.mock("react-router-dom", () => ({
   useParams: () => ({ username: "alice" }),
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
   Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={String(to)} {...props}>{children}</a>
   ),
 }));
+vi.mock("@/components/shelf/ShelvesSection", () => ({ default: () => null }));
 vi.mock("@/components/post/PostCard", () => ({
   default: ({ post }: { post: { content: string } }) => (
     <div data-testid="post-card">{post.content}</div>
