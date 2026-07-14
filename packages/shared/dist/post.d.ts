@@ -6,6 +6,8 @@ export declare const createPostSchema: z.ZodObject<{
     bookAuthor: z.ZodOptional<z.ZodString>;
     hasSpoilers: z.ZodDefault<z.ZodBoolean>;
     gifUrl: z.ZodOptional<z.ZodString>;
+    rating: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+    dnf: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export type CreatePostData = z.infer<typeof createPostSchema>;
 export type CreatePostInput = z.input<typeof createPostSchema>;
@@ -17,6 +19,8 @@ export declare const updatePostSchema: z.ZodObject<{
     bookId: z.ZodOptional<z.ZodString>;
     bookTitle: z.ZodOptional<z.ZodString>;
     bookAuthor: z.ZodOptional<z.ZodString>;
+    rating: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+    dnf: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 export type UpdatePostData = z.infer<typeof updatePostSchema>;
 export interface BookResult {
@@ -36,6 +40,8 @@ export interface PostWithAuthor {
     hasSpoilers: boolean;
     commentsDisabled: boolean;
     gifUrl: string | null;
+    rating: number | null;
+    dnf: boolean;
     createdAt: string;
     author: {
         id: string;

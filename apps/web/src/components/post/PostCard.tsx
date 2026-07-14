@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import StarRating, { DnfBadge } from "@/components/ui/StarRating";
 import {
   useDeletePost,
   useUpdatePost,
@@ -49,6 +50,8 @@ export interface Post {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  rating?: number | null;
+  dnf?: boolean;
 }
 
 interface PostCardProps {
@@ -67,6 +70,9 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [editHasSpoilers, setEditHasSpoilers] = useState(post.hasSpoilers);
+  const [editRating, setEditRating] = useState<number | null>(post.rating ?? null);
+  const [editDnf, setEditDnf] = useState(post.dnf ?? false);
+  const [ratingTouched, setRatingTouched] = useState(false);
   const [bookCleared, setBookCleared] = useState(false);
   const bookPicker = useBookPicker();
   const [manualTitle, setManualTitle] = useState("");
@@ -77,6 +83,9 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
   const updatePost = useUpdatePost();
   const toggleLike = useTogglePostLike();
   const toggleComments = useToggleCommentsDisabled();
+
+  // A rating can only attach to a post that references a real (searched) book.
+  const editHasRealBook = (!!post.book && !bookCleared) || !!bookPicker.selectedBook;
 
   async function handleDelete() {
     try {
@@ -103,9 +112,14 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
           bookTitle: manualTitle.trim(),
           bookAuthor: manualAuthor.trim() || undefined,
         }),
+        ...(ratingTouched && editHasRealBook && {
+          rating: editDnf ? null : editRating,
+          dnf: editDnf,
+        }),
       });
       setIsEditing(false);
       setBookCleared(false);
+      setRatingTouched(false);
       setManualTitle("");
       setManualAuthor("");
       bookPicker.clear();
@@ -117,6 +131,9 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
   function handleDiscard() {
     setEditContent(post.content);
     setEditHasSpoilers(post.hasSpoilers);
+    setEditRating(post.rating ?? null);
+    setEditDnf(post.dnf ?? false);
+    setRatingTouched(false);
     setIsEditing(false);
     setBookCleared(false);
     setManualTitle("");
@@ -432,6 +449,17 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
 
               {/* Content column */}
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {/* Author's rating snapshot */}
+                {!isEditing && (post.rating != null || post.dnf) && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    {post.dnf ? (
+                      <DnfBadge />
+                    ) : (
+                      <StarRating value={post.rating ?? 0} readOnly size={16} />
+                    )}
+                  </div>
+                )}
+
                 {/* Book pill — shown when no cover and not cleared */}
                 {displayBook && !hasCover && !bookCleared && (
                   <div
@@ -545,6 +573,38 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                         )}
                       </div>
                     ) : null}
+
+                    {/* Rating — only when a real book is attached */}
+                    {editHasRealBook && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexWrap: "wrap" }}
+                      >
+                        <span className="text-foreground/60" style={{ fontSize: "0.8rem" }}>
+                          Your rating:
+                        </span>
+                        <StarRating
+                          value={editDnf ? null : editRating}
+                          dnf={editDnf}
+                          onChange={(v) => {
+                            setEditRating(v);
+                            setEditDnf(false);
+                            setRatingTouched(true);
+                          }}
+                          onDnf={() => {
+                            setEditDnf(true);
+                            setEditRating(null);
+                            setRatingTouched(true);
+                          }}
+                          onClear={() => {
+                            setEditRating(null);
+                            setEditDnf(false);
+                            setRatingTouched(true);
+                          }}
+                          size={20}
+                        />
+                      </div>
+                    )}
 
                     {/* Spoilers toggle */}
                     <div
