@@ -6,3 +6,4 @@ export * from "./notification";
 export * from "./rating";
 export * from "./shelf";
 export * from "./feedback";
+export * from "./top-books";

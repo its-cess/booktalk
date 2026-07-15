@@ -28,6 +28,7 @@ vi.mock("react-router-dom", () => ({
   ),
 }));
 vi.mock("@/components/shelf/ShelvesSection", () => ({ default: () => null }));
+vi.mock("@/components/profile/TopBooks", () => ({ default: () => null }));
 vi.mock("@/components/post/PostCard", () => ({
   default: ({ post }: { post: { content: string } }) => (
     <div data-testid="post-card">{post.content}</div>

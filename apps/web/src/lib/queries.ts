@@ -16,6 +16,7 @@ import type {
   ShelfMembership,
   CreateShelfData,
   FeedbackData,
+  TopBook,
 } from "@booktalk/shared";
 
 interface BookDetailResponse {
@@ -621,6 +622,32 @@ export function useRemoveFromShelf() {
       await api.delete(`/shelves/${shelfId}/items/${bookId}`);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shelves"] }),
+  });
+}
+
+// --- Top books (profile "Top 8") ---
+
+export function useTopBooks(username: string) {
+  return useQuery({
+    queryKey: ["top-books", username],
+    queryFn: async () => {
+      const res = await api.get<{ books: TopBook[] }>(`/users/${username}/top-books`);
+      return res.data.books;
+    },
+    enabled: !!username,
+  });
+}
+
+export function useSetTopBooks(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (bookIds: string[]) => {
+      const res = await api.put<{ books: TopBook[] }>("/users/me/top-books", { bookIds });
+      return res.data.books;
+    },
+    onSuccess: (books) => {
+      queryClient.setQueryData(["top-books", username], books);
+    },
   });
 }
 

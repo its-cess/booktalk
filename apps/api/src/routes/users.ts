@@ -3,7 +3,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { updateProfileSchema } from "@booktalk/shared";
+import { updateProfileSchema, setTopBooksSchema, MAX_TOP_BOOKS } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { loadAuthorBookRatings, postRatingFor } from "../lib/rating.js";
@@ -276,6 +276,60 @@ export default async function userRoutes(app: FastifyInstance) {
     });
 
     return reply.send({ shelves: shelves.map(shelfSummary) });
+  });
+
+  // GET /users/:username/top-books — public "Top 8" favorite books
+  app.get("/:username/top-books", async (request, reply) => {
+    const { username } = request.params as { username: string };
+    const user = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+    if (!user) return reply.status(404).send({ error: "User not found" });
+
+    const rows = await prisma.profileTopBook.findMany({
+      where: { userId: user.id },
+      orderBy: { position: "asc" },
+      include: { book: { select: { id: true, title: true, author: true, coverUrl: true } } },
+    });
+    return reply.send({ books: rows.map((r) => r.book) });
+  });
+
+  // PUT /users/me/top-books — replace the current user's Top 8 (ordered book IDs)
+  app.put("/me/top-books", { preHandler: [requireAuth] }, async (request, reply) => {
+    try {
+      const { userId } = request.user as { userId: string };
+      const { bookIds } = setTopBooksSchema.parse(request.body);
+
+      // Keep only real books, dedupe, preserve order, cap at the max.
+      const existing = await prisma.book.findMany({
+        where: { id: { in: bookIds } },
+        select: { id: true },
+      });
+      const existingSet = new Set(existing.map((b) => b.id));
+      const ordered: string[] = [];
+      for (const id of bookIds) {
+        if (existingSet.has(id) && !ordered.includes(id)) ordered.push(id);
+        if (ordered.length >= MAX_TOP_BOOKS) break;
+      }
+
+      await prisma.$transaction([
+        prisma.profileTopBook.deleteMany({ where: { userId } }),
+        prisma.profileTopBook.createMany({
+          data: ordered.map((bookId, position) => ({ userId, bookId, position })),
+        }),
+      ]);
+
+      const rows = await prisma.profileTopBook.findMany({
+        where: { userId },
+        orderBy: { position: "asc" },
+        include: { book: { select: { id: true, title: true, author: true, coverUrl: true } } },
+      });
+      return reply.send({ books: rows.map((r) => r.book) });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.status(400).send({ errors: err.issues });
+      }
+      console.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
   });
 
   // POST /users/me/avatar-upload-url — get presigned R2 URL to upload an avatar
