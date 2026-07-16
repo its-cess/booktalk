@@ -25,17 +25,21 @@ import BookSearchBox from "@/components/book/BookSearchBox";
 
 const GRID_STYLE: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(4, 1fr)",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
   gap: "1.25rem",
 };
 
 const CARD_BASE: React.CSSProperties = {
   width: "100%",
   maxWidth: "7.5rem",
+  minWidth: 0,
   marginRight: "auto",
   border: "1px dashed hsl(var(--border))",
   borderRadius: "6px",
 };
+
+const TITLE_H = "1.6rem"; // ~2 lines
+const AUTHOR_H = "0.8rem";
 
 export default function TopBooks({ username, isOwner }: { username: string; isOwner: boolean }) {
   const { data: books, isLoading } = useTopBooks(username);
@@ -150,18 +154,18 @@ function BookCell({ book, children }: { book: TopBook; children?: React.ReactNod
     <div style={{ ...CARD_BASE, padding: "0.5rem 0.375rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem" }}>
       <span
         className="text-foreground"
-        style={{ fontSize: "0.66rem", fontWeight: 600, lineHeight: 1.2, textAlign: "center", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        style={{ fontSize: "0.66rem", fontWeight: 600, lineHeight: 1.2, textAlign: "center", height: TITLE_H, width: "100%", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
       >
         {book.title}
       </span>
-      <span className="text-muted-foreground" style={{ fontSize: "0.6rem", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+      <span className="text-muted-foreground" style={{ fontSize: "0.6rem", lineHeight: 1.2, height: AUTHOR_H, width: "100%", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {book.author}
       </span>
-      <div style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: "relative", width: "100%", aspectRatio: "2 / 3" }}>
         {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} className="rounded-sm" style={{ width: "100%", aspectRatio: "2 / 3", objectFit: "cover", display: "block", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }} />
+          <img src={book.coverUrl} alt={book.title} className="rounded-sm" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }} />
         ) : (
-          <div className="bg-primary/10 text-primary rounded-sm" style={{ width: "100%", aspectRatio: "2 / 3", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+          <div className="bg-primary/10 text-primary rounded-sm" style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
             {book.title[0]?.toUpperCase() ?? "?"}
           </div>
         )}
@@ -178,9 +182,14 @@ function EmptySlot({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Add a book to your Top 8"
       className="text-muted-foreground hover:text-foreground"
-      style={{ ...CARD_BASE, aspectRatio: "2 / 3", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+      style={{ ...CARD_BASE, padding: "0.5rem 0.375rem", background: "transparent", cursor: "pointer", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem" }}
     >
-      <Plus size={24} />
+      <span aria-hidden style={{ height: TITLE_H, width: "100%" }} />
+      <span aria-hidden style={{ height: AUTHOR_H, width: "100%" }} />
+      <span aria-hidden style={{ width: "100%", aspectRatio: "2 / 3" }} />
+      <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Plus size={24} />
+      </span>
     </button>
   );
 }
