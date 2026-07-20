@@ -7,6 +7,7 @@ import { useProfile, useUpdateProfile, useToggleFollow, useUploadAvatar } from "
 import { shareProfile } from "@/lib/shareCard";
 import PostCard from "@/components/post/PostCard";
 import ShelvesSection from "@/components/shelf/ShelvesSection";
+import TopBooks from "@/components/profile/TopBooks";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
@@ -304,6 +305,9 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {/* Top 8 favorites */}
+      <TopBooks username={username!} isOwner={isOwn} />
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid hsl(var(--border))", marginBottom: "1rem" }}>

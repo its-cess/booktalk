@@ -40,6 +40,7 @@ model User {
   ratings  BookRating[]
   shelves  Shelf[]
   feedback Feedback[]
+  topBooks ProfileTopBook[]
 }
 
 model AuthCredential {
@@ -82,6 +83,7 @@ model Book {
   posts      Post[]
   ratings    BookRating[]
   shelfItems ShelfItem[]
+  topBooks   ProfileTopBook[]
 }
 
 model Post {
@@ -251,6 +253,21 @@ model ShelfItem {
   @@unique([shelfId, bookId])
   @@index([shelfId])
   @@index([bookId])
+}
+
+// A user's "Top 8" favorite books, shown on their profile. Ordered by
+// position (0-based); capped at 8 in the API.
+model ProfileTopBook {
+  id       String @id @default(cuid())
+  userId   String
+  bookId   String
+  position Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([userId])
 }
 
 // User-submitted feedback (bug report / feature request / other). Emailed to

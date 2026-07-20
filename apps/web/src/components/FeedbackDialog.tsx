@@ -40,16 +40,16 @@ export default function FeedbackDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="bg-black/40" style={{ position: "fixed", inset: 0, zIndex: 50 }} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "12vh 1rem 1rem", pointerEvents: "none" }}>
         <Dialog.Content
           className="bg-background rounded-sm shadow-lg"
           style={{
-            position: "fixed",
-            top: "18%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "calc(100% - 2rem)",
+            pointerEvents: "auto",
+            width: "100%",
             maxWidth: "32rem",
-            zIndex: 51,
+            maxHeight: "85vh",
+            overflowY: "auto",
+            boxSizing: "border-box",
             padding: "1.25rem",
           }}
         >
@@ -97,6 +97,7 @@ export default function FeedbackDialog({
             </Button>
           </div>
         </Dialog.Content>
+        </div>
       </Dialog.Portal>
     </Dialog.Root>
   );
