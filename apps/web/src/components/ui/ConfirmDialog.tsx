@@ -37,8 +37,8 @@ export default function ConfirmDialog({
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="bg-popover"
         style={{
-          backgroundColor: "#ffffff",
           borderRadius: "0.75rem",
           padding: "1.5rem",
           width: "100%",
@@ -47,13 +47,13 @@ export default function ConfirmDialog({
           display: "flex",
           flexDirection: "column",
           gap: "0.75rem",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
         }}
       >
-        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#171717", margin: 0, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
+        <h3 className="text-popover-foreground" style={{ fontSize: "1rem", fontWeight: 600, margin: 0, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
           {title}
         </h3>
-        <p style={{ fontSize: "0.875rem", color: "#737373", margin: 0, lineHeight: 1.5 }}>
+        <p className="text-muted-foreground" style={{ fontSize: "0.875rem", margin: 0, lineHeight: 1.5 }}>
           {description}
         </p>
         <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "0.25rem" }}>

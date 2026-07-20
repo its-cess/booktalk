@@ -15,11 +15,13 @@ import { Tooltip } from "@/components/ui/tooltip";
 import StarRating from "@/components/ui/StarRating";
 import MentionTextarea from "./MentionTextarea";
 import GifPicker from "./GifPicker";
-import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
+import EmojiPicker, { type EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
+import { useTheme } from "@/lib/theme-context";
 
 export default function PostComposer({ onSuccess }: { onSuccess?: () => void } = {}) {
   const picker = useBookPicker();
   const createPost = useCreatePost();
+  const { theme } = useTheme();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -262,6 +264,7 @@ export default function PostComposer({ onSuccess }: { onSuccess?: () => void } =
                 setShowEmojiPicker(false);
               }}
               emojiStyle={EmojiStyle.GOOGLE}
+              theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
               previewConfig={{ showPreview: false }}
               height={350}
               width={300}

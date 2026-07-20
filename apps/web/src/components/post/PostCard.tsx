@@ -253,20 +253,13 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
             <Link
               to={`/${post.authorUsername}`}
               onClick={(e) => e.stopPropagation()}
+              className="group"
               style={{
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.1rem",
                 minWidth: 0,
                 textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
-                  "#4338ca";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget.querySelector(".author-handle") as HTMLElement).style.color =
-                  "#737373";
               }}
             >
               <span
@@ -276,8 +269,8 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                 {post.authorDisplayName}
               </span>
               <span
-                className="author-handle text-muted-foreground"
-                style={{ fontSize: "0.7rem", transition: "color 0.15s" }}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+                style={{ fontSize: "0.7rem" }}
               >
                 @{post.authorUsername}
               </span>
@@ -415,7 +408,7 @@ export default function PostCard({ post, isOwner = false, isDetailView = false, 
                       onClick={(e) => e.stopPropagation()}
                       onMouseEnter={() => setCoverHovered(true)}
                       onMouseLeave={() => setCoverHovered(false)}
-                      style={{ display: "block", borderRadius: "2px", outline: coverHovered ? "2px solid hsl(74 80% 60%)" : "2px solid transparent", outlineOffset: "2px", transition: "outline-color 0.15s" }}
+                      style={{ display: "block", borderRadius: "2px", outline: coverHovered ? "2px solid hsl(var(--pear))" : "2px solid transparent", outlineOffset: "2px", transition: "outline-color 0.15s" }}
                     >
                       <img
                         src={displayBook!.coverUrl!}

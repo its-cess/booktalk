@@ -83,4 +83,40 @@
 
     --radius: 0.5rem;
   }
+
+  .dark {
+    /* Deep indigo surfaces */
+    --background: 258 40% 8%;
+    --foreground: 48 33% 90%;
+    --card: 258 33% 13%;
+    --card-foreground: 48 33% 90%;
+    --popover: 258 36% 11%;
+    --popover-foreground: 48 33% 90%;
+
+    /* Indigo — brand/primary (brighter for dark bg) */
+    --primary: 258 70% 68%;
+    --primary-foreground: 258 45% 12%;
+
+    /* Secondary — muted dark indigo */
+    --secondary: 258 28% 22%;
+    --secondary-foreground: 258 55% 82%;
+
+    /* Muted */
+    --muted: 258 22% 17%;
+    --muted-foreground: 258 14% 64%;
+
+    /* Accent — pear */
+    --accent: 65 26% 20%;
+    --accent-foreground: 65 55% 72%;
+    --pear: 65 62% 56%;
+
+    /* Destructive */
+    --destructive: 3 68% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border: 258 18% 26%;
+    --input: 258 18% 26%;
+    --ring: 258 70% 62%;
+  }
 }

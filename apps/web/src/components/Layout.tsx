@@ -7,6 +7,7 @@ import { useNotifications } from "@/lib/queries";
 import NotificationPanel from "./NotificationDropdown";
 import PostComposer from "./post/PostComposer";
 import FeedbackDialog from "./FeedbackDialog";
+import ThemeToggle from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -158,15 +159,18 @@ export default function Layout() {
           </form>
         </div>
 
-        {/* Mobile feedback — header icon (bottom nav is full) */}
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          aria-label="Send feedback"
-          className="flex md:hidden items-center text-muted-foreground"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "0 1.5rem 0 0.5rem", flexShrink: 0 }}
-        >
-          <Megaphone size={20} />
-        </button>
+        {/* Right side: theme toggle (all sizes) + feedback (mobile only) */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.125rem", flexShrink: 0, paddingRight: "1rem", paddingLeft: "0.5rem" }}>
+          <ThemeToggle />
+          <button
+            onClick={() => setFeedbackOpen(true)}
+            aria-label="Send feedback"
+            className="flex md:hidden items-center text-muted-foreground"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "0 0.5rem", flexShrink: 0 }}
+          >
+            <Megaphone size={20} />
+          </button>
+        </div>
       </header>
 
       {/* ── Below header: sidebar + main ── */}

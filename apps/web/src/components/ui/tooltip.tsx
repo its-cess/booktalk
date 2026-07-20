@@ -17,15 +17,18 @@ export function Tooltip({
   side?: "top" | "bottom";
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [coords, setCoords] = useState<{ left: number; top: number } | null>(null);
+  const [coords, setCoords] = useState<{ left: number; top: number; placement: "top" | "bottom" } | null>(null);
 
   function show() {
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
+    // Flip below if there isn't room above (e.g. triggers in the top header).
+    const placement: "top" | "bottom" = side === "top" && r.top < 48 ? "bottom" : side;
     setCoords({
       left: r.left + r.width / 2,
-      top: side === "top" ? r.top - 6 : r.bottom + 6,
+      top: placement === "top" ? r.top - 6 : r.bottom + 6,
+      placement,
     });
   }
 
@@ -48,7 +51,7 @@ export function Tooltip({
               position: "fixed",
               left: coords.left,
               top: coords.top,
-              transform: side === "top" ? "translate(-50%, -100%)" : "translate(-50%, 0)",
+              transform: coords.placement === "top" ? "translate(-50%, -100%)" : "translate(-50%, 0)",
               fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
               fontSize: "0.7rem",
               fontWeight: 500,

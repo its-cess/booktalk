@@ -9,13 +9,15 @@ import PostCard from "@/components/post/PostCard";
 import CommentCard from "@/components/post/CommentCard";
 import MentionTextarea from "@/components/post/MentionTextarea";
 import { Button } from "@/components/ui/button";
-import EmojiPicker, { type EmojiClickData, EmojiStyle } from "emoji-picker-react";
+import EmojiPicker, { type EmojiClickData, EmojiStyle, Theme } from "emoji-picker-react";
+import { useTheme } from "@/lib/theme-context";
 import GifPicker from "@/components/post/GifPicker";
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { theme } = useTheme();
 
   const { data: post, isLoading: postLoading, isError: postError } = usePost(id!);
   const { data: comments, isLoading: commentsLoading } = useComments(id!);
@@ -234,6 +236,7 @@ export default function PostDetail() {
                       setShowEmojiPicker(false);
                     }}
                     emojiStyle={EmojiStyle.GOOGLE}
+                    theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
                     previewConfig={{ showPreview: false }}
                     height={350}
                     width={300}

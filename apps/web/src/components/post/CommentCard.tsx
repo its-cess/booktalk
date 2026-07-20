@@ -132,22 +132,15 @@ export default function CommentCard({
           >
             <Link
               to={`/${comment.author.username}`}
+              className="group"
               style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: "0.3rem" }}
-              onMouseEnter={(e) => {
-                (e.currentTarget.querySelector(".comment-handle") as HTMLElement).style.color =
-                  "#4338ca";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget.querySelector(".comment-handle") as HTMLElement).style.color =
-                  "#737373";
-              }}
             >
               <span className="text-foreground" style={{ fontSize: "0.8rem", fontWeight: 600, fontFamily: '"Zalando Sans SemiExpanded", sans-serif' }}>
                 {comment.author.displayName}
               </span>
               <span
-                className="comment-handle text-muted-foreground"
-                style={{ fontSize: "0.72rem", transition: "color 0.15s" }}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+                style={{ fontSize: "0.72rem" }}
               >
                 @{comment.author.username}
               </span>

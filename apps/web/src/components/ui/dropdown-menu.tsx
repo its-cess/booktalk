@@ -68,11 +68,11 @@ const DropdownMenuContent = React.forwardRef<
         minWidth: "10rem",
         overflow: "hidden",
         borderRadius: "4px",
-        border: "1px solid #e5e5e5",
-        backgroundColor: "#ffffff",
+        border: "1px solid hsl(var(--border))",
+        backgroundColor: "hsl(var(--popover))",
         padding: "0.375rem",
-        color: "#171717",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+        color: "hsl(var(--popover-foreground))",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
         fontFamily: '"Zalando Sans SemiExpanded", sans-serif',
         ...style,
       }}
@@ -104,9 +104,9 @@ const DropdownMenuItem = React.forwardRef<
       userSelect: "none",
       ...style,
     }}
-    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "#f5f5f5" }}
+    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(var(--accent))" }}
     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "transparent" }}
-    onFocus={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "#f5f5f5" }}
+    onFocus={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(var(--accent))" }}
     onBlur={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = "transparent" }}
     {...props}
   />

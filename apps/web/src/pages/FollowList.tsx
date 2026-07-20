@@ -39,10 +39,8 @@ export default function FollowList() {
       <div style={{ marginBottom: "1.25rem" }}>
         <Link
           to={`/${username}`}
-          className="text-muted-foreground"
+          className="text-muted-foreground hover:text-primary transition-colors"
           style={{ fontSize: "0.875rem", textDecoration: "none" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "")}
         >
           ← @{username}
         </Link>

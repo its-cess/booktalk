@@ -2,15 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { useChangePassword, useDeleteAccount } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { Switch } from "@/components/ui/switch";
 import FeedbackDialog from "@/components/FeedbackDialog";
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
@@ -69,6 +72,21 @@ export default function Settings() {
             <span className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>Username</span>
             <span className="text-foreground" style={{ fontSize: "0.875rem" }}>@{user?.username}</span>
           </div>
+        </div>
+      </section>
+
+      {/* Appearance */}
+      <section style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <h2 className="text-foreground" style={{ fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>
+          Appearance
+        </h2>
+        <div className="bg-background rounded-sm" style={{ padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", border: "1px solid hsl(var(--border))" }}>
+          <p className="text-foreground" style={{ fontSize: "0.875rem", margin: 0 }}>Dark mode</p>
+          <Switch
+            checked={theme === "dark"}
+            onCheckedChange={(on) => setTheme(on ? "dark" : "light")}
+            ariaLabel="Toggle dark mode"
+          />
         </div>
       </section>
 

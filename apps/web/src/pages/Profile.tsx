@@ -380,10 +380,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 function Stat({ count, label }: { count: number; label: string }) {
   return (
     <span
-      className="text-foreground/60"
+      className="text-foreground/60 hover:text-primary transition-colors"
       style={{ fontSize: "0.875rem" }}
-      onMouseEnter={(e) => (e.currentTarget.style.color = "#4338ca")}
-      onMouseLeave={(e) => (e.currentTarget.style.color = "")}
     >
       <strong className="text-foreground">{count}</strong> {label}
     </span>
