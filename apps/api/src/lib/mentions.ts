@@ -1,4 +1,5 @@
 import { prisma } from "../prisma.js";
+import { pushActivity } from "./push.js";
 
 const MENTION_RE = /@([a-zA-Z0-9_-]+)/g;
 
@@ -52,4 +53,6 @@ export async function notifyMentions({
       commentId: commentId ?? null,
     })),
   });
+
+  pushActivity({ recipientIds: recipients, actorId, type, postId });
 }

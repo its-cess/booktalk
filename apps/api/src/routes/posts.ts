@@ -4,6 +4,7 @@ import { createPostSchema, updatePostSchema, createCommentSchema } from "@bookta
 import { prisma } from "../prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { notifyMentions } from "../lib/mentions.js";
+import { pushActivity } from "../lib/push.js";
 import {
   halfStarsToRating,
   ratingToHalfStars,
@@ -421,6 +422,7 @@ export default async function postRoutes(app: FastifyInstance) {
             },
           })
           .catch(console.error);
+        pushActivity({ recipientIds: [post.authorId], actorId: payload.userId, type: "POST_LIKE", postId: id });
       }
 
       return reply.send({ isLiked: true });
@@ -501,6 +503,7 @@ export default async function postRoutes(app: FastifyInstance) {
             },
           })
           .catch(console.error);
+        pushActivity({ recipientIds: [post.authorId], actorId: payload.userId, type: "COMMENT", postId: id });
       }
 
       // Notify any @mentioned users (non-blocking)
