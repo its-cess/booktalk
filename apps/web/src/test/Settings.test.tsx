@@ -19,6 +19,9 @@ vi.mock("@/lib/queries", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: mockToastSuccess, error: mockToastError } }));
 vi.mock("@/components/FeedbackDialog", () => ({ default: () => null }));
+vi.mock("@/lib/theme-context", () => ({
+  useTheme: () => ({ theme: "light", setTheme: vi.fn(), toggleTheme: vi.fn() }),
+}));
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));

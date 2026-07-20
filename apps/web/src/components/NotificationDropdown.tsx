@@ -65,9 +65,8 @@ export default function NotificationPanel({ onClose }: Props) {
 
   return (
     <div
-      className="bg-background"
+      className="bg-background border"
       style={{
-        border: "1px solid #e5e5e5",
         borderRadius: "4px",
         overflow: "hidden",
       }}
@@ -131,7 +130,7 @@ export default function NotificationPanel({ onClose }: Props) {
               onClick={() => handleClick(n)}
               className="w-full justify-start items-start gap-2 rounded-none border-b border-border px-3 py-2.5 h-auto"
               style={{
-                backgroundColor: n.read ? "hsl(57 80% 96%)" : "hsl(var(--primary) / 0.05)",
+                backgroundColor: n.read ? "transparent" : "hsl(var(--primary) / 0.08)",
               }}
             >
               <span

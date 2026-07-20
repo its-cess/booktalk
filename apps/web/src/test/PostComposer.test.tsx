@@ -15,6 +15,9 @@ vi.mock("@/lib/queries", () => ({
 vi.mock("sonner", () => ({
   toast: { error: mockToastError },
 }));
+vi.mock("@/lib/theme-context", () => ({
+  useTheme: () => ({ theme: "light", setTheme: vi.fn(), toggleTheme: vi.fn() }),
+}));
 
 import PostComposer from "@/components/post/PostComposer";
 
