@@ -76,12 +76,12 @@ function markSvg(size, scale) {
 // Book + "BookTalk", both kept inside the centre so a circle crop won't clip them.
 function wordmarkSvg(size) {
   const fontSize = Math.round(size * 0.115);
-  const textY = Math.round(size * 0.75);
+  const textY = Math.round(size * 0.68);
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
     ${background(size)}
-    ${placedBook(size, 0.46, -size * 0.11)}
+    ${placedBook(size, 0.46, -size * 0.08)}
     <text x="50%" y="${textY}" text-anchor="middle"
-      font-family="Georgia, 'Times New Roman', serif" font-weight="700"
+      font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="700"
       font-size="${fontSize}" fill="${INK}">BookTalk</text>
   </svg>`;
 }
