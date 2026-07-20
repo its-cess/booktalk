@@ -6,3 +6,6 @@ dist
 *.db-journal
 *.db-wal
 *.db-shm
+
+# macOS
+.DS_Store

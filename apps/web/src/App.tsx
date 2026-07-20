@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/lib/theme-context";
 import { AuthProvider } from "@/lib/auth-context";
 import Layout from "@/components/Layout";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
@@ -22,6 +23,7 @@ export default function App() {
       <ThemeProvider>
       <AuthProvider>
         <Toaster position="bottom-right" richColors closeButton />
+        <PWAUpdatePrompt />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
