@@ -41,6 +41,8 @@ model User {
   shelves  Shelf[]
   feedback Feedback[]
   topBooks ProfileTopBook[]
+
+  pushSubscriptions PushSubscription[]
 }
 
 model AuthCredential {
@@ -197,6 +199,20 @@ model Notification {
 
   @@index([userId, createdAt])
   @@index([userId, postId, type])
+}
+
+// A browser/device Web Push subscription for a user (one row per device/endpoint).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // One rating per user per book. Value is either a star rating (halfStars 0–10,

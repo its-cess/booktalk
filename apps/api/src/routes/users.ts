@@ -5,6 +5,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { updateProfileSchema, setTopBooksSchema, MAX_TOP_BOOKS } from "@booktalk/shared";
 import { prisma } from "../prisma.js";
+import { pushActivity } from "../lib/push.js";
 import { requireAuth } from "../middleware/auth.js";
 import { loadAuthorBookRatings, postRatingFor } from "../lib/rating.js";
 import { ensureWantToRead, shelfListInclude, shelfSummary } from "../lib/shelves.js";
@@ -185,6 +186,7 @@ export default async function userRoutes(app: FastifyInstance) {
           },
         })
         .catch(console.error);
+      pushActivity({ recipientIds: [targetUser.id], actorId: payload.userId, type: "FOLLOW" });
       return reply.send({ isFollowing: true });
     }
   });

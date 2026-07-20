@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { usePush } from "@/lib/use-push";
 import { useChangePassword, useDeleteAccount } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import FeedbackDialog from "@/components/FeedbackDialog";
 export default function Settings() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const push = usePush();
   const navigate = useNavigate();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
@@ -39,6 +41,22 @@ export default function Settings() {
     } catch (err) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       toast.error(msg === "Current password is incorrect" ? "Current password is incorrect." : "Failed to update password.");
+    }
+  }
+
+  async function handlePushToggle(on: boolean) {
+    try {
+      await push.toggle(on);
+      toast.success(on ? "Push notifications enabled." : "Push notifications turned off.");
+    } catch (err) {
+      const reason = (err as Error)?.message;
+      if (reason === "denied") {
+        toast.error("Notifications are blocked. Enable them in your browser settings.");
+      } else if (reason === "no-key") {
+        toast.error("Push notifications aren't available right now.");
+      } else {
+        toast.error("Couldn't update push notifications.");
+      }
     }
   }
 
@@ -89,6 +107,31 @@ export default function Settings() {
           />
         </div>
       </section>
+
+      {/* Notifications */}
+      {push.supported && (
+        <section style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <h2 className="text-foreground" style={{ fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>
+            Notifications
+          </h2>
+          <div className="bg-background rounded-sm" style={{ padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", border: "1px solid hsl(var(--border))" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <p className="text-foreground" style={{ fontSize: "0.875rem", margin: 0 }}>Push notifications</p>
+              <p className="text-muted-foreground" style={{ fontSize: "0.8rem", margin: 0 }}>
+                {push.permission === "denied"
+                  ? "Blocked in your browser — enable notifications for this site to turn them on."
+                  : "Get notified about likes, comments, mentions, and new followers."}
+              </p>
+            </div>
+            <Switch
+              checked={push.enabled}
+              disabled={push.loading || push.permission === "denied"}
+              onCheckedChange={handlePushToggle}
+              ariaLabel="Toggle push notifications"
+            />
+          </div>
+        </section>
+      )}
 
       {/* Feedback */}
       <section style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>

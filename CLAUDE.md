@@ -153,7 +153,12 @@ R2_ACCESS_KEY_ID=""
 R2_SECRET_ACCESS_KEY=""
 R2_BUCKET_NAME=""                      # e.g. booktalk-prod
 R2_PUBLIC_URL=""                       # e.g. https://assets.booktalksocial.com
+VAPID_PUBLIC_KEY=""                    # Web Push VAPID keypair (generate: npx web-push generate-vapid-keys)
+VAPID_PRIVATE_KEY=""                   # secret — never commit
+VAPID_SUBJECT=""                       # mailto: contact for push, e.g. mailto:notifications@booktalksocial.com
 ```
+
+Web Push (PWA push notifications) is optional: if `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` are unset, `sendPushToUser`/`pushActivity` in `apps/api/src/lib/push.ts` become no-ops so the app runs fine without them. Push is wired into every notification creation point (likes, comments, follows, mentions); the web client subscribes via a Settings toggle and the custom service worker (`apps/web/src/sw.ts`, built with vite-plugin-pwa `injectManifest`) shows the notification.
 
 ### Environment variables (Web)
 Stored in `apps/web/.env`:

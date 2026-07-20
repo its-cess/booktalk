@@ -3,11 +3,13 @@ export function Switch({
   onCheckedChange,
   ariaLabel,
   size = "md",
+  disabled = false,
 }: {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   ariaLabel?: string;
   size?: "sm" | "md";
+  disabled?: boolean;
 }) {
   const d =
     size === "sm"
@@ -20,6 +22,7 @@ export function Switch({
       role="switch"
       aria-checked={checked}
       aria-label={ariaLabel}
+      disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       style={{
         position: "relative",
@@ -29,7 +32,8 @@ export function Switch({
         // Off = a clearly visible grey (so the white knob reads); On = primary.
         backgroundColor: checked ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.4)",
         border: "none",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
         padding: 0,
         flexShrink: 0,
         transition: "background-color 0.15s",

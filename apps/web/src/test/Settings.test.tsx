@@ -22,6 +22,10 @@ vi.mock("@/components/FeedbackDialog", () => ({ default: () => null }));
 vi.mock("@/lib/theme-context", () => ({
   useTheme: () => ({ theme: "light", setTheme: vi.fn(), toggleTheme: vi.fn() }),
 }));
+
+const mockUsePush = vi.hoisted(() => vi.fn());
+const mockPushToggle = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/use-push", () => ({ usePush: () => mockUsePush() }));
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
@@ -35,6 +39,14 @@ beforeEach(() => {
   mockUseAuth.mockReturnValue({ user: MOCK_USER, logout: mockLogout });
   mockUseChangePassword.mockReturnValue({ mutateAsync: mockChangeMutateAsync, isPending: false });
   mockUseDeleteAccount.mockReturnValue({ mutateAsync: mockDeleteMutateAsync, isPending: false });
+  mockPushToggle.mockResolvedValue(undefined);
+  mockUsePush.mockReturnValue({
+    supported: true,
+    enabled: false,
+    loading: false,
+    permission: "default",
+    toggle: mockPushToggle,
+  });
 });
 
 describe("Settings — account info", () => {
@@ -118,6 +130,41 @@ describe("Settings — change password", () => {
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith("Failed to update password.");
     });
+  });
+});
+
+describe("Settings — push notifications", () => {
+  it("shows the push toggle and enables on click", async () => {
+    render(<Settings />);
+    const toggle = screen.getByRole("switch", { name: "Toggle push notifications" });
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    await userEvent.click(toggle);
+    await waitFor(() => {
+      expect(mockPushToggle).toHaveBeenCalledWith(true);
+      expect(mockToastSuccess).toHaveBeenCalledWith("Push notifications enabled.");
+    });
+  });
+
+  it("shows a 'denied' error toast when the browser blocks permission", async () => {
+    mockPushToggle.mockRejectedValueOnce(new Error("denied"));
+    render(<Settings />);
+    await userEvent.click(screen.getByRole("switch", { name: "Toggle push notifications" }));
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Notifications are blocked. Enable them in your browser settings.");
+    });
+  });
+
+  it("hides the section when push isn't supported", () => {
+    mockUsePush.mockReturnValue({ supported: false, enabled: false, loading: false, permission: "default", toggle: mockPushToggle });
+    render(<Settings />);
+    expect(screen.queryByRole("switch", { name: "Toggle push notifications" })).not.toBeInTheDocument();
+  });
+
+  it("disables the toggle and shows a hint when permission is denied", () => {
+    mockUsePush.mockReturnValue({ supported: true, enabled: false, loading: false, permission: "denied", toggle: mockPushToggle });
+    render(<Settings />);
+    expect(screen.getByRole("switch", { name: "Toggle push notifications" })).toBeDisabled();
+    expect(screen.getByText(/Blocked in your browser/i)).toBeInTheDocument();
   });
 });
 

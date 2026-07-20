@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => ({
       ? []
       : [
           VitePWA({
+            strategies: "injectManifest",
+            srcDir: "src",
+            filename: "sw.ts",
             registerType: "prompt",
             includeAssets: ["favicon.png", "apple-touch-icon-180x180.png"],
             manifest: {
@@ -42,10 +45,8 @@ export default defineConfig(({ mode }) => ({
                 },
               ],
             },
-            workbox: {
+            injectManifest: {
               globPatterns: ["**/*.{js,css,html,png,svg,woff,woff2}"],
-              navigateFallback: "index.html",
-              cleanupOutdatedCaches: true,
             },
             devOptions: { enabled: false },
           }),
