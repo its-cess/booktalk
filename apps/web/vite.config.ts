@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
             registerType: "prompt",
             includeAssets: ["favicon.png", "apple-touch-icon-180x180.png"],
             manifest: {
+              id: "/",
               name: "BookTalk",
               short_name: "BookTalk",
               description: "Share what you're reading and talk books with friends.",
