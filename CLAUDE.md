@@ -75,7 +75,7 @@ Then set `DATABASE_URL` in `apps/api/.env` to `postgresql://postgres:postgres@lo
 ## Architecture
 
 ### Shared validation
-`packages/shared` exports Zod schemas (`createPostSchema`, `updatePostSchema`, `createCommentSchema`, `loginSchema`, `signupSchema`, `updateProfileSchema`) and inferred TypeScript types (`PostWithAuthor`, `CommentWithAuthor`, `UserProfile`, `BookResult`, etc.). This is the source of truth for data shapes — extend schemas here first, then use them in both apps.
+`packages/shared` exports Zod schemas and inferred TypeScript types, organized per-file and re-exported from `src/index.ts`: `auth.ts`, `post.ts`, `user.ts`, `notification.ts`, `rating.ts`, `shelf.ts`, `top-books.ts`, `feedback.ts`, `push.ts`, `types.ts` (e.g. `createPostSchema`, `createCommentSchema`, `loginSchema`, `signupSchema`, `updateProfileSchema`, `pushSubscriptionSchema`, and types like `PostWithAuthor`, `CommentWithAuthor`, `UserProfile`, `BookResult`, `GroupedNotification`). This is the source of truth for data shapes — extend schemas here first, then use them in both apps.
 
 `packages/shared/dist` is committed to git so Railway's build can resolve the package without relying on pnpm workspace symlinks.
 
@@ -87,10 +87,11 @@ Then set `DATABASE_URL` in `apps/api/.env` to `postgresql://postgres:postgres@lo
 
 ### API structure
 - Entry point: `apps/api/src/index.ts` — registers plugins (CORS, JWT, rate limiting) and mounts route modules; listens on `0.0.0.0` using `process.env.PORT`
-- Routes in `apps/api/src/routes/`: `auth.ts`, `posts.ts`, `books.ts`, `users.ts`, `comments.ts`, `notifications.ts`, `gifs.ts`
+- Routes in `apps/api/src/routes/`: `auth.ts`, `posts.ts`, `books.ts`, `users.ts`, `comments.ts`, `notifications.ts`, `gifs.ts`, `shelves.ts`, `feedback.ts`, `push.ts`
 - Prisma singleton: `apps/api/src/prisma.ts`
 - Prisma CLI config: `apps/api/prisma.config.ts` — sets the datasource URL from `DATABASE_URL` env var (Prisma 7 requirement)
-- Mention handling: `apps/api/src/lib/mentions.ts` — extracts `@username` mentions from post/comment content and creates notifications via `notifyMentions()`
+- Mention handling: `apps/api/src/lib/mentions.ts` — extracts `@username` mentions from post/comment content and creates notifications via `notifyMentions()` (also fires a push)
+- Web Push: `apps/api/src/lib/push.ts` — `sendPushToUser()` / `pushActivity()` (see the Web Push note under API env vars)
 
 Key API patterns:
 - All routes validate input with Zod schemas from `@booktalk/shared`; errors return `{ errors: err.issues }` with 400
@@ -106,6 +107,11 @@ Notable endpoints not obvious from route file names:
 - `GET /auth/me` — returns current authenticated user
 - `GET /notifications`, `POST /notifications/read-all`, `POST /notifications/:id/read` — notification system
 - `POST /users/me/avatar-upload-url` — returns a presigned Cloudflare R2 URL for avatar upload
+- `PUT /books/:id/rating`, `DELETE /books/:id/rating` — set/clear the current user's rating for a book (ratings live under `books.ts`, not a separate route file)
+- `GET /users/:username/top-books`, `PUT /users/me/top-books` — a user's pinned "Top 8" books (replace-all)
+- `GET /shelves/me`, `GET /shelves/:id`, `POST /shelves`, `PATCH /shelves/:id`, `DELETE /shelves/:id`, `POST /shelves/:id/items`, `DELETE /shelves/:id/items/:bookId` — custom + system book shelves
+- `POST /feedback` — persists a `Feedback` row and emails `FEEDBACK_EMAIL` (falls back to `FROM_EMAIL`) via Resend; open to logged-out users, rate-limited
+- `GET /push/vapid-public-key`, `POST /push/subscribe`, `POST /push/unsubscribe` — Web Push subscription management
 
 ### Data model highlights
 Notable Prisma models beyond User/Post/Comment:
@@ -114,19 +120,35 @@ Notable Prisma models beyond User/Post/Comment:
 - **Follow** — self-referential many-to-many on User for social graph
 - **PostLike** / **CommentLike** — unique on `[userId, postId]` / `[userId, commentId]`
 - **PasswordResetToken** — used by the password reset flow
-- **Notification** — supports types `FOLLOW`, `LIKE_POST`, `LIKE_COMMENT`, `MENTION_POST`, `MENTION_COMMENT`; notifications are grouped by `(type, postId)` when returned to the client
+- **Notification** — `type` is one of `POST_LIKE`, `COMMENT`, `FOLLOW`, `MENTION_POST`, `MENTION_COMMENT` (note: comment-likes create **no** notification); grouped by `(type, postId)` when returned to the client (FOLLOWs grouped together)
+- **BookRating** — one rating per user per book (half-stars 0–10, or DNF); drives own-ratings + a gated average
+- **Shelf** / **ShelfItem** — custom + system ("Want to Read") book shelves; `ShelfItem` links a shelf to a book
+- **ProfileTopBook** — a user's pinned "Top 8" books (`userId`, `bookId`, `position`, cap 8)
+- **Feedback** — bug/feature/other submissions from the feedback dialog
+- **PushSubscription** — one row per browser/device Web Push subscription (`endpoint` unique, `p256dh`/`auth` keys), cascade-deleted with the user
 
 ### Web structure
-- Router defined in `apps/web/src/App.tsx` using React Router 7 with a shared `Layout` wrapper
-- Routes: `/` (feed), `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/search`, `/posts/:id`, `/books/:id`, `/:username`, `/:username/followers`, `/:username/following`, `/settings`
+- Router defined in `apps/web/src/App.tsx` using React Router 7 with a shared `Layout` wrapper. `App` also wraps everything in `ThemeProvider` + `AuthProvider` and renders the global `<Toaster />` and `<PWAUpdatePrompt />`
+- Routes: `/` (feed), `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/search`, `/posts/:id`, `/books/:id`, `/settings`, `/:username`, `/:username/followers`, `/:username/following`, `/:username/shelves/:shelfId`
 - Pages are in `apps/web/src/pages/`
-- UI primitives (Button, Input, Label) are shadcn/ui components in `apps/web/src/components/ui/`; toasts via Sonner
+- UI primitives (Button, Input, Label, Switch) are shadcn/ui-style components in `apps/web/src/components/ui/`; toasts via Sonner
 - Path alias `@/` resolves to `apps/web/src/`
-- `ProtectedRoute` component wraps auth-gated routes
+- **No `ProtectedRoute` component** — auth-gating is done inline per page (a page reads `useAuth()` and redirects/renders a logged-out view itself, e.g. `Home`, `PostDetail`)
+
+### Dark mode / theming
+- `apps/web/src/lib/theme-context.tsx` — `ThemeProvider` + `useTheme()` (`theme: "light" | "dark"`, `toggleTheme`, `setTheme`); persists to `localStorage` key `theme` and respects `prefers-color-scheme`
+- Colors are HSL CSS custom properties in `apps/web/src/index.css`; dark values live in a `.dark {}` block, activated via `@custom-variant dark (&:is(.dark *))` and a `.dark` class on `<html>`
+- `index.html` runs a tiny inline script before paint to add `.dark` from stored/system preference (avoids a flash)
+- Header toggle: `apps/web/src/components/ThemeToggle.tsx` (a `Switch` with a `SunMoon` icon); also a "Dark mode" toggle in Settings
+
+### PWA (installable + update prompt + push)
+- Configured via `vite-plugin-pwa` in `apps/web/vite.config.ts` using **`injectManifest`** with a custom service worker `apps/web/src/sw.ts` (precache + SPA navigation fallback + `push` / `notificationclick` handlers + `SKIP_WAITING`). The plugin is skipped under Vitest (`mode === "test"`) and `virtual:pwa-register/react` is aliased to a stub in tests
+- `registerType: "prompt"` — `apps/web/src/components/PWAUpdatePrompt.tsx` uses `useRegisterSW` to show a Sonner "Refresh" toast when a new build is waiting (never auto-activates)
+- Icons are generated by `apps/web/scripts/generate-pwa-icons.mjs` (`pnpm icons:generate`, needs the `sharp` devDependency) — an SVG open-book on a midnight gradient; mark-only for maskable/apple-touch/favicon, mark + "BookTalk" wordmark for the larger `any` install-prompt sizes
+- Push: `apps/web/src/lib/push.ts` + `usePush` hook power a single master "Push notifications" toggle in Settings (browsers require explicit opt-in; the OS handles per-site muting). Notifications fire only for **new** activity to opted-in subscriptions — there is no backfill
 
 ### Feature flags
-`apps/web/src/lib/config.ts` contains feature flags:
-- `SHOW_GIPHY` — set to `false` until the Giphy production API key is approved; controls GIF picker visibility in `PostComposer` and `PostDetail`
+There is currently **no** `apps/web/src/lib/config.ts` / `SHOW_GIPHY` flag (removed). If a feature flag is needed, add it fresh.
 
 ### React Query (TanStack Query v5)
 All server state goes through React Query. Queries and mutations are centralized in `apps/web/src/lib/queries.ts`. Key patterns:
@@ -135,7 +157,7 @@ All server state goes through React Query. Queries and mutations are centralized
 - Some queries set `staleTime` (books: 5 min, post search: 30 sec) or `refetchInterval` (notifications: 30 s)
 
 ### Tests (`apps/web/src/test/`)
-Tests use Vitest with JSDOM + `@testing-library/react`. The setup file patches `ResizeObserver` for Radix UI compatibility. Test files cover pages (`Login`, `Signup`, `Home`, `Profile`, `Settings`, `BookDetail`), components (`PostComposer`, `PostCard`, `CommentCard`, `MentionTextarea`, `NotificationDropdown`, `FollowList`, `Layout`), and query/mutation hooks (`mutations.test.ts`).
+Tests use Vitest with JSDOM + `@testing-library/react`. The setup file patches `ResizeObserver` for Radix UI compatibility. Coverage spans pages (`Login`, `Signup`, `Home`, `Profile`, `Settings`, `BookDetail`), components (`PostComposer`, `PostCard`, `CommentCard`, `MentionTextarea`, `NotificationDropdown`, `FollowList`, `Layout`, `ThemeToggle`, `PWAUpdatePrompt`), hooks/libs (`theme-context`, `use-push`, mutations), and query hooks. Currently ~270 tests. Note: the API has no automated tests yet (planned).
 
 ### Environment variables (API)
 Stored in `apps/api/.env`:
@@ -146,8 +168,9 @@ JWT_EXPIRES_IN="7d"
 CORS_ORIGIN="http://localhost:5173"
 APP_URL="http://localhost:5173"        # Used in password reset emails
 GIPHY_API_KEY=""                       # Giphy API key for GIF search
-RESEND_API_KEY=""                      # Resend API key for password reset emails
+RESEND_API_KEY=""                      # Resend API key for password reset + feedback emails
 FROM_EMAIL=""                          # Sender address for Resend emails
+FEEDBACK_EMAIL=""                      # Where feedback submissions are emailed (falls back to FROM_EMAIL); keep the owner's inbox here — never commit
 R2_ACCOUNT_ID=""                       # Cloudflare R2 for avatar storage
 R2_ACCESS_KEY_ID=""
 R2_SECRET_ACCESS_KEY=""
@@ -175,4 +198,7 @@ VITE_API_URL=http://localhost:3000
 - **Email**: Resend (domain verified on `booktalksocial.com`)
 
 ## CI
-GitHub Actions (`.github/workflows/ci.yml`) runs on PRs to `main` with Node 20 + pnpm 10: builds shared, lints web, typechecks web, and runs web tests. Jobs share a build artifact cache.
+GitHub Actions (`.github/workflows/ci.yml`) runs on PRs to `main` with Node 20 + pnpm 10: builds shared, lints web, runs the **full web build** (`pnpm --filter web build`, i.e. `tsc -b && vite build`), and runs web tests. The full build (not just `tsc --noEmit`) is intentional — Cloudflare's build type-checks test files with `noUnusedLocals`, which a bare `tsc --noEmit` misses, so running the real build in CI catches that class of error before deploy.
+
+## Local dev note
+The build tooling requires **Node 20+**. If your shell defaults to an older Node, switch first (e.g. `nvm use 20`) before running `pnpm build`/`pnpm test`.
