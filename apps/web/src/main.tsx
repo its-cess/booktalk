@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
+// Side-effect import: registers the beforeinstallprompt listener before render.
+import "./lib/install";
 
 const queryClient = new QueryClient();
 

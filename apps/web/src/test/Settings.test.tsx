@@ -26,6 +26,10 @@ vi.mock("@/lib/theme-context", () => ({
 const mockUsePush = vi.hoisted(() => vi.fn());
 const mockPushToggle = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/use-push", () => ({ usePush: () => mockUsePush() }));
+
+const mockUseInstall = vi.hoisted(() => vi.fn());
+const mockPromptInstall = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/use-install", () => ({ useInstall: () => mockUseInstall() }));
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
@@ -46,6 +50,13 @@ beforeEach(() => {
     loading: false,
     permission: "default",
     toggle: mockPushToggle,
+  });
+  mockPromptInstall.mockResolvedValue("accepted");
+  mockUseInstall.mockReturnValue({
+    installable: false,
+    standalone: false,
+    ios: false,
+    promptInstall: mockPromptInstall,
   });
 });
 
@@ -130,6 +141,35 @@ describe("Settings — change password", () => {
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith("Failed to update password.");
     });
+  });
+});
+
+describe("Settings — install app", () => {
+  it("shows an Install button and triggers the prompt on Chromium", async () => {
+    mockUseInstall.mockReturnValue({ installable: true, standalone: false, ios: false, promptInstall: mockPromptInstall });
+    render(<Settings />);
+    const btn = screen.getByRole("button", { name: "Install app" });
+    await userEvent.click(btn);
+    expect(mockPromptInstall).toHaveBeenCalledOnce();
+    await waitFor(() => expect(mockToastSuccess).toHaveBeenCalledWith("Installing BookTalk…"));
+  });
+
+  it("shows Add-to-Home-Screen instructions on iOS (no button)", () => {
+    mockUseInstall.mockReturnValue({ installable: false, standalone: false, ios: true, promptInstall: mockPromptInstall });
+    render(<Settings />);
+    expect(screen.getByText(/Add to Home Screen/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Install app" })).not.toBeInTheDocument();
+  });
+
+  it("shows a fallback hint on other browsers", () => {
+    render(<Settings />); // default mock: not installable, not ios
+    expect(screen.getByText(/open BookTalk in Chrome/i)).toBeInTheDocument();
+  });
+
+  it("hides the section entirely once installed (standalone)", () => {
+    mockUseInstall.mockReturnValue({ installable: false, standalone: true, ios: false, promptInstall: mockPromptInstall });
+    render(<Settings />);
+    expect(screen.queryByText("Install app")).not.toBeInTheDocument();
   });
 });
 
